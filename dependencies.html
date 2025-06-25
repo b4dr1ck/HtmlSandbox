@@ -21,12 +21,10 @@
     </style>
   </head>
   <body>
-    <h1>Job Dependencies</h1>
     <canvas></canvas>
 
     <script src="./deps.js"></script>
     <script>
-
       const sortedDeps = sortDeps(deps); // Sort dependencies to ensure correct rendering order
 
       const canvas = document.querySelector("canvas");
@@ -57,19 +55,19 @@
           levels[job.name] = Math.max(...job.dependencies.map((dep) => levels[dep] || 0)) + 1;
         }
       });
-
-      // Group jobs by levels
+      // Group jobs by levels and sort alphabetically within each level
       const jobsByLevel = Object.entries(levels).reduce((acc, [job, level]) => {
         acc[level] = acc[level] || [];
         acc[level].push(job);
+        acc[level].sort((a, b) => a.localeCompare(b)); // Sort jobs alphabetically by name
         return acc;
       }, {});
 
       // Calculate the required canvas size
       const maxLevel = Math.max(...Object.values(levels));
       const maxJobsInLevel = Math.max(...Object.values(jobsByLevel).map((jobs) => jobs.length));
-      const canvasWidth = maxJobsInLevel * (boxWidth + horizontalSpacing) + 50; // Add padding
-      const canvasHeight = (maxLevel + 1) * (boxHeight + verticalSpacing) + 50; // Add padding
+      const canvasWidth = maxJobsInLevel * (boxWidth + horizontalSpacing) + canvasPadding; // Add padding
+      const canvasHeight = (maxLevel + 1) * (boxHeight + verticalSpacing) + canvasPadding; // Add padding
 
       // Set the canvas size dynamically
       canvas.width = canvasWidth;
@@ -84,6 +82,7 @@
         });
       });
 
+      // Function to sort dependencies in a topological order
       function sortDeps(deps) {
         const sorted = [];
         const visited = new Set();
@@ -163,6 +162,9 @@
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(cropJobNameText(job.name), x + boxWidth / 2, y + boxHeight / 2);
+          // Debug - show positions
+          /*ctx.fillStyle = "white"; 
+          ctx.fillText(`x:${x} y:${y}`, x + boxWidth / 2, y + boxHeight + 10 );*/
         });
 
         // Draw lines for dependencies after the boxes
@@ -205,6 +207,7 @@
           });
         });
       }
+
       // Function to handle mouse movement
       function handleMouseMove(event) {
         const rect = canvas.getBoundingClientRect();
