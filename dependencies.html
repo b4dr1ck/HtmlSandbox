@@ -31,8 +31,8 @@
       const ctx = canvas.getContext("2d");
       const canvasPadding = 50;
 
-      const defaultLineColor = "#263238"; // Default line color for dependencies
-      const defaultBoxColor = "#607D8B"; // Default box color for jobs without a specific color
+      const defaultLineColor = "#546E7A"; // Default line color for dependencies
+      const defaultBoxColor = "#78909C"; // Default box color for jobs without a specific color
       const highlightColor = "white"; // Color for highlighted jobs
       const boxWidth = 150;
       const boxHeight = 50;
@@ -154,7 +154,7 @@
           const { x, y } = positions[job.name];
           const isHighlighted = hoveredJob && findDependencies(hoveredJob).includes(job.name);
 
-          ctx.lineWidth = lineWidth;
+          ctx.lineWidth = isHighlighted ? lineWidth * 2 : lineWidth;
           ctx.strokeStyle = isHighlighted ? highlightColor : job.color ? job.color : defaultBoxColor;
           ctx.strokeRect(x, y, boxWidth, boxHeight);
           ctx.fillStyle = isHighlighted ? highlightColor : job.color ? job.color : defaultBoxColor;
@@ -188,7 +188,7 @@
             ctx.strokeStyle = isHighlighted
               ? highlightColor // Highlighted lines are white
               : job.strokeColor || defaultLineColor; // Use job stroke color or default
-            ctx.lineWidth = lineWidth; // Make the lines more visible
+            ctx.lineWidth = isHighlighted ? lineWidth * 2 : lineWidth;
             ctx.stroke();
             ctx.setLineDash([]); // reset the line dash style
 
