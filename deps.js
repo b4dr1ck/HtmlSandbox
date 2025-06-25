@@ -1,0 +1,64 @@
+/*
+data-structure:
+[
+  {
+    name: "JobName",
+    dependencies: ["Dependency1", "Dependency2"],
+    color: "#ColorCode", // Optional: color for the job box
+    dashed: true, // Optional: if true, the line will be dashed
+    strokeColor: "#StrokeColor" // Optional: color for the dependency line
+  },
+]
+*/
+
+const deps = [
+  { name: "Start", dependencies: [], color: "#7E57C2" },
+  { name: "Init1", dependencies: ["Start"], color: "#1E88E5" },
+  { name: "Init2", dependencies: ["Start"], color: "#43A047" },
+  { name: "JobA", dependencies: ["Init1"], strokeColor: "#FF5722" },
+  { name: "JobB", dependencies: ["Init1"], dashed: true, strokeColor: "#FF9800" },
+  { name: "JobC", dependencies: ["Init2"], color: "#F4511E" },
+  { name: "JobD", dependencies: ["Init2"], dashed: true, strokeColor: "#8E24AA" },
+  { name: "Process1", dependencies: ["JobA", "JobB"], color: "#3949AB" },
+  { name: "Process2", dependencies: ["JobC", "JobD"], color: "#039BE5" },
+  { name: "Merge1", dependencies: ["Process1", "Process2"], color: "#6D4C41" },
+  { name: "Branch1", dependencies: ["Merge1"], color: "#FF7043" },
+  { name: "Branch2", dependencies: ["Merge1"], color: "#5C6BC0" },
+  { name: "Branch3", dependencies: ["Merge1"], color: "#26A69A" },
+  { name: "Task1", dependencies: ["Branch1"], dashed: true, strokeColor: "#FFEB3B" },
+  { name: "Task2", dependencies: ["Branch2"], dashed: true, strokeColor: "#FFC107" },
+  { name: "Task3", dependencies: ["Branch3"], dashed: true, strokeColor: "#FF5722" },
+  { name: "SubTask1", dependencies: ["Task1"], color: "#8BC34A" },
+  { name: "SubTask2", dependencies: ["Task2"], color: "#CDDC39" },
+  { name: "SubTask3", dependencies: ["Task3"], color: "#FF9800" },
+  { name: "FinalTask", dependencies: ["SubTask1", "SubTask2", "SubTask3"], color: "#9C27B0" },
+  { name: "Review", dependencies: ["FinalTask"], color: "#3F51B5" },
+  { name: "Approval", dependencies: ["Review"], color: "#009688" },
+  { name: "End", dependencies: ["Approval", "Start"], color: "#7E57C2" },
+
+  // Additional jobs and dependencies
+  { name: "Extra1", dependencies: ["Init1"], color: "#FF6F00" },
+  { name: "Extra2", dependencies: ["Init2"], color: "#D84315" },
+  { name: "ExtraProcess1", dependencies: ["Extra1", "JobA"], color: "#4CAF50" },
+  { name: "ExtraProcess2", dependencies: ["Extra2", "JobC"], color: "#03A9F4" },
+  { name: "ExtraMerge", dependencies: ["ExtraProcess1", "ExtraProcess2"], color: "#9E9D24" },
+  { name: "ExtraBranch1", dependencies: ["ExtraMerge"], color: "#FF5722" },
+  { name: "ExtraBranch2", dependencies: ["ExtraMerge"], color: "#607D8B" },
+  { name: "ExtraTask1", dependencies: ["ExtraBranch1"], dashed: true, strokeColor: "#FFC107" },
+  { name: "ExtraTask2", dependencies: ["ExtraBranch2"], dashed: true, strokeColor: "#FF9800" },
+  { name: "ExtraSubTask1", dependencies: ["ExtraTask1"], color: "#8BC34A" },
+  { name: "ExtraSubTask2", dependencies: ["ExtraTask2"], color: "#CDDC39" },
+  { name: "ExtraFinal", dependencies: ["ExtraSubTask1", "ExtraSubTask2"], color: "#9C27B0" },
+  { name: "ExtraReview", dependencies: ["ExtraFinal"], color: "#3F51B5" },
+  { name: "ExtraApproval", dependencies: ["ExtraReview"], color: "#009688" },
+  { name: "ExtraEnd", dependencies: ["ExtraApproval"], color: "#7E57C2" },
+
+  // Deep branching
+  { name: "Deep1", dependencies: ["ExtraEnd"], color: "#FF7043" },
+  { name: "Deep2", dependencies: ["Deep1"], color: "#5C6BC0" },
+  { name: "Deep3", dependencies: ["Deep2"], color: "#26A69A" },
+  { name: "Deep4", dependencies: ["Deep3"], color: "#FFEB3B" },
+  { name: "Deep5", dependencies: ["Deep4"], color: "#FFC107" },
+  { name: "Deep6", dependencies: ["Deep5"], color: "#FF5722" },
+  { name: "DeepFinal", dependencies: ["Deep6"], color: "#8BC34A" },
+];
