@@ -24,75 +24,23 @@
     <canvas></canvas>
     <script>
       const deps = [
-        { name: "Start", dependencies: [], color: "#EC407A", strokeColor: "rgba(236, 64, 122,0.5)" },
-
-        { name: "Job1", dependencies: ["Start"], strokeColor: "rgba(236, 64, 122,0.5)" },
-        { name: "Job2", dependencies: ["Job1"] },
-        { name: "Job3", dependencies: ["Job2"] },
-        { name: "Job4a", dependencies: ["Job3"] },
-        { name: "Job5a", dependencies: ["Job4a"] },
-        { name: "Job5b", dependencies: ["Job4a"], color: "#AB47BC" },
-        { name: "Job4b", dependencies: ["Job3"] },
-        { name: "Job6a", dependencies: ["Job4b"] },
-        { name: "Job6b", dependencies: ["Job4b"], color: "#AB47BC" },
-        { name: "Job4c", dependencies: ["Job3"] },
-        { name: "Job7a", dependencies: ["Job4c"] },
-        { name: "Job7b", dependencies: ["Job4c"], color: "#AB47BC" },
-        { name: "Job4d", dependencies: ["Job3"] },
-        { name: "Job8a", dependencies: ["Job4d"] },
-        { name: "Job8b", dependencies: ["Job4d"], color: "#AB47BC" },
-        { name: "Job9", dependencies: ["Job5a"] },
-        { name: "Job10", dependencies: ["Job9"] },
-        { name: "Job11", dependencies: ["Job10"] },
-        { name: "Job12", dependencies: ["Job11"] },
-        { name: "Job13", dependencies: ["Job12"] },
-        { name: "Job14", dependencies: ["Job13"] },
-        { name: "Job5End", dependencies: ["Job14", "Job5b"] },
-
-        { name: "Job15", dependencies: ["Job6a"] },
-        { name: "Job16", dependencies: ["Job15"] },
-        { name: "Job17", dependencies: ["Job16"] },
-        { name: "LongJobnameToCropIt", dependencies: ["Job17"], color: "#5C6BC0" },
-        { name: "Job19", dependencies: ["LongJobnameToCropIt"] },
-        { name: "Job20", dependencies: ["Job19"] },
-        { name: "Job21", dependencies: ["Job20"] },
-        { name: "Job6End", dependencies: ["Job21", "Job6a"], color: "#42A5F5", strokeColor: "rgba(66, 165, 245,0.5)" },
-
-        { name: "Job18", dependencies: ["Job7a"] },
-        { name: "Job19a", dependencies: ["Job18"] },
-        { name: "Job20a", dependencies: ["Job19a"] },
-        { name: "Job21a", dependencies: ["Job20a"] },
-
-        { name: "Job22", dependencies: ["Job7a"] },
-        { name: "Job23", dependencies: ["Job22"] },
-        { name: "Job24", dependencies: ["Job23"] },
-        { name: "Job7End", dependencies: ["Job24", "Job7a"] },
-
-        { name: "Job25", dependencies: ["Job8a"] },
-        { name: "Job26", dependencies: ["Job25"] },
-        { name: "Job27", dependencies: ["Job26"] },
-        { name: "Job28", dependencies: ["Job27"] },
-        { name: "Job29", dependencies: ["Job28"] },
-        { name: "Job30", dependencies: ["Job29"] },
-        { name: "Job31", dependencies: ["Job30"] },
-        { name: "Job32", dependencies: ["Job31"] },
-        { name: "Job33", dependencies: ["Job32"] },
-        { name: "Job34", dependencies: ["Job33"] },
-        { name: "Job35", dependencies: ["Job34"] },
-        { name: "Job36", dependencies: ["Job35"] },
-        { name: "Job37", dependencies: ["Job36"] },
-        { name: "Job38", dependencies: ["Job37"] },
-        { name: "Job39", dependencies: ["Job38"] },
-        { name: "Job8End", dependencies: ["Job39", "Job8a"] },
-
-        { name: "End", dependencies: ["Job5End", "Job6End", "Job7End", "Job8End", "Start"], color: "#EC407A" },
+        { name: "Start", dependencies: [], color: "#7E57C2" },
+        { name: "Job1", dependencies: ["Start"] },
+        { name: "Job2a", dependencies: ["Job1"] },
+        { name: "Job2b", dependencies: ["Job1"], dashed: true, strokeColor: "#FF5722" },
+        { name: "Job2c", dependencies: ["Job1"] },
+        { name: "Job3", dependencies: ["Job2a", "Job2b", "Job2c"] },
+        { name: "Job4", dependencies: ["Job2c"] },
+        { name: "Job5", dependencies: ["Job4"] },
+        { name: "Job6", dependencies: ["Job5"] },
+        { name: "End", dependencies: ["Job6"], color: "#7E57C2" },
       ];
 
       const canvas = document.querySelector("canvas");
       const ctx = canvas.getContext("2d");
 
-      const defaultLineColor = "rgba(126, 87, 194,0.5)"; // Default line color for dependencies
-      const defaultBoxColor = "#666"; // Default box color for jobs without a specific color
+      const defaultLineColor = "#263238"; // Default line color for dependencies
+      const defaultBoxColor = "#607D8B"; // Default box color for jobs without a specific color
       const highlightColor = "white"; // Color for highlighted jobs
       const boxWidth = 150;
       const boxHeight = 50;
@@ -208,6 +156,9 @@
 
             // Draw the line
             ctx.beginPath();
+            if (job.dashed) {
+              ctx.setLineDash([5, 10]);
+            }
             ctx.moveTo(startX + boxWidth / 2 + offset, startY); // Start with an offset
             ctx.lineTo(endX + boxWidth / 2 + offset, endY + boxHeight); // End with the same offset
             ctx.strokeStyle = isHighlighted
@@ -215,6 +166,7 @@
               : job.strokeColor || defaultLineColor; // Use job stroke color or default
             ctx.lineWidth = 2; // Make the lines more visible
             ctx.stroke();
+            ctx.setLineDash([]); // reset the line dash style
 
             // Draw the arrowhead at the start of the line
             drawArrowhead(
