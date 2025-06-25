@@ -16,6 +16,7 @@
       canvas {
         display: block;
         margin: 20px auto;
+        border: 1px solid rgba(96, 125, 139, 0.25);
       }
     </style>
   </head>
@@ -23,21 +24,75 @@
     <h1>Job Dependencies</h1>
     <canvas></canvas>
     <script>
+      /*
+      data-structure:
+      [
+        {
+          name: "JobName",
+          dependencies: ["Dependency1", "Dependency2"],
+          color: "#ColorCode", // Optional: color for the job box
+          dashed: true, // Optional: if true, the line will be dashed
+          strokeColor: "#StrokeColor" // Optional: color for the dependency line
+        },
+      ]
+      */
       const deps = [
         { name: "Start", dependencies: [], color: "#7E57C2" },
-        { name: "Job1", dependencies: ["Start"] },
-        { name: "Job2a", dependencies: ["Job1"] },
-        { name: "Job2b", dependencies: ["Job1"], dashed: true, strokeColor: "#FF5722" },
-        { name: "Job2c", dependencies: ["Job1"] },
-        { name: "Job3", dependencies: ["Job2a", "Job2b", "Job2c"] },
-        { name: "Job4", dependencies: ["Job2c"] },
-        { name: "Job5", dependencies: ["Job4"] },
-        { name: "Job6", dependencies: ["Job5"] },
-        { name: "End", dependencies: ["Job6"], color: "#7E57C2" },
+        { name: "Init1", dependencies: ["Start"], color: "#1E88E5" },
+        { name: "Init2", dependencies: ["Start"], color: "#43A047" },
+        { name: "JobA", dependencies: ["Init1"], strokeColor: "#FF5722" },
+        { name: "JobB", dependencies: ["Init1"], dashed: true, strokeColor: "#FF9800" },
+        { name: "JobC", dependencies: ["Init2"], color: "#F4511E" },
+        { name: "JobD", dependencies: ["Init2"], dashed: true, strokeColor: "#8E24AA" },
+        { name: "Process1", dependencies: ["JobA", "JobB"], color: "#3949AB" },
+        { name: "Process2", dependencies: ["JobC", "JobD"], color: "#039BE5" },
+        { name: "Merge1", dependencies: ["Process1", "Process2"], color: "#6D4C41" },
+        { name: "Branch1", dependencies: ["Merge1"], color: "#FF7043" },
+        { name: "Branch2", dependencies: ["Merge1"], color: "#5C6BC0" },
+        { name: "Branch3", dependencies: ["Merge1"], color: "#26A69A" },
+        { name: "Task1", dependencies: ["Branch1"], dashed: true, strokeColor: "#FFEB3B" },
+        { name: "Task2", dependencies: ["Branch2"], dashed: true, strokeColor: "#FFC107" },
+        { name: "Task3", dependencies: ["Branch3"], dashed: true, strokeColor: "#FF5722" },
+        { name: "SubTask1", dependencies: ["Task1"], color: "#8BC34A" },
+        { name: "SubTask2", dependencies: ["Task2"], color: "#CDDC39" },
+        { name: "SubTask3", dependencies: ["Task3"], color: "#FF9800" },
+        { name: "FinalTask", dependencies: ["SubTask1", "SubTask2", "SubTask3"], color: "#9C27B0" },
+        { name: "Review", dependencies: ["FinalTask"], color: "#3F51B5" },
+        { name: "Approval", dependencies: ["Review"], color: "#009688" },
+        { name: "End", dependencies: ["Approval", "Start"], color: "#7E57C2" },
+
+        // Additional jobs and dependencies
+        { name: "Extra1", dependencies: ["Init1"], color: "#FF6F00" },
+        { name: "Extra2", dependencies: ["Init2"], color: "#D84315" },
+        { name: "ExtraProcess1", dependencies: ["Extra1", "JobA"], color: "#4CAF50" },
+        { name: "ExtraProcess2", dependencies: ["Extra2", "JobC"], color: "#03A9F4" },
+        { name: "ExtraMerge", dependencies: ["ExtraProcess1", "ExtraProcess2"], color: "#9E9D24" },
+        { name: "ExtraBranch1", dependencies: ["ExtraMerge"], color: "#FF5722" },
+        { name: "ExtraBranch2", dependencies: ["ExtraMerge"], color: "#607D8B" },
+        { name: "ExtraTask1", dependencies: ["ExtraBranch1"], dashed: true, strokeColor: "#FFC107" },
+        { name: "ExtraTask2", dependencies: ["ExtraBranch2"], dashed: true, strokeColor: "#FF9800" },
+        { name: "ExtraSubTask1", dependencies: ["ExtraTask1"], color: "#8BC34A" },
+        { name: "ExtraSubTask2", dependencies: ["ExtraTask2"], color: "#CDDC39" },
+        { name: "ExtraFinal", dependencies: ["ExtraSubTask1", "ExtraSubTask2"], color: "#9C27B0" },
+        { name: "ExtraReview", dependencies: ["ExtraFinal"], color: "#3F51B5" },
+        { name: "ExtraApproval", dependencies: ["ExtraReview"], color: "#009688" },
+        { name: "ExtraEnd", dependencies: ["ExtraApproval"], color: "#7E57C2" },
+
+        // Deep branching
+        { name: "Deep1", dependencies: ["ExtraEnd"], color: "#FF7043" },
+        { name: "Deep2", dependencies: ["Deep1"], color: "#5C6BC0" },
+        { name: "Deep3", dependencies: ["Deep2"], color: "#26A69A" },
+        { name: "Deep4", dependencies: ["Deep3"], color: "#FFEB3B" },
+        { name: "Deep5", dependencies: ["Deep4"], color: "#FFC107" },
+        { name: "Deep6", dependencies: ["Deep5"], color: "#FF5722" },
+        { name: "DeepFinal", dependencies: ["Deep6"], color: "#8BC34A" },
       ];
+
+      const sortedDeps = sortDeps(deps); // Sort dependencies to ensure correct rendering order
 
       const canvas = document.querySelector("canvas");
       const ctx = canvas.getContext("2d");
+      const canvasPadding = 50;
 
       const defaultLineColor = "#263238"; // Default line color for dependencies
       const defaultBoxColor = "#607D8B"; // Default box color for jobs without a specific color
@@ -46,6 +101,9 @@
       const boxHeight = 50;
       const horizontalSpacing = 60;
       const verticalSpacing = 30;
+      const fontSize = 16;
+      const lineWidth = 2;
+      const arrowSize = 10;
 
       // Calculate positions for each job dynamically
       const positions = {};
@@ -53,7 +111,7 @@
       let hoveredJob = null; // Variable to track the hovered job
 
       // Assign levels to jobs based on dependencies
-      deps.forEach((job) => {
+      sortedDeps.forEach((job) => {
         if (job.dependencies.length === 0) {
           levels[job.name] = 0; // Root level
         } else {
@@ -81,15 +139,40 @@
       // Assign positions based on levels and order within levels
       Object.entries(jobsByLevel).forEach(([level, jobs]) => {
         jobs.forEach((job, index) => {
-          const x = 50 + index * (boxWidth + horizontalSpacing); // Add padding
-          const y = 50 + level * (boxHeight + verticalSpacing); // Add padding
+          const x = canvasPadding + index * (boxWidth + horizontalSpacing); // Add padding
+          const y = canvasPadding + level * (boxHeight + verticalSpacing); // Add padding
           positions[job] = { x, y };
         });
       });
 
+      function sortDeps(deps) {
+        const sorted = [];
+        const visited = new Set();
+
+        // Helper function for depth-first traversal
+        function visit(job) {
+          if (visited.has(job.name)) return; // Skip already visited jobs
+          visited.add(job.name);
+
+          // Visit all dependencies first
+          job.dependencies.forEach((depName) => {
+            const dep = deps.find((j) => j.name === depName);
+            if (dep) visit(dep);
+          });
+
+          // Add the job to the sorted list
+          sorted.push(job);
+        }
+
+        // Visit all jobs in the deps array
+        deps.forEach((job) => visit(job));
+
+        return sorted;
+      }
+
       // Function to find all dependencies recursively
       function findDependencies(jobName, chain = []) {
-        const job = deps.find((j) => j.name === jobName);
+        const job = sortedDeps.find((j) => j.name === jobName);
         if (!job || chain.includes(jobName)) return chain;
         chain.push(jobName);
         job.dependencies.forEach((dep) => findDependencies(dep, chain));
@@ -129,22 +212,22 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Draw boxes for jobs first
-        deps.forEach((job) => {
+        sortedDeps.forEach((job) => {
           const { x, y } = positions[job.name];
           const isHighlighted = hoveredJob && findDependencies(hoveredJob).includes(job.name);
 
-          ctx.lineWidth = 2;
+          ctx.lineWidth = lineWidth;
           ctx.strokeStyle = isHighlighted ? highlightColor : job.color ? job.color : defaultBoxColor;
           ctx.strokeRect(x, y, boxWidth, boxHeight);
           ctx.fillStyle = isHighlighted ? highlightColor : job.color ? job.color : defaultBoxColor;
-          ctx.font = "bold 16px Arial";
+          ctx.font = `bold ${fontSize}px Arial`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(cropJobNameText(job.name), x + boxWidth / 2, y + boxHeight / 2);
         });
 
         // Draw lines for dependencies after the boxes
-        deps.forEach((job) => {
+        sortedDeps.forEach((job) => {
           const { x: startX, y: startY } = positions[job.name];
 
           job.dependencies.forEach((dep, index) => {
@@ -164,7 +247,7 @@
             ctx.strokeStyle = isHighlighted
               ? highlightColor // Highlighted lines are white
               : job.strokeColor || defaultLineColor; // Use job stroke color or default
-            ctx.lineWidth = 2; // Make the lines more visible
+            ctx.lineWidth = lineWidth; // Make the lines more visible
             ctx.stroke();
             ctx.setLineDash([]); // reset the line dash style
 
@@ -175,7 +258,7 @@
               startY,
               endX + boxWidth / 2 + offset,
               endY + boxHeight,
-              10,
+              arrowSize,
               isHighlighted
                 ? highlightColor // Highlighted lines are white
                 : job.strokeColor || defaultLineColor
