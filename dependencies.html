@@ -14,7 +14,6 @@
         text-align: center;
       }
       canvas {
-        background-color: #212121;
         display: block;
         margin: 20px auto;
       }
@@ -25,9 +24,9 @@
     <canvas></canvas>
     <script>
       const deps = [
-        { name: "Start", dependencies: [], color: "#EC407A", strokeColor: "#EC407A" },
+        { name: "Start", dependencies: [], color: "#EC407A", strokeColor: "rgba(236, 64, 122,0.5)" },
 
-        { name: "Job1", dependencies: ["Start"], strokeColor: "#EC407A" },
+        { name: "Job1", dependencies: ["Start"], strokeColor: "rgba(236, 64, 122,0.5)" },
         { name: "Job2", dependencies: ["Job1"] },
         { name: "Job3", dependencies: ["Job2"] },
         { name: "Job4a", dependencies: ["Job3"] },
@@ -57,9 +56,8 @@
         { name: "Job19", dependencies: ["LongJobnameToCropIt"] },
         { name: "Job20", dependencies: ["Job19"] },
         { name: "Job21", dependencies: ["Job20"] },
-        { name: "Job6End", dependencies: ["Job21", "Job6a"], color: "#42A5F5",strokeColor: "#42A5F5"},
+        { name: "Job6End", dependencies: ["Job21", "Job6a"], color: "#42A5F5", strokeColor: "rgba(66, 165, 245,0.5)" },
 
-        { name: "Job7a", dependencies: ["Job7b"] },
         { name: "Job18", dependencies: ["Job7a"] },
         { name: "Job19a", dependencies: ["Job18"] },
         { name: "Job20a", dependencies: ["Job19a"] },
@@ -87,12 +85,15 @@
         { name: "Job39", dependencies: ["Job38"] },
         { name: "Job8End", dependencies: ["Job39", "Job8a"] },
 
-        { name: "End", dependencies: ["Job5End", "Job6End", "Job7End", "Job8End","Start"], color: "#EC407A" },
+        { name: "End", dependencies: ["Job5End", "Job6End", "Job7End", "Job8End", "Start"], color: "#EC407A" },
       ];
 
       const canvas = document.querySelector("canvas");
       const ctx = canvas.getContext("2d");
 
+      const defaultLineColor = "rgba(126, 87, 194,0.5)"; // Default line color for dependencies
+      const defaultBoxColor = "#666"; // Default box color for jobs without a specific color
+      const highlightColor = "white"; // Color for highlighted jobs
       const boxWidth = 150;
       const boxHeight = 50;
       const horizontalSpacing = 60;
@@ -101,6 +102,7 @@
       // Calculate positions for each job dynamically
       const positions = {};
       const levels = {};
+      let hoveredJob = null; // Variable to track the hovered job
 
       // Assign levels to jobs based on dependencies
       deps.forEach((job) => {
@@ -137,6 +139,15 @@
         });
       });
 
+      // Function to find all dependencies recursively
+      function findDependencies(jobName, chain = []) {
+        const job = deps.find((j) => j.name === jobName);
+        if (!job || chain.includes(jobName)) return chain;
+        chain.push(jobName);
+        job.dependencies.forEach((dep) => findDependencies(dep, chain));
+        return chain;
+      }
+
       // Function to draw an arrowhead at the start of the line
       function drawArrowhead(ctx, fromX, fromY, toX, toY, arrowSize, color) {
         const angle = Math.atan2(toY - fromY, toX - fromX); // Calculate the angle of the line
@@ -172,11 +183,12 @@
         // Draw boxes for jobs first
         deps.forEach((job) => {
           const { x, y } = positions[job.name];
-          ctx.fillStyle = "#212121"; // Use job color or default
-          ctx.fillRect(x, y, boxWidth, boxHeight);
-          ctx.strokeStyle = job.color ? job.color : "#78909C";
+          const isHighlighted = hoveredJob && findDependencies(hoveredJob).includes(job.name);
+
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = isHighlighted ? highlightColor : job.color ? job.color : defaultBoxColor;
           ctx.strokeRect(x, y, boxWidth, boxHeight);
-          ctx.fillStyle = job.color ? job.color : "#78909C";
+          ctx.fillStyle = isHighlighted ? highlightColor : job.color ? job.color : defaultBoxColor;
           ctx.font = "bold 16px Arial";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
@@ -186,20 +198,22 @@
         // Draw lines for dependencies after the boxes
         deps.forEach((job) => {
           const { x: startX, y: startY } = positions[job.name];
-          const lineColor = job.strokeColor ? job.strokeColor : "rgba(126, 87, 194,0.5)"; // Use job stroke color or default
 
           job.dependencies.forEach((dep, index) => {
             const { x: endX, y: endY } = positions[dep];
 
             // Offset the line slightly based on the index of the dependency
             const offset = (index - job.dependencies.length / 2) * 10; // Adjust offset dynamically
+            const isHighlighted = hoveredJob && findDependencies(hoveredJob).includes(job.name);
 
             // Draw the line
             ctx.beginPath();
             ctx.moveTo(startX + boxWidth / 2 + offset, startY); // Start with an offset
             ctx.lineTo(endX + boxWidth / 2 + offset, endY + boxHeight); // End with the same offset
-            ctx.strokeStyle = lineColor; // Set line color based on dependency count
-            ctx.lineWidth = 1; // Make the lines more visible
+            ctx.strokeStyle = isHighlighted
+              ? highlightColor // Highlighted lines are white
+              : job.strokeColor || defaultLineColor; // Use job stroke color or default
+            ctx.lineWidth = 2; // Make the lines more visible
             ctx.stroke();
 
             // Draw the arrowhead at the start of the line
@@ -210,11 +224,32 @@
               endX + boxWidth / 2 + offset,
               endY + boxHeight,
               10,
-              lineColor
+              isHighlighted
+                ? highlightColor // Highlighted lines are white
+                : job.strokeColor || defaultLineColor
             );
           });
         });
       }
+      // Function to handle mouse movement
+      function handleMouseMove(event) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        // Check if the mouse is over any box
+        hoveredJob = null;
+        for (const job of deps) {
+          const { x, y } = positions[job.name];
+          if (mouseX >= x && mouseX <= x + boxWidth && mouseY >= y && mouseY <= y + boxHeight) {
+            hoveredJob = job.name;
+            break;
+          }
+        }
+        drawDependencies();
+      }
+      // Attach the mousemove event listener
+      canvas.addEventListener("mousemove", handleMouseMove);
 
       drawDependencies();
     </script>
