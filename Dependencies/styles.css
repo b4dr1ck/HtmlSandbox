@@ -10,4 +10,5 @@ canvas {
   display: block;
   margin: 20px auto;
   border: 1px solid rgba(96, 125, 139, 0.25);
+  background-color: black;
 }

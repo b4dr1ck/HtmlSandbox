@@ -24,7 +24,7 @@ const maxJobNameLength = 17; // Maximum length of the job name to display
 // Calculate positions for each job dynamically
 const positions = {};
 const levels = {};
-let hoveredJob = null; // Variable to track the hovered job
+let clickedJob = null; // Variable to track the clicked job
 
 // Assign levels to jobs based on dependencies
 sortedDeps.forEach((job) => {
@@ -140,12 +140,13 @@ function cropJobNameText(jobname) {
 
 // Draw the jobs and dependencies
 function drawDependencies() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "black"; // Set background color to black
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill background with black
 
   // Draw boxes for jobs first
   sortedDeps.forEach((job) => {
     const { x, y } = positions[job.name];
-    const isHighlighted = hoveredJob && findDependencies(hoveredJob).includes(job.name);
+    const isHighlighted = clickedJob && findDependencies(clickedJob).includes(job.name);
 
     // box
     ctx.lineWidth = isHighlighted ? lineWidth * 2 : lineWidth;
@@ -184,7 +185,7 @@ function drawDependencies() {
 
       // Offset the line slightly based on the index of the dependency
       const offset = (index - job.dependencies.length / 2) * 10; // Adjust offset dynamically
-      const isHighlighted = hoveredJob && findDependencies(hoveredJob).includes(job.name);
+      const isHighlighted = clickedJob && findDependencies(clickedJob).includes(job.name);
 
       // Draw the line
       ctx.beginPath();
@@ -217,6 +218,12 @@ function drawDependencies() {
 }
 
 function drawJobInformation(jobName, x, y) {
+
+  const job = sortedDeps.find((j) => j.name === jobName);
+  if (!job) return; 
+
+  const dependencies = job.dependencies.filter((dep) => !sortedDeps.some((j) => j.name === dep));
+ 
   if (jobName.length > maxJobNameLength) {
     ctx.fillStyle = "white";
     ctx.font = `bold ${fontSize}px Arial`;
@@ -225,9 +232,6 @@ function drawJobInformation(jobName, x, y) {
     ctx.fillText(`Jobname: ${jobName}`, x + 10, y + 10);
   }
 
-  const job = sortedDeps.find((j) => j.name === jobName);
-  if (!job) return; // If the job is not found, exit
-  const dependencies = job.dependencies.filter((dep) => !sortedDeps.some((j) => j.name === dep));
   if (dependencies.length > 0) {
     ctx.fillStyle = "white";
     ctx.font = `bold ${fontSize}px Arial`;
@@ -238,13 +242,32 @@ function drawJobInformation(jobName, x, y) {
 }
 
 // Function to handle mouse movement
+function handleMouseClick(event) {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const mouseY = event.clientY - rect.top;
+
+  // Check if the mouse is over any box
+  clickedJob = null;
+  for (const job of deps) {
+    const { x, y } = positions[job.name];
+
+    if (mouseX >= x && mouseX <= x + boxWidth && mouseY >= y && mouseY <= y + boxHeight) {
+      clickedJob = job.name;
+      break;
+    }
+  }
+
+  drawDependencies();
+}
+
 function handleMouseMove(event) {
   const rect = canvas.getBoundingClientRect();
   const mouseX = event.clientX - rect.left;
   const mouseY = event.clientY - rect.top;
 
   // Check if the mouse is over any box
-  hoveredJob = null;
+  let hoveredJob = null;
   for (const job of deps) {
     const { x, y } = positions[job.name];
 
@@ -253,16 +276,31 @@ function handleMouseMove(event) {
       break;
     }
   }
-
   drawDependencies();
 
   if (hoveredJob) {
     drawJobInformation(hoveredJob, mouseX + 10, mouseY + 10); // Draw job information near the mouse cursor
   }
 }
-// Attach the mousemove event listener
-if (activateMouseHover) {
-  canvas.addEventListener("mousemove", handleMouseMove);
+
+// Function to download the canvas as an image
+function downloadCanvasAsImage() {
+  const image = canvas.toDataURL("image/png"); // Convert canvas to a PNG image
+  const link = document.createElement("a"); // Create a temporary <a> element
+  link.href = image;
+  link.download = "canvas-image.png"; // Set the default file name
+  link.click(); // Trigger the download
 }
+
+// Attach the mousemove event listener
+canvas.addEventListener("click", handleMouseClick);
+canvas.addEventListener("mousemove", handleMouseMove);
+
+// Event listener for keypress
+document.addEventListener("keydown", (event) => {
+  if (event.key === "d" || event.key === "D") {
+    downloadCanvasAsImage();
+  }
+});
 
 drawDependencies();

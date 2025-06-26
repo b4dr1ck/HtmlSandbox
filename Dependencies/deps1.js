@@ -15,7 +15,7 @@ data-structure:
 const deps = [
   { name: "Start", dependencies: [], color: "#7E57C2",fill:"#7E57C2" },
   { name: "Init1", dependencies: ["Start"], color: "#1E88E5" },
-  { name: "ExtDep", dependencies: ["Start","JobInAnOtherSchedule"], color: "#1E88E5" },
+  { name: "JobWithExternalDepAndLongName", dependencies: ["Start","JobInAnOtherSchedule"], color: "#1E88E5" },
   { name: "Init2", dependencies: ["Start"], color: "#43A047" },
   { name: "JobA", dependencies: ["Init1"], strokeColor: "#FF5722" },
   { name: "JobB", dependencies: ["Init1"], dashed: true, strokeColor: "#FF9800" },
