@@ -1,8 +1,8 @@
-
 if (typeof config !== "undefined" && config) {
   applyJobConfig(config);
-} 
+}
 
+const activateMouseHover = true; // Enable mouse hover functionality
 const sortedDeps = sortDeps(deps); // Sort dependencies to ensure correct rendering order
 
 const canvas = document.querySelector("canvas");
@@ -107,6 +107,7 @@ function findDependencies(jobName, chain = []) {
   if (!job || chain.includes(jobName)) return chain;
   chain.push(jobName);
   job.dependencies.forEach((dep) => findDependencies(dep, chain));
+
   return chain;
 }
 
@@ -260,6 +261,8 @@ function handleMouseMove(event) {
   }
 }
 // Attach the mousemove event listener
-canvas.addEventListener("mousemove", handleMouseMove);
+if (activateMouseHover) {
+  canvas.addEventListener("mousemove", handleMouseMove);
+}
 
 drawDependencies();
