@@ -5,6 +5,7 @@ data-structure:
     name: "JobName",
     dependencies: ["Dependency1", "Dependency2"],
     color: "#ColorCode", // Optional: color for the job box
+    fill: "#FillColor", // Optional: fill color for the job box
     dashed: true, // Optional: if true, the line will be dashed
     strokeColor: "#StrokeColor" // Optional: color for the dependency line
   },
@@ -12,8 +13,9 @@ data-structure:
 */
 
 const deps = [
-  { name: "Start", dependencies: [], color: "#7E57C2" },
+  { name: "Start", dependencies: [], color: "#7E57C2",fill:"#7E57C2" },
   { name: "Init1", dependencies: ["Start"], color: "#1E88E5" },
+  { name: "ExtDep", dependencies: ["Start","JobInAnOtherSchedule"], color: "#1E88E5" },
   { name: "Init2", dependencies: ["Start"], color: "#43A047" },
   { name: "JobA", dependencies: ["Init1"], strokeColor: "#FF5722" },
   { name: "JobB", dependencies: ["Init1"], dashed: true, strokeColor: "#FF9800" },
@@ -22,6 +24,7 @@ const deps = [
   { name: "Process1", dependencies: ["JobA", "JobB"], color: "#3949AB" },
   { name: "Process2", dependencies: ["JobC", "JobD"], color: "#039BE5" },
   { name: "Merge1", dependencies: ["Process1", "Process2"], color: "#6D4C41" },
+  { name: "LongJobNameYouCanCrop", dependencies: ["Process1", "Process2"], color: "#009688" },
   { name: "Branch1", dependencies: ["Merge1"], color: "#FF7043" },
   { name: "Branch2", dependencies: ["Merge1"], color: "#5C6BC0" },
   { name: "Branch3", dependencies: ["Merge1"], color: "#26A69A" },
@@ -61,4 +64,12 @@ const deps = [
   { name: "Deep5", dependencies: ["Deep4"], color: "#FFC107" },
   { name: "Deep6", dependencies: ["Deep5"], color: "#FF5722" },
   { name: "DeepFinal", dependencies: ["Deep6"], color: "#8BC34A" },
+
+  { name: "TotalEnd", dependencies: ["DeepFinal"], color: "#8BC34A" },
 ];
+
+// jobConfig to apply on multiple jobs
+const config = {
+  Start: { fill: "#4CAF50",color:"#4CAF50" }, // Green for Jobs including "Start"
+  End: { fill: "#4CAF50",color:"#4CAF50"  }, // Green for Jobs including "End"
+};
