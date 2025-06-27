@@ -1,11 +1,26 @@
 body {
   background-color: black;
-}
-h2,p {
   font-family: Arial, Helvetica, sans-serif;
+}
+h2 {
   color: white;
   text-align: center;
+  margin: 0px;
+  padding: 0px;
 }
+
+p {
+  color: white;
+  text-align: center;
+  margin-left: 10px;
+}
+
+p::before {
+  content: "•"; /* Unicode character for a dot */
+  color: white; /* Color of the dot */
+  margin-right: 5px; /* Space between the text and the dot */
+}
+
 canvas {
   display: block;
   margin: 20px auto;
@@ -14,4 +29,10 @@ canvas {
 }
 strong {
   color:blueviolet;
+}
+
+.d-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

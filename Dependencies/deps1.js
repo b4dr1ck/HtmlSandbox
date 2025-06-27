@@ -15,7 +15,7 @@ data-structure:
 const deps = [
   { name: "Start", dependencies: [], color: "#7E57C2",fill:"#7E57C2" },
   { name: "Init1", dependencies: ["Start"], color: "#1E88E5" },
-  { name: "JobWithExternalDepAndLongName", dependencies: ["Start","JobInAnOtherSchedule"], color: "#1E88E5" },
+  { name: "JobWithExternalDepAndLongName", dependencies: ["Start","JobInAnOtherSchedule","UnknownJob"], color: "#1E88E5" },
   { name: "Init2", dependencies: ["Start"], color: "#43A047" },
   { name: "JobA", dependencies: ["Init1"], strokeColor: "#FF5722" },
   { name: "JobB", dependencies: ["Init1"], dashed: true, strokeColor: "#FF9800" },
@@ -37,7 +37,7 @@ const deps = [
   { name: "FinalTask", dependencies: ["SubTask1", "SubTask2", "SubTask3"], color: "#9C27B0" },
   { name: "Review", dependencies: ["FinalTask"], color: "#3F51B5" },
   { name: "Approval", dependencies: ["Review"], color: "#009688" },
-  { name: "End", dependencies: ["Approval", "Start"], color: "#7E57C2" },
+  { name: "End", dependencies: ["Approval", "Start","ForeignEnd"], color: "#7E57C2" },
 
   // Additional jobs and dependencies
   { name: "Extra1", dependencies: ["Init1"], color: "#FF6F00" },

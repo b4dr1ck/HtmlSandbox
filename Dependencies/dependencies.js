@@ -188,6 +188,9 @@ function drawDependencies() {
       // external (or unknown) dependencies
       if (!positions[dep]) {
         ctx.fillStyle = "#ccc";
+        if (job.fill) {
+          ctx.fillStyle = "black";
+        }
         ctx.textAlign = "left";
         ctx.font = `bold ${fontSize + 2}px Arial`;
         ctx.fillText("X", startX + 4, startY + 4 + 10);
