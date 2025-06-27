@@ -1,7 +1,7 @@
 body {
   background-color: black;
 }
-h1 {
+h2,p {
   font-family: Arial, Helvetica, sans-serif;
   color: white;
   text-align: center;
@@ -11,4 +11,7 @@ canvas {
   margin: 20px auto;
   border: 1px solid rgba(96, 125, 139, 0.25);
   background-color: black;
+}
+strong {
+  color:blueviolet;
 }

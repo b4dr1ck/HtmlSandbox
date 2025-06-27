@@ -21,6 +21,10 @@ const lineWidth = 2;
 const arrowSize = 10;
 const maxJobNameLength = 17; // Maximum length of the job name to display
 
+let draggedJob = null; // Track the job being dragged
+let offsetX = 0; // Offset between mouse and box position (x-axis)
+let offsetY = 0; // Offset between mouse and box position (y-axis)
+
 // Calculate positions for each job dynamically
 const positions = {};
 const levels = {};
@@ -73,6 +77,15 @@ function applyJobConfig(config) {
       }
     }
   });
+}
+
+// Function to download the canvas as an image
+function downloadCanvasAsImage() {
+  const image = canvas.toDataURL("image/png"); // Convert canvas to a PNG image
+  const link = document.createElement("a"); // Create a temporary <a> element
+  link.href = image;
+  link.download = "canvas-image.png"; // Set the default file name
+  link.click(); // Trigger the download
 }
 
 // Function to sort dependencies in a topological order
@@ -218,12 +231,11 @@ function drawDependencies() {
 }
 
 function drawJobInformation(jobName, x, y) {
-
   const job = sortedDeps.find((j) => j.name === jobName);
-  if (!job) return; 
+  if (!job) return;
 
   const dependencies = job.dependencies.filter((dep) => !sortedDeps.some((j) => j.name === dep));
- 
+
   if (jobName.length > maxJobNameLength) {
     ctx.fillStyle = "white";
     ctx.font = `bold ${fontSize}px Arial`;
@@ -243,6 +255,7 @@ function drawJobInformation(jobName, x, y) {
 
 // Function to handle mouse movement
 function handleMouseClick(event) {
+  event.preventDefault(); // Prevent default context menu from appearing
   const rect = canvas.getBoundingClientRect();
   const mouseX = event.clientX - rect.left;
   const mouseY = event.clientY - rect.top;
@@ -283,18 +296,49 @@ function handleMouseMove(event) {
   }
 }
 
-// Function to download the canvas as an image
-function downloadCanvasAsImage() {
-  const image = canvas.toDataURL("image/png"); // Convert canvas to a PNG image
-  const link = document.createElement("a"); // Create a temporary <a> element
-  link.href = image;
-  link.download = "canvas-image.png"; // Set the default file name
-  link.click(); // Trigger the download
-}
-
 // Attach the mousemove event listener
-canvas.addEventListener("click", handleMouseClick);
+canvas.addEventListener("contextmenu", handleMouseClick);
 canvas.addEventListener("mousemove", handleMouseMove);
+
+// Mouse down event: Start dragging
+canvas.addEventListener("mousedown", (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const mouseY = event.clientY - rect.top;
+
+  // Check if the mouse is over any box
+  for (const job of deps) {
+    const { x, y } = positions[job.name];
+
+    if (mouseX >= x && mouseX <= x + boxWidth && mouseY >= y && mouseY <= y + boxHeight) {
+      draggedJob = job.name; // Set the dragged job
+      offsetX = mouseX - x; // Calculate offset
+      offsetY = mouseY - y;
+      break;
+    }
+  }
+});
+
+// Mouse move event: Drag the box
+canvas.addEventListener("mousemove", (event) => {
+  if (!draggedJob) return; // Only proceed if a job is being dragged
+
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const mouseY = event.clientY - rect.top;
+
+  // Update the position of the dragged job
+  positions[draggedJob].x = mouseX - offsetX;
+  positions[draggedJob].y = mouseY - offsetY;
+
+  // Redraw the canvas to update the box and dependency lines
+  drawDependencies();
+});
+
+// Mouse up event: Stop dragging
+canvas.addEventListener("mouseup", () => {
+  draggedJob = null; // Clear the dragged job
+});
 
 // Event listener for keypress
 document.addEventListener("keydown", (event) => {
