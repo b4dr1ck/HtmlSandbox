@@ -12,13 +12,13 @@ const canvasPadding = 50;
 const defaultLineColor = "#546E7A"; // Default line color for dependencies
 const defaultBoxColor = "#78909C"; // Default box color for jobs without a specific color
 const highlightColor = "white"; // Color for highlighted jobs
-const boxWidth = 150;
-const boxHeight = 50;
-const horizontalSpacing = 60;
-const verticalSpacing = 30;
-const fontSize = 16;
-const lineWidth = 2;
-const arrowSize = 10;
+const boxWidth = 150; // Width of each job box
+const boxHeight = 50; // Height of each job box
+const horizontalSpacing = 60; // Horizontal spacing between job boxes
+const verticalSpacing = 30; // Vertical spacing between job levels
+const fontSize = 16; // Font size for job names
+const lineWidth = 2; // Width of the dependency lines
+const arrowSize = 10; // Size of the arrowhead at the start of the dependency lines
 const maxJobNameLength = 17; // Maximum length of the job name to display
 
 let draggedJob = null; // Track the job being dragged
@@ -29,6 +29,7 @@ let offsetY = 0; // Offset between mouse and box position (y-axis)
 const positions = {};
 const levels = {};
 let clickedJob = null; // Variable to track the clicked job
+let hoveredJob = null;
 
 // Assign levels to jobs based on dependencies
 sortedDeps.forEach((job) => {
@@ -65,11 +66,12 @@ Object.entries(jobsByLevel).forEach(([level, jobs]) => {
   });
 });
 
+// override job properties based on the config
 function applyJobConfig(config) {
-  // override job properties based on the config
   deps.forEach((job) => {
     for (const key in config) {
-      if (job.name.indexOf(key) >= 0) {
+      const re = new RegExp(`^${key}$`, "i"); // Case-insensitive match
+      if (re.test(job.name)) {
         job.color = config[key].color;
         job.strokeColor = config[key].strokeColor;
         job.dashed = config[key].dashed;
@@ -225,14 +227,13 @@ function drawDependencies() {
         endX + boxWidth / 2 + offset,
         endY + boxHeight,
         arrowSize,
-        isHighlighted
-          ? highlightColor // Highlighted lines are white
-          : job.strokeColor || defaultLineColor
+        isHighlighted ? highlightColor : job.strokeColor || defaultLineColor
       );
     });
   });
 }
 
+// Function to draw job information when hovering
 function drawJobInformation(jobName, x, y) {
   const job = sortedDeps.find((j) => j.name === jobName);
   if (!job) return;
@@ -256,7 +257,7 @@ function drawJobInformation(jobName, x, y) {
   }
 }
 
-// Function to handle mouse movement
+// Function to handle mouse click
 function handleMouseClick(event) {
   event.preventDefault(); // Prevent default context menu from appearing
   const rect = canvas.getBoundingClientRect();
@@ -277,13 +278,20 @@ function handleMouseClick(event) {
   drawDependencies();
 }
 
+// Function to handle mouse move
 function handleMouseMove(event) {
   const rect = canvas.getBoundingClientRect();
   const mouseX = event.clientX - rect.left;
   const mouseY = event.clientY - rect.top;
 
+  if (draggedJob) {
+    // Update the position of the dragged job
+    positions[draggedJob].x = mouseX - offsetX;
+    positions[draggedJob].y = mouseY - offsetY;
+  }
+
   // Check if the mouse is over any box
-  let hoveredJob = null;
+  hoveredJob = null;
   for (const job of deps) {
     const { x, y } = positions[job.name];
 
@@ -299,12 +307,8 @@ function handleMouseMove(event) {
   }
 }
 
-// Attach the mousemove event listener
-canvas.addEventListener("contextmenu", handleMouseClick);
-canvas.addEventListener("mousemove", handleMouseMove);
-
-// Mouse down event: Start dragging
-canvas.addEventListener("mousedown", (event) => {
+// Function to start dragging a job box
+function startDragging(event) {
   const rect = canvas.getBoundingClientRect();
   const mouseX = event.clientX - rect.left;
   const mouseY = event.clientY - rect.top;
@@ -320,28 +324,16 @@ canvas.addEventListener("mousedown", (event) => {
       break;
     }
   }
-});
+}
 
-// Mouse move event: Drag the box
-canvas.addEventListener("mousemove", (event) => {
-  if (!draggedJob) return; // Only proceed if a job is being dragged
-
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = event.clientX - rect.left;
-  const mouseY = event.clientY - rect.top;
-
-  // Update the position of the dragged job
-  positions[draggedJob].x = mouseX - offsetX;
-  positions[draggedJob].y = mouseY - offsetY;
-
-  // Redraw the canvas to update the box and dependency lines
-  drawDependencies();
-});
-
-// Mouse up event: Stop dragging
+// Event Listener
+canvas.addEventListener("contextmenu", handleMouseClick);
+canvas.addEventListener("mousemove", handleMouseMove);
+canvas.addEventListener("mousedown", startDragging);
 canvas.addEventListener("mouseup", () => {
   draggedJob = null; // Clear the dragged job
 });
+
 
 // Event listener for keypress
 document.addEventListener("keydown", (event) => {

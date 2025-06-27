@@ -70,6 +70,7 @@ const deps = [
 
 // jobConfig to apply on multiple jobs
 const config = {
-  Start: { fill: "#4CAF50",color:"#4CAF50" }, // Green for Jobs including "Start"
-  End: { fill: "#4CAF50",color:"#4CAF50"  }, // Green for Jobs including "End"
+  ".*Start.*": { fill: "#4CAF50",color:"#4CAF50" }, // Green for Jobs including "Start"
+  ".*End.*": { fill: "#4CAF50",color:"#4CAF50"  }, // Green for Jobs including "End"
+  ".*3": { color:"red"  }, // regex also possible
 };
