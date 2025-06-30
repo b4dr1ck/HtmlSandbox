@@ -1,6 +1,20 @@
 
-const dataUrl = location.href.split("?")[1].split("=")[1];
-fetch(dataUrl)
+// helper-function to parse the url and get the query-parameters as an object
+function getQueryParameters() {
+  const queryString = window.location.search;
+  const params = new URLSearchParams(queryString);
+  const queryParams = {};
+
+  for (const [key, value] of params.entries()) {
+    queryParams[key] = value;
+  }
+
+  return queryParams;
+}
+
+const requestData = getQueryParameters().data
+// start the request...
+fetch(requestData)
   .then((response) => {
     if (!response.ok) {
       throw new Error("Failed to load deps.json");
@@ -16,11 +30,17 @@ fetch(dataUrl)
       applyJobConfig(config);
     }
 
-    document.querySelector("h2").textContent += ` (${dataUrl})`;
+    document.querySelector("h2").textContent += ` (${requestData})`;
+
+    const startJob = getQueryParameters().start;
+    const endJob = getQueryParameters().end;
+
+    if (startJob && endJob) {
+      deps = extractSubgraph(deps, endJob, startJob);
+    }
 
     const sortedDeps = sortDeps(deps); // Sort dependencies to ensure correct rendering order
-
-    const canvas = document.querySelector("canvas");
+      const canvas = document.querySelector("canvas");
     const align = "LEFT"; // LEFT, CENTER, RIGHT
     const ctx = canvas.getContext("2d");
     const canvasPadding = 50;
@@ -43,8 +63,8 @@ fetch(dataUrl)
     // Calculate positions for each job dynamically
     const positions = {};
     const levels = {};
-    
-    let clickedJob = null; 
+
+    let clickedJob = null;
     let hoveredJob = null;
     let foundJob = null;
 
@@ -94,6 +114,35 @@ fetch(dataUrl)
         }
       });
     });
+
+    function extractSubgraph(deps, startJob, endJob) {
+      const visited = new Set();
+      const subgraph = [];
+
+      // Helper function to traverse the graph
+      function traverse(jobName) {
+        if (visited.has(jobName)) return;
+        visited.add(jobName);
+
+        const job = deps.find((j) => j.name === jobName);
+        if (!job) return;
+
+        subgraph.push(job);
+
+        // Stop traversal if we reach the end job
+        if (jobName === endJob) return;
+
+        // Traverse dependencies
+        job.dependencies.forEach((dep) => {
+          traverse(dep);
+        });
+      }
+
+      // Start traversal from the start job
+      traverse(startJob);
+
+      return subgraph;
+    }
 
     // override job properties based on the config
     function applyJobConfig(config) {
