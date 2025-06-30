@@ -1,5 +1,4 @@
-
-fetch("./deps.json")
+fetch("./LGKK.json")
   .then((response) => {
     if (!response.ok) {
       throw new Error("Failed to load deps.json");
@@ -18,7 +17,6 @@ fetch("./deps.json")
     const canvas = document.querySelector("canvas");
     const ctx = canvas.getContext("2d");
     const canvasPadding = 50;
-
     const defaultLineColor = "#546E7A"; // Default line color for dependencies
     const defaultBoxColor = "#78909C"; // Default box color for jobs without a specific color
     const highlightColor = "white"; // Color for highlighted jobs
@@ -40,6 +38,7 @@ fetch("./deps.json")
     const levels = {};
     let clickedJob = null; // Variable to track the clicked job
     let hoveredJob = null;
+    let foundJob = null;
 
     // Assign levels to jobs based on dependencies
     sortedDeps.forEach((job) => {
@@ -93,6 +92,8 @@ fetch("./deps.json")
 
     // Function to download the canvas as an image
     function downloadCanvasAsImage() {
+      // TODO: canvas-size is to big.
+
       const image = canvas.toDataURL("image/png"); // Convert canvas to a PNG image
       const link = document.createElement("a"); // Create a temporary <a> element
       link.href = image;
@@ -183,8 +184,15 @@ fetch("./deps.json")
         } else {
           ctx.fillStyle = isHighlighted ? highlightColor : job.color ? job.color : defaultBoxColor;
         }
-        ctx.strokeRect(x, y, boxWidth, boxHeight);
 
+        if (foundJob && foundJob === job.name) {
+          ctx.fillStyle = "yellow"; // Highlight found job with yellow
+          ctx.fillRect(x, y, boxWidth, boxHeight);
+          ctx.fillStyle = "black"; // Reset fill color for text
+        }
+
+        ctx.strokeRect(x, y, boxWidth, boxHeight);
+  
         // Text
         ctx.font = `bold ${fontSize}px Arial`;
         ctx.textAlign = "center";
@@ -269,6 +277,7 @@ fetch("./deps.json")
 
     // Function to handle mouse click
     function handleMouseClick(event) {
+      foundJob = null;
       event.preventDefault(); // Prevent default context menu from appearing
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
@@ -319,6 +328,7 @@ fetch("./deps.json")
 
     // Function to start dragging a job box
     function startDragging(event) {
+      foundJob = null;
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
@@ -336,7 +346,20 @@ fetch("./deps.json")
       }
     }
 
+    // Function to find a job an scroll to it's position
+    function findJob(event) {
+      const jobName = document.getElementById("searchInput").value;
+      scrollTo(positions[jobName]["x"], positions[jobName]["y"]);
+      foundJob = jobName;
+
+      drawDependencies();
+    }
+
+    const searchBtn = document.getElementById("searchBtn");
+    const screenshotBtn = document.getElementById("screenshotBtn");
+
     // Event Listener
+    searchBtn.addEventListener("click", findJob);
     canvas.addEventListener("contextmenu", handleMouseClick);
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mousedown", startDragging);
@@ -345,12 +368,9 @@ fetch("./deps.json")
     });
 
     // Event listener for keypress
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "d" || event.key === "D") {
-        downloadCanvasAsImage();
-      }
+    screenshotBtn.addEventListener("click", (event) => {
+      downloadCanvasAsImage();
     });
-
     drawDependencies();
   })
   .catch((error) => {

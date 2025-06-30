@@ -198,7 +198,8 @@
       "dependencies": [
         "Approval",
         "Start",
-        "ForeignEnd"
+        "ForeignEnd",
+        "ForeignEnd2"
       ],
       "color": "#7E57C2"
     },

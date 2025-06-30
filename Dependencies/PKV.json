@@ -1,9 +1,14 @@
 {
   "data": [
     {
-      "name": "B017bN00-ENDE",
+      "name": "PKV-PRE-START",
+      "dependencies": []
+    },
+    {
+      "name": "PKV-LEI-Quartal-Start",
       "dependencies": [
-        "pkjsprvw_Mb1AbstimmungAus"
+        "PKV-Block-Ende",
+        "PKV-LEI-ENDE"
       ]
     },
     {
@@ -14,22 +19,10 @@
       ]
     },
     {
-      "name": "B017N00-ENDE",
-      "dependencies": [
-        "pkjsprvw_Mb1KontoAus"
-      ]
-    },
-    {
       "name": "B017N00-START",
       "dependencies": [
         "B017N00-START-PKV",
         "PKV-PRE-ENDE"
-      ]
-    },
-    {
-      "name": "B029N00-ENDE",
-      "dependencies": [
-        "pkjtedvw_Mb1Aufheben"
       ]
     },
     {
@@ -773,10 +766,15 @@
       ]
     },
     {
-      "name": "PKV-LEI-Quartal-Start",
+      "name": "B029N00-ENDE",
       "dependencies": [
-        "PKV-Block-Ende",
-        "PKV-LEI-ENDE"
+        "pkjtedvw_Mb1Aufheben"
+      ]
+    },
+    {
+      "name": "B017N00-ENDE",
+      "dependencies": [
+        "pkjsprvw_Mb1KontoAus"
       ]
     },
     {
@@ -789,6 +787,12 @@
       "name": "PKV-PRE-ENDE",
       "dependencies": [
         "pkjxkfsp_Mb1"
+      ]
+    },
+    {
+      "name": "B017bN00-ENDE",
+      "dependencies": [
+        "pkjsprvw_Mb1AbstimmungAus"
       ]
     },
     {

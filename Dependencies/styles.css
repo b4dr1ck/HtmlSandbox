@@ -36,3 +36,24 @@ strong {
   justify-content: center;
   align-items: center;
 }
+
+button {
+  background-color: #6200ea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:nth-of-type(1) {
+  margin-right: 15px;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 20%;
+  box-sizing: border-box; 
+}

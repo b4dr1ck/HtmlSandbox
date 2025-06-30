@@ -962,10 +962,10 @@
   ],
   "config": {
     "LGK.*START": {
-      "fill": "yellow"
+      "color": "yellow"
     },
     "LGK.*ENDE": {
-      "fill": "yellow"
+      "color": "yellow"
     },
     ".*ftp.*": {
       "color": "coral"
