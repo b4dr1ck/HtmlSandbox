@@ -1,4 +1,5 @@
-const deps = [
+{
+  "data": [
     {
       "name": "ajiakaba_Mahn",
       "dependencies": [
@@ -6635,11 +6636,13 @@ const deps = [
         "pkjzpers_transfer_get_pkv_zugriffsprot"
       ]
     }
-  ]
-
-  // jobConfig to apply on multiple jobs
-const config = {
-  START: { color: "#4CAF50" },
-  END: { color: "#4CAF50" },
-  resource: { color: "yellow" },
-};
+  ],
+  "config": {
+    ".*START": {
+      "color": "#4CAF50"
+    },
+    ".*ENDE": {
+      "color": "#4CAF50"
+    }
+  }
+}

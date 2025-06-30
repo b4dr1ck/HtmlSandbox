@@ -1,0 +1,904 @@
+{
+  "data": [
+    {
+      "name": "B017bN00-ENDE",
+      "dependencies": [
+        "pkjsprvw_Mb1AbstimmungAus"
+      ]
+    },
+    {
+      "name": "B017bN00-START",
+      "dependencies": [
+        "B017bN00-START-PKV",
+        "PKV-PRE-ENDE"
+      ]
+    },
+    {
+      "name": "B017N00-ENDE",
+      "dependencies": [
+        "pkjsprvw_Mb1KontoAus"
+      ]
+    },
+    {
+      "name": "B017N00-START",
+      "dependencies": [
+        "B017N00-START-PKV",
+        "PKV-PRE-ENDE"
+      ]
+    },
+    {
+      "name": "B029N00-ENDE",
+      "dependencies": [
+        "pkjtedvw_Mb1Aufheben"
+      ]
+    },
+    {
+      "name": "B029N00-START",
+      "dependencies": [
+        "B029N00-START-PKV",
+        "PKV-PRE-ENDE"
+      ]
+    },
+    {
+      "name": "delete_LKB_LkmLei",
+      "dependencies": [
+        "transfer_get_LKB_LkmLei"
+      ]
+    },
+    {
+      "name": "gentoken_PKV",
+      "dependencies": [
+        "skipjob_generisch_PKV"
+      ]
+    },
+    {
+      "name": "get_pkv_from_sap",
+      "dependencies": [
+        "get_pkv_from_sap_Lei"
+      ]
+    },
+    {
+      "name": "get_pkv_from_sap_Lei",
+      "dependencies": [
+        "pkjtedvw_Mb1Setzen"
+      ]
+    },
+    {
+      "name": "lkmsftp_get_LkmLei",
+      "dependencies": [
+        "wait40min_LkmLei"
+      ]
+    },
+    {
+      "name": "lkmsftp_put_LkmLei",
+      "dependencies": [
+        "delete_LKB_LkmLei"
+      ]
+    },
+    {
+      "name": "LSt_pkjaeinz_sql_update",
+      "dependencies": [
+        "pkjaeinz_Mb1"
+      ]
+    },
+    {
+      "name": "pkjablem_Mb1",
+      "dependencies": [
+        "pkjablvw_Mb1"
+      ]
+    },
+    {
+      "name": "pkjablvw_Mb1",
+      "dependencies": [
+        "pkjbzers_Mb1Ausz",
+        "pkjbzers_Mb1AuszMvk"
+      ]
+    },
+    {
+      "name": "pkjabxml_Mb1",
+      "dependencies": [
+        "pkjiaerg_Mb1Abstimmung"
+      ]
+    },
+    {
+      "name": "pkjaeinz_Lei",
+      "dependencies": [
+        "pkjlauvw_Lei"
+      ]
+    },
+    {
+      "name": "pkjaeinz_Mb1",
+      "dependencies": [
+        "pkjiaerg_Mb1Online"
+      ]
+    },
+    {
+      "name": "pkjakvba_Mb1Kontoausgleich",
+      "dependencies": [
+        "pkjiaerg_Mb1Pkjkager"
+      ]
+    },
+    {
+      "name": "pkjakvba_Mb1Vereinnahmung",
+      "dependencies": [
+        "pkjiaerg_Mb1Pkjugver"
+      ]
+    },
+    {
+      "name": "pkjaopls_Mb1",
+      "dependencies": [
+        "pkjelers_Mb1",
+        "pkjsalls_Mb1",
+        "pkjspocb_Mb1"
+      ]
+    },
+    {
+      "name": "pkjaulel_Lei",
+      "dependencies": [
+        "pkjiaerg_LeiOnline"
+      ]
+    },
+    {
+      "name": "pkjaulel_LeiRg",
+      "dependencies": [
+        "pkjiaerg_LeiPkjaulel"
+      ]
+    },
+    {
+      "name": "pkjaulem_Mb1",
+      "dependencies": [
+        "pkjopsal_Mb1"
+      ]
+    },
+    {
+      "name": "pkjaulmm_Mb1",
+      "dependencies": [
+        "pkjbzers_Mb1Ausz"
+      ]
+    },
+    {
+      "name": "pkjauxml_Lei",
+      "dependencies": [
+        "pkjiaerg_LeiPkjaulelRg"
+      ]
+    },
+    {
+      "name": "pkjauxml_Mb1",
+      "dependencies": [
+        "pkjiaerg_Mb1Pkjaulem"
+      ]
+    },
+    {
+      "name": "pkjauxml_Mb1Mvk",
+      "dependencies": [
+        "pkjiaerg_Mb1Pkjaulmm"
+      ]
+    },
+    {
+      "name": "pkjbakvw_Lei",
+      "dependencies": [
+        "pkjsprvw_LeiEin"
+      ]
+    },
+    {
+      "name": "pkjbjvir_Lei",
+      "dependencies": [
+        "pkjbver_Lei"
+      ]
+    },
+    {
+      "name": "pkjbver_Lei",
+      "dependencies": [
+        "pkjfiers_LeiAbsO",
+        "pkjoplls_LeiPford",
+        "pkjoplls_LeiPverb",
+        "pkjoplls_LeiUgeld",
+        "pkjopser_LeiPford",
+        "pkjopser_LeiPverb",
+        "svmm_Lei_send_dds"
+      ]
+    },
+    {
+      "name": "pkjbver_Mb1",
+      "dependencies": [
+        "pkjfiers_Mb1"
+      ]
+    },
+    {
+      "name": "pkjbzers_LeiAusz",
+      "dependencies": [
+        "pkjiaerg_LeiPkjaeinz"
+      ]
+    },
+    {
+      "name": "pkjbzers_Mb1Ausz",
+      "dependencies": [
+        "pkjcauer_Mb1"
+      ]
+    },
+    {
+      "name": "pkjbzers_Mb1AuszMvk",
+      "dependencies": [
+        "pkjauxml_Mb1Mvk"
+      ]
+    },
+    {
+      "name": "pkjbzers_Mb1Einz",
+      "dependencies": [
+        "pkjabxml_Mb1"
+      ]
+    },
+    {
+      "name": "pkjcalvz_Mb1",
+      "dependencies": [
+        "pkjaopls_Mb1",
+        "pkjelers_Mb1",
+        "pkjsalls_Mb1",
+        "pkjspocb_Mb1"
+      ]
+    },
+    {
+      "name": "pkjcauer_Mb1",
+      "dependencies": [
+        "pkjcauv2_Mb1",
+        "pkjcauvw_Mb1"
+      ]
+    },
+    {
+      "name": "pkjcauv2_Mb1",
+      "dependencies": [
+        "pkjcauvw_Mb1"
+      ]
+    },
+    {
+      "name": "pkjcauvw_Mb1",
+      "dependencies": [
+        "pkjauxml_Mb1"
+      ]
+    },
+    {
+      "name": "pkjclean_Mb1",
+      "dependencies": [
+        "pkjtrtra"
+      ]
+    },
+    {
+      "name": "pkjeabsl_LeiO",
+      "dependencies": [
+        "pkjfiers_LeiAbsT"
+      ]
+    },
+    {
+      "name": "pkjeabsl_LeiT",
+      "dependencies": [
+        "pkjkvgzo_Lei"
+      ]
+    },
+    {
+      "name": "pkjeabsl_Mb1",
+      "dependencies": [
+        "pkjkvgzo_Mb1"
+      ]
+    },
+    {
+      "name": "pkjelers_Mb1",
+      "dependencies": [
+        "pkjspocb_Mb1"
+      ]
+    },
+    {
+      "name": "pkjfeinz_Mb1",
+      "dependencies": [
+        "pkjiaerg_Mb1Pkjablem"
+      ]
+    },
+    {
+      "name": "pkjfiers_LeiAbsO",
+      "dependencies": [
+        "pkjeabsl_LeiO"
+      ]
+    },
+    {
+      "name": "pkjfiers_LeiAbsT",
+      "dependencies": [
+        "pkjeabsl_LeiT"
+      ]
+    },
+    {
+      "name": "pkjfiers_Mb1",
+      "dependencies": [
+        "pkjeabsl_Mb1",
+        "VG3883_mail"
+      ]
+    },
+    {
+      "name": "pkjiaerg_LeiOnline",
+      "dependencies": [
+        "pkjbakvw_Lei"
+      ]
+    },
+    {
+      "name": "pkjiaerg_LeiPkjaeinz",
+      "dependencies": [
+        "pkjaeinz_Lei"
+      ]
+    },
+    {
+      "name": "pkjiaerg_LeiPkjaulel",
+      "dependencies": [
+        "pkjaulel_Lei"
+      ]
+    },
+    {
+      "name": "pkjiaerg_LeiPkjaulelRg",
+      "dependencies": [
+        "pkjaulel_LeiRg"
+      ]
+    },
+    {
+      "name": "pkjiaerg_LkmLei",
+      "dependencies": [
+        "pkjsprvw_LkmLeiEin"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Abschluss",
+      "dependencies": [
+        "pkjsprvw_Mb1AbschlussEin"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Abstimmung",
+      "dependencies": [
+        "pkjsprvw_Mb1AbstimmungEin"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Online",
+      "dependencies": [
+        "pkjsprvw_Mb1KontoEin"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjablem",
+      "dependencies": [
+        "pkjablem_Mb1"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjaeinz",
+      "dependencies": [
+        "LSt_pkjaeinz_sql_update",
+        "pkjaeinz_Mb1"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjaulem",
+      "dependencies": [
+        "pkjaulem_Mb1"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjaulmm",
+      "dependencies": [
+        "pkjaulmm_Mb1"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjfeinz",
+      "dependencies": [
+        "pkjfeinz_Mb1"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjkager",
+      "dependencies": [
+        "pkjkager_Mb1"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjkaver",
+      "dependencies": [
+        "pkjkaver_Mb1"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjkorls",
+      "dependencies": [
+        "pkjkorls_Mb1"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjtomix",
+      "dependencies": [
+        "pkjtomix_Mb1"
+      ]
+    },
+    {
+      "name": "pkjiaerg_Mb1Pkjugver",
+      "dependencies": [
+        "pkjugver_Mb1"
+      ]
+    },
+    {
+      "name": "pkjkager_Mb1",
+      "dependencies": [
+        "pkjakvba_Mb1Vereinnahmung"
+      ]
+    },
+    {
+      "name": "pkjkaver_Mb1",
+      "dependencies": [
+        "SQL_VG3402_KorrDN"
+      ]
+    },
+    {
+      "name": "pkjkop69_Mb1",
+      "dependencies": [
+        "pkjbver_Mb1"
+      ]
+    },
+    {
+      "name": "pkjkorls_Mb1",
+      "dependencies": [
+        "pkjiaerg_Mb1Pkjfeinz"
+      ]
+    },
+    {
+      "name": "pkjkvgzo_Lei",
+      "dependencies": [
+        "pkjbzers_LeiAusz"
+      ]
+    },
+    {
+      "name": "pkjkvgzo_Mb1",
+      "dependencies": [
+        "pkjiaerg_Mb1Abschluss",
+        "pkjiaerg_Mb1Pkjtomix"
+      ]
+    },
+    {
+      "name": "pkjlauvw_Lei",
+      "dependencies": [
+        "pkjauxml_Lei"
+      ]
+    },
+    {
+      "name": "pkjlkmev_LkmLei",
+      "dependencies": [
+        "pkjlkmql_LkmLei"
+      ]
+    },
+    {
+      "name": "pkjlkmle_LkmLei",
+      "dependencies": [
+        "pkjlkmle_transfer_put_LKB_LkmLei"
+      ]
+    },
+    {
+      "name": "pkjlkmle_transfer_put_LKB_LkmLei",
+      "dependencies": [
+        "lkmsftp_get_LkmLei"
+      ]
+    },
+    {
+      "name": "pkjlkmql_LkmLei",
+      "dependencies": [
+        "pkjiaerg_LkmLei"
+      ]
+    },
+    {
+      "name": "pkjlvssp_Mb1",
+      "dependencies": [
+        "pkjbver_Mb1",
+        "pkjkop69_Mb1"
+      ]
+    },
+    {
+      "name": "pkjmdbgs_Lei",
+      "dependencies": [
+        "pkjmdbuc_Lei"
+      ]
+    },
+    {
+      "name": "pkjmdbuc_Lei",
+      "dependencies": [
+        "pkjfiers_LeiAbsO"
+      ]
+    },
+    {
+      "name": "pkjmdcbt_Mb1",
+      "dependencies": [
+        "pkjsprvw_Mb1AbschlussAus"
+      ]
+    },
+    {
+      "name": "pkjoplls_LeiPford",
+      "dependencies": [
+        "pkjfiers_LeiAbsO",
+        "pkjmdbgs_Lei",
+        "pkjopser_LeiPford",
+        "pkjopser_LeiPverb",
+        "svmm_Lei_send_dds"
+      ]
+    },
+    {
+      "name": "pkjoplls_LeiPverb",
+      "dependencies": [
+        "pkjfiers_LeiAbsO",
+        "pkjmdbgs_Lei",
+        "pkjoplls_LeiPford",
+        "pkjopser_LeiPford",
+        "pkjopser_LeiPverb",
+        "svmm_Lei_send_dds"
+      ]
+    },
+    {
+      "name": "pkjoplls_LeiUgeld",
+      "dependencies": [
+        "pkjfiers_LeiAbsO",
+        "pkjmdbgs_Lei",
+        "pkjoplls_LeiPverb",
+        "pkjopser_LeiPford",
+        "pkjopser_LeiPverb",
+        "svmm_Lei_send_dds"
+      ]
+    },
+    {
+      "name": "pkjopsal_Mb1",
+      "dependencies": [
+        "pkjiaerg_Mb1Pkjaeinz"
+      ]
+    },
+    {
+      "name": "pkjopser_LeiPford",
+      "dependencies": [
+        "pkjfiers_LeiAbsO",
+        "pkjmdbgs_Lei"
+      ]
+    },
+    {
+      "name": "pkjopser_LeiPverb",
+      "dependencies": [
+        "pkjfiers_LeiAbsO",
+        "pkjmdbgs_Lei",
+        "pkjopser_LeiPford"
+      ]
+    },
+    {
+      "name": "pkjreorg",
+      "dependencies": [
+        "pkjreorg_Lei"
+      ]
+    },
+    {
+      "name": "pkjreorg_Lei",
+      "dependencies": [
+        "gentoken_PKV"
+      ]
+    },
+    {
+      "name": "pkjsalls_Mb1",
+      "dependencies": [
+        "pkjspocb_Mb1"
+      ]
+    },
+    {
+      "name": "pkjspocb_Mb1",
+      "dependencies": [
+        "pkjlvssp_Mb1"
+      ]
+    },
+    {
+      "name": "pkjsprvw_LeiAus",
+      "dependencies": [
+        "pkjbjvir_Lei",
+        "pkjbver_Lei",
+        "pkjfiers_LeiAbsO",
+        "pkjmdbgs_Lei",
+        "pkjoplls_LeiPford",
+        "pkjoplls_LeiPverb",
+        "pkjoplls_LeiUgeld",
+        "pkjopser_LeiPford"
+      ]
+    },
+    {
+      "name": "pkjsprvw_LeiEin",
+      "dependencies": [
+        "PKV-LEI-START"
+      ]
+    },
+    {
+      "name": "pkjsprvw_LkmLeiAus",
+      "dependencies": [
+        "pkjlkmev_LkmLei"
+      ]
+    },
+    {
+      "name": "pkjsprvw_LkmLeiEin",
+      "dependencies": [
+        "pkjtedvw_LkmLeiSetzen"
+      ]
+    },
+    {
+      "name": "pkjsprvw_Mb1AbschlussAus",
+      "dependencies": [
+        "pkjaopls_Mb1",
+        "pkjcalvz_Mb1",
+        "pkjclean_Mb1",
+        "pkjelers_Mb1",
+        "pkjsalls_Mb1",
+        "pkjspocb_Mb1"
+      ]
+    },
+    {
+      "name": "pkjsprvw_Mb1AbschlussEin",
+      "dependencies": [
+        "B029N00-START"
+      ]
+    },
+    {
+      "name": "pkjsprvw_Mb1AbstimmungAus",
+      "dependencies": [
+        "pkjakvba_Mb1Kontoausgleich",
+        "SQL_VG3402_KorrDN"
+      ]
+    },
+    {
+      "name": "pkjsprvw_Mb1AbstimmungEin",
+      "dependencies": [
+        "B017bN00-START"
+      ]
+    },
+    {
+      "name": "pkjsprvw_Mb1KontoAus",
+      "dependencies": [
+        "pkjiaerg_Mb1Pkjkorls"
+      ]
+    },
+    {
+      "name": "pkjsprvw_Mb1KontoEin",
+      "dependencies": [
+        "B017N00-START"
+      ]
+    },
+    {
+      "name": "pkjtedvw_LeiAufheben",
+      "dependencies": [
+        "put_pkv_to_teda_Lei"
+      ]
+    },
+    {
+      "name": "pkjtedvw_LeiSetzen",
+      "dependencies": [
+        "pkjreorg"
+      ]
+    },
+    {
+      "name": "pkjtedvw_LkmLeiAufheben",
+      "dependencies": [
+        "pkjlkmle_LkmLei"
+      ]
+    },
+    {
+      "name": "pkjtedvw_LkmLeiSetzen",
+      "dependencies": [
+        "PKV-LEI-Quartal-Start"
+      ]
+    },
+    {
+      "name": "pkjtedvw_Mb1Aufheben",
+      "dependencies": [
+        "put_pkv_to_teda"
+      ]
+    },
+    {
+      "name": "pkjtedvw_Mb1Setzen",
+      "dependencies": [
+        "pkjtedvw_LeiSetzen"
+      ]
+    },
+    {
+      "name": "pkjtomix_Mb1",
+      "dependencies": [
+        "pkjiaerg_Mb1Abschluss"
+      ]
+    },
+    {
+      "name": "pkjtrtra",
+      "dependencies": [
+        "pkjaopls_Mb1",
+        "pkjcalvz_Mb1",
+        "pkjspocb_Mb1"
+      ]
+    },
+    {
+      "name": "pkjugver_Mb1",
+      "dependencies": [
+        "pkjiaerg_Mb1Pkjkaver"
+      ]
+    },
+    {
+      "name": "pkjxkfsp_Lei",
+      "dependencies": [
+        "get_pkv_from_sap"
+      ]
+    },
+    {
+      "name": "pkjxkfsp_Mb1",
+      "dependencies": [
+        "pkjxkfsp_Lei"
+      ]
+    },
+    {
+      "name": "pkv_resource_Abschluss",
+      "dependencies": [
+        "B029N00-START"
+      ]
+    },
+    {
+      "name": "pkv_resource_Abstimmung",
+      "dependencies": [
+        "B017bN00-START"
+      ]
+    },
+    {
+      "name": "pkv_resource_Konto",
+      "dependencies": [
+        "B017N00-START"
+      ]
+    },
+    {
+      "name": "pkv_resource_Lei",
+      "dependencies": [
+        "PKV-LEI-START"
+      ]
+    },
+    {
+      "name": "pkv_resource_LkmLei",
+      "dependencies": [
+        "pkjtedvw_LkmLeiSetzen"
+      ]
+    },
+    {
+      "name": "PKV-LEI-ENDE",
+      "dependencies": [
+        "pkjtedvw_LeiAufheben"
+      ]
+    },
+    {
+      "name": "PKV-LEI-Quartal-Ende",
+      "dependencies": [
+        "pkjtedvw_LkmLeiAufheben"
+      ]
+    },
+    {
+      "name": "PKV-LEI-Quartal-Start",
+      "dependencies": [
+        "PKV-Block-Ende",
+        "PKV-LEI-ENDE"
+      ]
+    },
+    {
+      "name": "PKV-LEI-START",
+      "dependencies": [
+        "PKV-PRE-ENDE"
+      ]
+    },
+    {
+      "name": "PKV-PRE-ENDE",
+      "dependencies": [
+        "pkjxkfsp_Mb1"
+      ]
+    },
+    {
+      "name": "pkv-verst_Lei",
+      "dependencies": [
+        "pkjsprvw_LeiAus"
+      ]
+    },
+    {
+      "name": "pkv-verst_Mb1",
+      "dependencies": [
+        "pkjsprvw_Mb1AbschlussAus",
+        "svmm_Mb1_ftp"
+      ]
+    },
+    {
+      "name": "put_pkv_to_sap",
+      "dependencies": [
+        "pkv-verst_Mb1"
+      ]
+    },
+    {
+      "name": "put_pkv_to_sap_Lei",
+      "dependencies": [
+        "pkv-verst_Lei"
+      ]
+    },
+    {
+      "name": "put_pkv_to_teda",
+      "dependencies": [
+        "put_pkv_to_sap"
+      ]
+    },
+    {
+      "name": "put_pkv_to_teda_Lei",
+      "dependencies": [
+        "put_pkv_to_sap_Lei"
+      ]
+    },
+    {
+      "name": "skipjob_generisch_PKV",
+      "dependencies": [
+        "PKV-PRE-START"
+      ]
+    },
+    {
+      "name": "SQL_VG3402_KorrDN",
+      "dependencies": [
+        "pkjbzers_Mb1Einz"
+      ]
+    },
+    {
+      "name": "svmm_Lei_ftp",
+      "dependencies": [
+        "svmm_Lei_send_dds"
+      ]
+    },
+    {
+      "name": "svmm_Lei_send_dds",
+      "dependencies": [
+        "pkjmdbgs_Lei"
+      ]
+    },
+    {
+      "name": "svmm_Mb1_ftp",
+      "dependencies": [
+        "svmm_Mb1_send_dds"
+      ]
+    },
+    {
+      "name": "svmm_Mb1_send_dds",
+      "dependencies": [
+        "pkjmdcbt_Mb1"
+      ]
+    },
+    {
+      "name": "transfer_get_LKB_LkmLei",
+      "dependencies": [
+        "pkjlkmev_LkmLei",
+        "pkjsprvw_LkmLeiAus"
+      ]
+    },
+    {
+      "name": "VG3883",
+      "dependencies": [
+        "pkjeabsl_Mb1"
+      ]
+    },
+    {
+      "name": "VG3883_mail",
+      "dependencies": [
+        "VG3883"
+      ]
+    },
+    {
+      "name": "wait40min_LkmLei",
+      "dependencies": [
+        "lkmsftp_put_LkmLei"
+      ]
+    }
+  ],
+  "config": {
+    ".*START": {
+      "color": "#4CAF50"
+    },
+    ".*ENDE": {
+      "color": "#4CAF50"
+    },
+    ".*resource.*": {
+      "color": "yellow"
+    }
+  }
+}
