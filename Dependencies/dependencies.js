@@ -1,4 +1,6 @@
-fetch("./LGKK.json")
+
+const dataUrl = location.href.split("?")[1].split("=")[1];
+fetch(dataUrl)
   .then((response) => {
     if (!response.ok) {
       throw new Error("Failed to load deps.json");
@@ -6,18 +8,23 @@ fetch("./LGKK.json")
     return response.json();
   })
   .then((data) => {
+    // data from json
     deps = data.data;
     config = data.config;
 
     if (typeof config !== "undefined" && config) {
       applyJobConfig(config);
     }
+
+    document.querySelector("h2").textContent += ` (${dataUrl})`;
+
     const sortedDeps = sortDeps(deps); // Sort dependencies to ensure correct rendering order
 
     const canvas = document.querySelector("canvas");
+    const align = "LEFT"; // LEFT, CENTER, RIGHT
     const ctx = canvas.getContext("2d");
     const canvasPadding = 50;
-    const defaultLineColor = "#546E7A"; // Default line color for dependencies
+    const defaultLineColor = "#cccccc66"; // Default line color for dependencies
     const defaultBoxColor = "#78909C"; // Default box color for jobs without a specific color
     const highlightColor = "white"; // Color for highlighted jobs
     const boxWidth = 150; // Width of each job box
@@ -36,7 +43,8 @@ fetch("./LGKK.json")
     // Calculate positions for each job dynamically
     const positions = {};
     const levels = {};
-    let clickedJob = null; // Variable to track the clicked job
+    
+    let clickedJob = null; 
     let hoveredJob = null;
     let foundJob = null;
 
@@ -72,6 +80,18 @@ fetch("./LGKK.json")
         const x = canvasPadding + index * (boxWidth + horizontalSpacing); // Add padding
         const y = canvasPadding + level * (boxHeight + verticalSpacing); // Add padding
         positions[job] = { x, y };
+
+        if (align === "CENTER") {
+          const totalWidth = jobs.length * boxWidth + (jobs.length - 1) * horizontalSpacing; // Total width of the level
+          const offsetX = (canvas.width - totalWidth) / 2; // Calculate horizontal offset to center the level
+
+          positions[job].x = offsetX + index * (boxWidth + horizontalSpacing);
+        } else if (align === "RIGHT") {
+          const totalWidth = jobs.length * boxWidth + (jobs.length - 1) * horizontalSpacing; // Total width of the level
+          const offsetX = canvas.width - totalWidth - canvasPadding; // Calculate horizontal offset to right-align the level
+
+          positions[job].x = offsetX + index * (boxWidth + horizontalSpacing);
+        }
       });
     });
 
@@ -192,7 +212,7 @@ fetch("./LGKK.json")
         }
 
         ctx.strokeRect(x, y, boxWidth, boxHeight);
-  
+
         // Text
         ctx.font = `bold ${fontSize}px Arial`;
         ctx.textAlign = "center";
@@ -375,4 +395,15 @@ fetch("./LGKK.json")
   })
   .catch((error) => {
     console.error("Error loading dependencies:", error);
+    const canvas = document.querySelector("canvas");
+    canvas.width = 800;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "red";
+    ctx.font = "20px Arial";
+    ctx.textAlign = "left";
+    ctx.fillText("Error loading dependencies", 10, 50);
+    ctx.fillText(error.message, 10, 80);
+    ctx.fillText("Check the console for more details.", 10, 110);
+    console.error(error);
   });
