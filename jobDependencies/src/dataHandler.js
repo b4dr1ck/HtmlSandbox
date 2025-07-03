@@ -1,3 +1,4 @@
+// function to fetch dependencies from a given URL
 export async function fetchDependencies(requestData) {
   const response = await fetch(requestData);
   if (!response.ok) {

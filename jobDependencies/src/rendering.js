@@ -13,7 +13,7 @@ export function drawDependencies(canvasManager, deps, positions, canvasConfig, c
       y,
       canvasConfig.boxWidth,
       canvasConfig.boxHeight,
-      job.fill ? job.fill : "black",
+      job.fill ? job.fill : "rgba(0,0,0,0.2)",
       isHighlighted ? canvasConfig.highlightColor : job.color ? job.color : canvasConfig.defaultBoxColor,
       isHighlighted ? canvasConfig.lineWidth * 2 : canvasConfig.lineWidth
     );
@@ -32,12 +32,8 @@ export function drawDependencies(canvasManager, deps, positions, canvasConfig, c
         : canvasConfig.defaultBoxColor,
       `${canvasConfig.fontSize}px Arial`
     );
-  });
 
-  // draw the dependencies lines
-  deps.forEach((job) => {
     const { x: startX, y: startY } = positions[job.name];
-    const isHighlighted = clickedJob && findDependencies(clickedJob, deps).includes(job.name);
 
     job.dependencies.forEach((dep) => {
       if (!positions[dep]) {
@@ -66,7 +62,7 @@ export function drawDependencies(canvasManager, deps, positions, canvasConfig, c
         endX + canvasConfig.boxWidth / 2 + offset,
         endY + canvasConfig.boxHeight,
         canvasConfig.arrowSize,
-        isHighlighted ? canvasConfig.highlightColor: job.strokeColor ? job.strokeColor : canvasConfig.defaultLineColor
+        isHighlighted ? canvasConfig.highlightColor : job.strokeColor ? job.strokeColor : canvasConfig.defaultLineColor
       );
     });
   });

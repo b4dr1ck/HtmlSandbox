@@ -17,6 +17,7 @@ export class CanvasManager {
   }
 
   drawBox(x, y, width, height, color = "black", strokeColor = "lightBlue",lineWidth = 2) {
+    this.ctx.setLineDash([]);
     this.ctx.fillStyle = color;
     this.ctx.fillRect(x, y, width, height);
     this.ctx.strokeStyle = strokeColor;
