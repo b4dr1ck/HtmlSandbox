@@ -1,4 +1,3 @@
-
 // Parse the url and get the query-parameters as an object
 export function getQueryParameters() {
   const queryString = window.location.search;
@@ -62,17 +61,16 @@ export function assignPositions(jobsByLevel, canvas, canvasConfig) {
     jobs.forEach((job, index) => {
       const x = canvasConfig.canvasPadding + index * (canvasConfig.boxWidth + canvasConfig.horizontalSpacing);
       const y = canvasConfig.canvasPadding + level * (canvasConfig.boxHeight + canvasConfig.verticalSpacing);
+      let offsetX = 0;
+
+      const totalWidth = jobs.length * canvasConfig.boxWidth + (jobs.length - 1) * canvasConfig.horizontalSpacing;
       positions[job] = { x, y };
 
       if (canvasConfig.align === "CENTER") {
-        const totalWidth = jobs.length * canvasConfig.boxWidth + (jobs.length - 1) * canvasConfig.horizontalSpacing;
-        const offsetX = (canvas.width - totalWidth) / 2;
-
+        offsetX = (canvas.width - totalWidth) / 2;
         positions[job].x = offsetX + index * (canvasConfig.boxWidth + canvasConfig.horizontalSpacing);
       } else if (canvasConfig.align === "RIGHT") {
-        const totalWidth = jobs.length * canvasConfig.boxWidth + (jobs.length - 1) * canvasConfig.horizontalSpacing;
-        const offsetX = canvas.width - totalWidth - canvasConfig.canvasPadding;
-
+        offsetX = canvas.width - totalWidth - canvasConfig.canvasPadding;
         positions[job].x = offsetX + index * (canvasConfig.boxWidth + canvasConfig.horizontalSpacing);
       }
     });
@@ -136,7 +134,7 @@ export function findDependencies(jobName, deps, chain = []) {
   const job = deps.find((j) => j.name === jobName);
   if (!job || chain.includes(jobName)) return chain;
   chain.push(jobName);
-  job.dependencies.forEach((dep) => findDependencies(dep, deps,chain));
+  job.dependencies.forEach((dep) => findDependencies(dep, deps, chain));
 
   return chain;
 }
@@ -144,12 +142,12 @@ export function findDependencies(jobName, deps, chain = []) {
 // Get the viewport dimensions and scroll position
 export function getViewPort() {
   const viewport = {
-      top: window.scrollY,
-      left: window.scrollX,
-      width: window.innerWidth,
-      height: window.innerHeight,
-      bottom: window.scrollY + window.innerHeight,
-      right: window.scrollX + window.innerWidth
+    top: window.scrollY,
+    left: window.scrollX,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    bottom: window.scrollY + window.innerHeight,
+    right: window.scrollX + window.innerWidth,
   };
   return viewport;
 }

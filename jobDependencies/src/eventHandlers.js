@@ -28,6 +28,7 @@ function getJobNameByClick(event, canvas, canvasConfig, deps, positions, offset)
   return null;
 }
 
+// hover over a job in the canvas and get the hovered jobname
 function getJobnameByHover(event, canvas, canvasConfig, deps, positions) {
   return getJobNameByClick(event, canvas, canvasConfig, deps, positions, { x: 0, y: 0 });
 }
@@ -43,7 +44,7 @@ function updateJobPosOnMouseMove(event, canvas, positions, draggedJob, offset) {
 }
 
 // scroll to the job position
-function findJobOnClickSearch(inputSearch, positions) {
+function scrollToJobOnClickSearch(inputSearch, positions) {
   const jobName = inputSearch.value;
   if (!(jobName in positions)) {
     return;
@@ -77,7 +78,7 @@ export function setupEventListeners(
 
   // click on search button
   btnSearch.addEventListener("click", () => {
-    const jobName = findJobOnClickSearch(inputSearch, positions);
+    const jobName = scrollToJobOnClickSearch(inputSearch, positions);
 
     drawDependencies(canvasManager, deps, positions, canvasConfig, jobEvent.clicked, jobName);
   });

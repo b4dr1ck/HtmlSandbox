@@ -21,15 +21,35 @@ export function drawInfoBox(canvasManager, job, positions, canvasConfig) {
     infoText.push(`   ${unknownDependencies.join(", ")}`);
   }
 
-  // draw job doc
+  // hover box
+  canvasManager.drawBox(
+    x,
+    y,
+    canvasConfig.boxWidth ,
+    canvasConfig.boxHeight ,
+    "rgba(255,255,255,0.2)",
+    "rgba(255,255,255,0.2)",
+    canvasConfig.lineWidth
+  );
+
+  // draw job-info text
   if (infoText.length > 0) {
-    infoText.forEach((text, index) => {
-      let textColor = "white";
+    infoText.forEach((text, index) => {;
+      // shadow
+      canvasManager.drawText(
+        text,
+        x + canvasConfig.boxWidth + 2,
+        y + index * canvasConfig.fontSize + canvasConfig.fontSize - 1,
+        "#333",
+        `${canvasConfig.fontSize}px Arial`,
+        "left"
+      );
+      // text
       canvasManager.drawText(
         text,
         x + canvasConfig.boxWidth + 3,
         y + index * canvasConfig.fontSize + canvasConfig.fontSize,
-        textColor,
+        "white",
         `${canvasConfig.fontSize}px Arial`,
         "left"
       );
