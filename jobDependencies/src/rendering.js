@@ -8,33 +8,28 @@ export function drawInfoBox(canvasManager, job, positions, canvasConfig) {
 
   const { x, y } = positions[job.name];
   const unknownDependencies = job.dependencies.filter((dep) => !positions[dep]);
+  const infoText = [];
+
+  if (job.doc) {
+    infoText.push(`Documentation:`);
+    infoText.push(`   ${job.doc}`);
+    infoText.push("");
+  }
+
+  if (unknownDependencies.length > 0) {
+    infoText.push(`External Dependencies:`);
+    infoText.push(`   ${unknownDependencies.join(", ")}`);
+  }
 
   // draw job doc
-  if (job.doc) {
-    const newBoxWidth = (job.doc.length * canvasConfig.fontSize) / 2;
-    const newBoxHeigth =
-      unknownDependencies.length * canvasConfig.fontSize +
-      (job.doc.length > 0 ? canvasConfig.fontSize : 0) +
-      canvasConfig.fontSize;
-
-    canvasManager.drawBox(x + canvasConfig.boxWidth + 2, y, newBoxWidth, newBoxHeigth, "rgba(0,0,0,0.6)", "black");
-    canvasManager.drawText(
-      job.doc,
-      x + canvasConfig.boxWidth + 3,
-      y + canvasConfig.fontSize / 2,
-      "white",
-      `${canvasConfig.fontSize}px Arial`,
-      "left"
-    );
-  }
-  // draw unkonw deps
-  if (unknownDependencies.length > 0) {
-    unknownDependencies.forEach((dep, index) => {
+  if (infoText.length > 0) {
+    infoText.forEach((text, index) => {
+      let textColor = "white";
       canvasManager.drawText(
-        `X ${dep}`,
+        text,
         x + canvasConfig.boxWidth + 3,
-        y + canvasConfig.fontSize * (index + 2),
-        "red",
+        y + index * canvasConfig.fontSize + canvasConfig.fontSize,
+        textColor,
         `${canvasConfig.fontSize}px Arial`,
         "left"
       );
@@ -68,7 +63,7 @@ export function drawDependencies(canvasManager, deps, positions, canvasConfig, c
       y + canvasConfig.boxHeight / 2,
       isHighlighted
         ? canvasConfig.highlightColor
-        : job.fill
+        : job.fill || foundJob === job.name
         ? "black"
         : job.color
         ? job.color
