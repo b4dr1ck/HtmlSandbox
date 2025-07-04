@@ -17,7 +17,8 @@
       "name": "Start",
       "dependencies": [],
       "color": "#7E57C2",
-      "fill": "#7E57C2"
+      "fill": "#7E57C2",
+      "doc": "This is the starting point of the workflow. All processes begin here."
     },
     {
       "name": "Init1",
@@ -31,8 +32,12 @@
       "dependencies": [
         "Start",
         "JobInAnOtherSchedule",
+        "dasdsa",
+        "dasdsadsadasddsa",
+        "dasdasd",
         "UnknownJob"
       ],
+      "doc":"Job with a long name and unkown dependencies",
       "color": "#1E88E5"
     },
     {
@@ -55,7 +60,8 @@
         "Init1"
       ],
       "dashed": true,
-      "strokeColor": "#FF9800"
+      "strokeColor": "#FF9800",
+      "doc": "this is the Job-B. B ist the second letter in the alphabet"
     },
     {
       "name": "JobC",
@@ -208,7 +214,8 @@
       "dependencies": [
         "Init1"
       ],
-      "color": "#FF6F00"
+      "color": "#FF6F00",
+      "doc": "This is an extra job that is not part of the main workflow but is included for testing purposes."
     },
     {
       "name": "Extra2",

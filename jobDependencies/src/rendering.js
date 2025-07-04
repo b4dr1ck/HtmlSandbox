@@ -1,6 +1,49 @@
 import { cropJobNameText, findDependencies } from "./utils.js";
 
-export function drawDependencies(canvasManager, deps, positions, canvasConfig, clickedJob) {
+// Draw the info box for the job on the canvas
+export function drawInfoBox(canvasManager, job, positions, canvasConfig) {
+  if (!job) {
+    return;
+  }
+
+  const { x, y } = positions[job.name];
+  const unknownDependencies = job.dependencies.filter((dep) => !positions[dep]);
+
+  // draw job doc
+  if (job.doc) {
+    const newBoxWidth = (job.doc.length * canvasConfig.fontSize) / 2;
+    const newBoxHeigth =
+      unknownDependencies.length * canvasConfig.fontSize +
+      (job.doc.length > 0 ? canvasConfig.fontSize : 0) +
+      canvasConfig.fontSize;
+
+    canvasManager.drawBox(x + canvasConfig.boxWidth + 2, y, newBoxWidth, newBoxHeigth, "rgba(0,0,0,0.6)", "black");
+    canvasManager.drawText(
+      job.doc,
+      x + canvasConfig.boxWidth + 3,
+      y + canvasConfig.fontSize / 2,
+      "white",
+      `${canvasConfig.fontSize}px Arial`,
+      "left"
+    );
+  }
+  // draw unkonw deps
+  if (unknownDependencies.length > 0) {
+    unknownDependencies.forEach((dep, index) => {
+      canvasManager.drawText(
+        `X ${dep}`,
+        x + canvasConfig.boxWidth + 3,
+        y + canvasConfig.fontSize * (index + 2),
+        "red",
+        `${canvasConfig.fontSize}px Arial`,
+        "left"
+      );
+    });
+  }
+}
+
+// Draw the dependencies of the jobs on the canvas
+export function drawDependencies(canvasManager, deps, positions, canvasConfig, clickedJob, foundJob = null) {
   canvasManager.clear();
 
   deps.forEach((job) => {
@@ -13,7 +56,7 @@ export function drawDependencies(canvasManager, deps, positions, canvasConfig, c
       y,
       canvasConfig.boxWidth,
       canvasConfig.boxHeight,
-      job.fill ? job.fill : "rgba(0,0,0,0.2)",
+      foundJob === job.name ? canvasConfig.foundJobColor : job.fill ? job.fill : "rgba(0,0,0,0.2)",
       isHighlighted ? canvasConfig.highlightColor : job.color ? job.color : canvasConfig.defaultBoxColor,
       isHighlighted ? canvasConfig.lineWidth * 2 : canvasConfig.lineWidth
     );
@@ -36,8 +79,9 @@ export function drawDependencies(canvasManager, deps, positions, canvasConfig, c
     const { x: startX, y: startY } = positions[job.name];
 
     job.dependencies.forEach((dep) => {
+      // external or unkonw dependency
       if (!positions[dep]) {
-        // quit if the dependend job is not found
+        canvasManager.drawText("X", startX, startY, "red", `${canvasConfig.fontSize * 2}px Arial`);
         return;
       }
 

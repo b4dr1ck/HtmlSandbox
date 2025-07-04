@@ -5,6 +5,7 @@ import {
   groupJobsByLevel,
   assignPositions,
   applyJobConfig,
+  extracSubJobs,
 } from "./utils.js";
 import { fetchDependencies } from "./dataHandler.js";
 import { CanvasManager } from "./canvasManager.js";
@@ -14,13 +15,20 @@ import { setupEventListeners } from "./eventHandlers.js";
 async function main() {
   // fetch the data from the json file given by the query parameter (?data=file.json)
   const queryParameter = getQueryParameters();
+  const startJob = queryParameter.startJob || null;
+  const endJob = queryParameter.endJob || null;
   const responseData = await fetchDependencies(`data/${queryParameter.data}`);
-  const data = responseData.data;
+  const data = startJob && endJob ? extracSubJobs(responseData.data, endJob, startJob) : responseData.data;
   const config = responseData.config;
 
   // canvas
   const canvas = document.getElementsByTagName("canvas")[0];
   const canvasManager = new CanvasManager(canvas);
+
+  // Buttons / Input
+  const btnSearch = document.getElementById("btnSearch");
+  const btnScreenshot = document.getElementById("btnSreenShot");
+  const inputSearch = document.getElementById("inputSearch");
 
   // default config for the canvas
   const canvasConfig = {
@@ -29,6 +37,7 @@ async function main() {
     defaultLineColor: "#cccccc66",
     defaultBoxColor: "#78909C",
     highlightColor: "white",
+    foundJobColor:"yellow",
     boxWidth: 150,
     boxHeight: 50,
     horizontalSpacing: 60,
@@ -39,22 +48,33 @@ async function main() {
     maxJobNameLength: 17,
   };
 
-  // Calculate the levels and group the jobs by their levels
+  // override the default config with the config from the json file
   const sortedDeps = applyJobConfig(config, sortDeps(data));
+
+  // Assign levels/ggroups and calculate the positions (x,y) of the jobs
   const levels = assignLevels(sortedDeps);
   const jobsByLevel = groupJobsByLevel(levels);
   const positions = assignPositions(jobsByLevel, canvas, canvasConfig);
 
   // Set up event listeners for the canvas
-  setupEventListeners(canvas,  canvasManager, canvasConfig, sortedDeps, positions,jobsByLevel);
+  setupEventListeners(
+    canvas,
+    canvasManager,
+    canvasConfig,
+    sortedDeps,
+    positions,
+    btnSearch,
+    inputSearch,
+    btnScreenshot
+  );
 
   // Calculate the required canvas size
   const maxLevel = Math.max(...Object.values(levels));
   const maxJobsInLevel = Math.max(...Object.values(jobsByLevel).map((jobs) => jobs.length));
   const canvasWidth =
-    maxJobsInLevel * (canvasConfig.boxWidth + canvasConfig.horizontalSpacing) + canvasConfig.canvasPadding; // Add padding
+    maxJobsInLevel * (canvasConfig.boxWidth + canvasConfig.horizontalSpacing) + canvasConfig.canvasPadding;
   const canvasHeight =
-    (maxLevel + 1) * (canvasConfig.boxHeight + canvasConfig.verticalSpacing) + canvasConfig.canvasPadding; // Add padding
+    (maxLevel + 1) * (canvasConfig.boxHeight + canvasConfig.verticalSpacing) + canvasConfig.canvasPadding;
 
   // Set the canvas size
   canvas.width = canvasWidth;

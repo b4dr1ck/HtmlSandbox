@@ -1,5 +1,6 @@
-import { drawDependencies } from "./rendering.js";
+import { drawDependencies, drawInfoBox } from "./rendering.js";
 
+// get the mouse coordinates relative to the canvas
 function getMouseCoordinates(event, canvas) {
   const rect = canvas.getBoundingClientRect();
   const mouseX = event.clientX - rect.left;
@@ -12,7 +13,7 @@ function getMouseCoordinates(event, canvas) {
 function getJobNameByClick(event, canvas, canvasConfig, deps, positions, offset) {
   event.preventDefault();
 
-  const {mouseX:mouseX,mouseY: mouseY} = getMouseCoordinates(event, canvas);
+  const { mouseX: mouseX, mouseY: mouseY } = getMouseCoordinates(event, canvas);
 
   for (const job of deps) {
     const { x, y } = positions[job.name];
@@ -21,14 +22,19 @@ function getJobNameByClick(event, canvas, canvasConfig, deps, positions, offset)
     offset.y = mouseY - y;
 
     if (mouseX >= x && mouseX <= x + canvasConfig.boxWidth && mouseY >= y && mouseY <= y + canvasConfig.boxHeight) {
-      return job.name;
+      return job;
     }
   }
+  return null;
+}
+
+function getJobnameByHover(event, canvas, canvasConfig, deps, positions) {
+  return getJobNameByClick(event, canvas, canvasConfig, deps, positions, { x: 0, y: 0 });
 }
 
 // mouse is moving over the canvas and update the position of the dragged job
 function updateJobPosOnMouseMove(event, canvas, positions, draggedJob, offset) {
-  const {mouseX:mouseX,mouseY: mouseY} = getMouseCoordinates(event, canvas);
+  const { mouseX: mouseX, mouseY: mouseY } = getMouseCoordinates(event, canvas);
 
   if (draggedJob) {
     positions[draggedJob].x = mouseX - offset.x;
@@ -36,28 +42,74 @@ function updateJobPosOnMouseMove(event, canvas, positions, draggedJob, offset) {
   }
 }
 
+// scroll to the job position
+function findJobOnClickSearch(inputSearch, positions) {
+  const jobName = inputSearch.value;
+  if (!(jobName in positions)) {
+    return;
+  }
+  scrollTo(positions[jobName]["x"], positions[jobName]["y"]);
+  return jobName;
+}
+
+// download the canvas as an image
+function downloadCanvasAsImage(canvas) {
+  const image = canvas.toDataURL("image/png");
+  const link = document.createElement("a");
+  link.href = image;
+  link.download = "canvas-image.png";
+  link.click();
+}
+
 // Set up event listeners for the canvas
-export function setupEventListeners(canvas, canvasManager, canvasConfig, deps, positions) {
-  const job = { dragged: null, clicked: null };
+export function setupEventListeners(
+  canvas,
+  canvasManager,
+  canvasConfig,
+  deps,
+  positions,
+  btnSearch,
+  inputSearch,
+  btnScreenshot
+) {
+  const jobEvent = { dragged: null, clicked: null, hover: null };
   const offset = { x: 0, y: 0 };
 
-  // Right click on job box
-  canvas.addEventListener("contextmenu", (event) => {
-    job.clicked = getJobNameByClick(event, canvas, canvasConfig, deps, positions, offset);
-    drawDependencies(canvasManager, deps, positions, canvasConfig, job.clicked);
+  // click on search button
+  btnSearch.addEventListener("click", () => {
+    const jobName = findJobOnClickSearch(inputSearch, positions);
+
+    drawDependencies(canvasManager, deps, positions, canvasConfig, jobEvent.clicked, jobName);
+  });
+
+  // clck on screenshot button
+  btnScreenshot.addEventListener("click", () => {
+    downloadCanvasAsImage(canvas);
   });
 
   // mouse move over the job box
   canvas.addEventListener("mousemove", (event) => {
-    updateJobPosOnMouseMove(event, canvas, positions, job.dragged, offset);
-    drawDependencies(canvasManager, deps, positions, canvasConfig, job.clicked);
+    updateJobPosOnMouseMove(event, canvas, positions, jobEvent.dragged, offset);
+    const job = getJobnameByHover(event, canvas, canvasConfig, deps, positions, offset);
+
+    drawDependencies(canvasManager, deps, positions, canvasConfig, jobEvent.clicked);
+
+    drawInfoBox(canvasManager, job, positions, canvasConfig);
   });
 
   // mouse down over the job box
   canvas.addEventListener("mousedown", (event) => {
-    job.dragged = getJobNameByClick(event, canvas, canvasConfig, deps, positions, offset);
+    const job = getJobNameByClick(event, canvas, canvasConfig, deps, positions, offset);
+    if (job) {
+      jobEvent.clicked = job.name;
+      jobEvent.dragged = job.name;
+    } else {
+      jobEvent.clicked = null;
+      jobEvent.dragged = null;
+    }
+    drawDependencies(canvasManager, deps, positions, canvasConfig, jobEvent.clicked);
   });
 
   // mouse up over the job box
-  canvas.addEventListener("mouseup", () => (job.dragged = null));
+  canvas.addEventListener("mouseup", () => (jobEvent.dragged = null));
 }

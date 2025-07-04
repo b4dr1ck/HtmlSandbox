@@ -5,13 +5,14 @@ export class CanvasManager {
   }
 
   clear() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = "black"; 
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  drawText(text, x, y, color = "lightBlue", font = "20px Arial") {
+  drawText(text, x, y, color = "lightBlue", font = "20px Arial",align = "center") {
     this.ctx.fillStyle = color;
     this.ctx.font = font;
-    this.ctx.textAlign = "center";
+    this.ctx.textAlign = align;
     this.ctx.textBaseline = "middle";
     this.ctx.fillText(text, x, y);
   }

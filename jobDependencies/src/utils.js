@@ -81,6 +81,32 @@ export function assignPositions(jobsByLevel, canvas, canvasConfig) {
   return positions;
 }
 
+// Extract sub-jobs from the dependencies based on start and end job names
+export function extracSubJobs(deps, startJob, endJob) {
+  const visited = new Set();
+  const subjobs = [];
+
+  function traverse(jobName) {
+    if (visited.has(jobName)) return;
+    visited.add(jobName);
+
+    const job = deps.find((j) => j.name === jobName);
+    if (!job) return;
+
+    subjobs.push(job);
+
+    if (jobName === endJob) return;
+
+    job.dependencies.forEach((dep) => {
+      traverse(dep);
+    });
+  }
+
+  traverse(startJob);
+
+  return subjobs;
+}
+
 // Crop job name text if it exceeds the maximum length
 export function cropJobNameText(jobname, maxJobNameLength) {
   if (jobname.length > maxJobNameLength) {
@@ -113,4 +139,17 @@ export function findDependencies(jobName, deps, chain = []) {
   job.dependencies.forEach((dep) => findDependencies(dep, deps,chain));
 
   return chain;
+}
+
+// Get the viewport dimensions and scroll position
+export function getViewPort() {
+  const viewport = {
+      top: window.scrollY,
+      left: window.scrollX,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      bottom: window.scrollY + window.innerHeight,
+      right: window.scrollX + window.innerWidth
+  };
+  return viewport;
 }
