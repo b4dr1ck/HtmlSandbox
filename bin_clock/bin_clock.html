@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>  
+    <script src="/js/jquery.js"></script>
+    <meta charset="utf-8"/>
+    <style>
+        body
+        {
+            background: black;
+            font-family: 'Arial monospaced for SAP','Arial','san-serif';
+        }
+        
+        input 
+        {
+            border: 2px solid yellow;
+            width: 48px;
+            background: rgba(255,255,0,0.25);
+            color:yellow;
+            font-size: 38px;
+            position: absolute;
+            top:8px;
+            margin-left: 5px;
+            text-align: center;
+        }
+    </style>
+</head>  
+
+<body>
+    <canvas id=clock style='background:black;border: 2px solid lime;' width="300" height="200"></canvas>
+    <canvas id=date style='background:black;border: 2px solid red;' width="400" height="200"></canvas>
+    <canvas id=number style='background:black;border: 2px solid yellow;' width="50" height="200"></canvas>
+    <input maxlength=1 type="text" id=input_number>
+    
+    <script>
+        
+        // initialize
+        var canvas =  document.getElementById("clock").getContext('2d');
+        var canvas2 =  document.getElementById("date").getContext('2d');
+        var canvas3 =  document.getElementById("number").getContext('2d');
+        var cell_size = 50;
+        var color = "rgb(0,255,0)";
+        var color2 = "rgb(255,0,0)";
+        var color3= "yellow";
+        
+        var input = document.getElementById("input_number");
+        
+        canvas3.clearRect(0, 0, 50, 200);
+        draw_bits(color3,canvas3,["0000"]);
+    
+        input.addEventListener("input",function(e) {
+            var number = leading_zeros(parseInt(e.target.value).toString(2),4);
+            var bit = [number];
+            console.log(bit)
+            canvas3.clearRect(0, 0, 50, 200);
+            draw_bits(color3,canvas3,bit);
+        });
+        
+        proceed();
+                
+        // refresh the canvas every second 
+        setInterval(proceed, 1000);
+        
+        function proceed() {
+            var time = new Date();
+            // get time elements
+            var HH = time.getHours() < 10 ? "0" + time.getHours() :  time.getHours();
+            var MM = time.getMinutes() < 10 ? "0" + time.getMinutes() :  time.getMinutes();
+            var SS = time.getSeconds() < 10 ? "0" + time.getSeconds() :  time.getSeconds();
+
+            var H1 = leading_zeros((parseInt(HH.toString().substr(0,1))).toString(2),4);
+            var H2 = leading_zeros((parseInt(HH.toString().substr(1,1))).toString(2),4);
+            var M1 = leading_zeros((parseInt(MM.toString().substr(0,1))).toString(2),4);
+            var M2 = leading_zeros((parseInt(MM.toString().substr(1,1))).toString(2),4);
+            var S1 = leading_zeros((parseInt(SS.toString().substr(0,1))).toString(2),4);
+            var S2 = leading_zeros((parseInt(SS.toString().substr(1,1))).toString(2),4);
+            
+            // get date elements
+            var dd = time.getDate() <  10 ? "0" + time.getDate() :  time.getDate();
+            var mm = (time.getMonth() + 1) <  10 ? "0" + (time.getMonth() + 1) :  (time.getMonth() + 1);
+            var yy = time.getFullYear();
+            
+            var d1 = leading_zeros((parseInt(dd.toString().substr(0,1))).toString(2),4);
+            var d2 = leading_zeros((parseInt(dd.toString().substr(1,1))).toString(2),4);
+            var m1 = leading_zeros((parseInt(mm.toString().substr(0,1))).toString(2),4);
+            var m2 = leading_zeros((parseInt(mm.toString().substr(1,1))).toString(2),4);
+            var y1 = leading_zeros((parseInt(yy.toString().substr(0,1))).toString(2),4);
+            var y2 = leading_zeros((parseInt(yy.toString().substr(1,1))).toString(2),4);
+            var y3 = leading_zeros((parseInt(yy.toString().substr(2,1))).toString(2),4);
+            var y4 = leading_zeros((parseInt(yy.toString().substr(3,1))).toString(2),4);
+            
+            var bit_fields = [H1,H2,M1,M2,S1,S2];
+            var bit_fields2 = [d1,d2,m1,m2,y1,y2,y3,y4];
+
+            canvas.clearRect(0, 0, 300, 200);
+            draw_bits(color,canvas,bit_fields);
+            
+            canvas2.clearRect(0, 0, 400, 200);
+            draw_bits(color2,canvas2,bit_fields2);
+        }
+        
+        // function to draw a box for every bit
+        function draw_bits(color,canvas,bit_fields) {
+            for (var x = 0; x < bit_fields.length; x++) {
+                for (var y = 0; y < bit_fields[x].length; y++) {
+                    if (bit_fields[x].substr(y,1) == "1") {
+                        canvas.fillStyle = color;
+                        canvas.fillRect(x * cell_size, y * cell_size, cell_size, cell_size);
+                        canvas.strokeStyle = "black";
+                        canvas.lineWidth = 1;
+                        canvas.strokeRect(x * cell_size, y * cell_size, cell_size, cell_size);
+                    } else {
+                        canvas.strokeStyle = color;
+                        canvas.lineWidth = 1;
+                        canvas.strokeRect(x * cell_size, y * cell_size, cell_size, cell_size);
+                    }
+                }
+            }
+        }
+        
+        // create leading zeros on a given number
+        function leading_zeros(number,digits) {
+            number = number.toString()
+            while (number.length < digits) {
+                number = "0" + number;
+            }
+            return number;
+        }
+    </script>
+    
+</body>
+</html>

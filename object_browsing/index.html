@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <link rel="stylesheet" href="./object_browsing.css"/>
+        <script src="object_browsing.js"></script>
+    </head>
+
+    <body style="background-color: black;">
+        <p id="paste_txt">paste json...</p>
+        <div id="wrapper"></div>
+
+        <script>
+            document.addEventListener("paste",function(event) {
+                event.preventDefault();
+                let paste_txt = event.clipboardData.getData('text');
+                try {
+                    let p = document.getElementById("paste_txt");
+                    p.textContent = "paste json...";
+                    p.classList.remove("error");
+
+                    let paste_json = JSON.parse(paste_txt);
+                    create_browsing_graph(document.getElementById("wrapper"),paste_json);
+                } catch (error) {
+                    let p = document.getElementById("paste_txt");
+                    p.textContent = error;
+                    p.classList.add("error");
+                }
+            })
+        </script>
+    </body>
+</html>

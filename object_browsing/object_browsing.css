@@ -1,0 +1,71 @@
+
+#paste_txt {
+    color: white;
+    font-size: 18px;
+    font-family: 'Arial';
+    border: 1px dashed white;
+    padding: 15px;
+}
+
+#paste_txt.error {
+    color: red;
+    border-color: red;
+}
+
+.object_browsing {
+    width: fit-content;
+    height: fit-content;
+    font-family: 'Consolas';
+    background: none;
+}
+
+.object_browsing div {
+    margin: 0px;
+    margin-left: 10px;
+    padding-bottom: 1px;
+    height: fit-content;
+    background: none;
+}
+
+.object_browsing .disappear {
+    display: none;
+}
+
+.object_browsing .dict {
+    color:  rgb(171, 171, 255);
+    border-bottom:1px solid rgba(171, 171, 255,0.5);
+    border-left:1px solid rgba(171, 171, 255, 0.5);
+}
+
+.object_browsing .array {
+    color:rgb(255, 157, 157);
+    border-bottom:1px solid rgba(255, 157, 157, 0.5);
+    border-left:1px solid rgba(255, 157, 157 , 0.5);
+}
+
+.object_browsing .string {
+    color:rgb(255, 136, 217);
+}
+
+.object_browsing .number {
+    color:rgb(192, 255, 203);
+}
+
+.object_browsing .bool {
+    color:rgb(255, 255, 184);
+}
+
+.object_browsing .function {
+    color:rgb(184, 255, 255);  
+}
+
+.object_browsing p {
+    margin: 0px;
+    padding: 5px;
+    color: #ccc;
+}
+
+.object_browsing p:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}

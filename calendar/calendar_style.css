@@ -1,0 +1,89 @@
+
+:root
+{
+    --dark:#333;
+    --light_dark: #444;
+    --medium: #666;
+    --light: #999;
+    --extra_light:#ccc;
+    --dark_blue:rgb(61, 142, 255);
+    --blue:rgb(152, 195, 255);
+    --pink:rgb(207, 139, 202);
+}
+
+#calendar table {
+    background: var(--dark);
+}
+
+#calendar {
+    width: fit-content;
+    font-family: 'Arial';
+}
+
+#calendar button {
+    border: none;
+    background:var(--dark);
+    color:white;
+    padding: 5px;
+    font-size: 14px;
+    font-weight: bolder;
+}
+
+#calendar button:hover {
+    background:var(--medium);
+    transition: background-color 0.5s;
+    cursor: pointer;
+}
+
+#calendar h2 {
+    font-size: 16px;
+    margin: 0px;
+    text-align: center;
+    padding: 2px;
+    color: var(--pink);
+}
+
+#calendar .active {
+    color: #333;
+    background: var(--blue);
+    font-weight: bolder;
+}
+
+#calendar .free {
+    color:var(--dark_blue);
+}
+
+#calendar .flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+#calendar table {
+   border-collapse: collapse; 
+}
+
+#calendar table th {
+    color: var(--blue);
+    padding: 2px;
+}
+
+#calendar table td {
+    border: 1px solid var(--light_dark);
+    padding: 2px;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+}
+
+#calendar table td:hover {
+    color: var(--dark_blue);
+}
+
+#calendar table tr td:nth-of-type(1) {
+    color: var(--light);
+}
+
+#calendar table tr td:nth-of-type(7) {
+    color: var(--light);
+}
+
