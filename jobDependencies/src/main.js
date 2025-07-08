@@ -12,23 +12,6 @@ import { CanvasManager } from "./canvasManager.js";
 import { drawDependencies } from "./rendering.js";
 import { setupEventListeners } from "./eventHandlers.js";
 
-// default config for the canvas
-const canvasConfig = {
-  align: "LEFT",
-  canvasPadding: 50,
-  defaultLineColor: "#cccccc66",
-  defaultBoxColor: "#78909C",
-  highlightColor: "white",
-  foundJobColor: "yellow",
-  boxWidth: 150,
-  boxHeight: 50,
-  horizontalSpacing: 60,
-  verticalSpacing: 30,
-  fontSize: 16,
-  lineWidth: 2,
-  arrowSize: 10,
-  maxJobNameLength: 17,
-};
 
 async function main(canvasConfig) {
   // fetch the data from the json file given by the query parameter (?data=file.json)
@@ -86,5 +69,23 @@ async function main(canvasConfig) {
   // rendering the dependencies
   drawDependencies(canvasManager, sortedDeps, positions, canvasConfig);
 }
+
+// default config for the canvas
+const canvasConfig = {
+  align: "LEFT",
+  canvasPadding: 50,
+  defaultLineColor: "#cccccc66",
+  defaultBoxColor: "#78909C",
+  highlightColor: "white",
+  foundJobColor: "yellow",
+  boxWidth: 150,
+  boxHeight: 50,
+  horizontalSpacing: 60,
+  verticalSpacing: 30,
+  fontSize: 16,
+  lineWidth: 2,
+  arrowSize: 10,
+  maxJobNameLength: 17,
+};
 
 main(canvasConfig);
