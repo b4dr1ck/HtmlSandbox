@@ -1,4 +1,7 @@
 <script>
+import { player } from "./player.js";
+import { enemy } from "./enemy.js";
+
 export default {
   name: "App",
   data() {
@@ -20,122 +23,8 @@ export default {
         resist: { FIR: "red", WAT: "aqua", POI: "lightgreen" },
         details: "#666",
       },
-      player: {
-        stats: {
-          AC: { base: 5, current: 5, bon: 0 },
-          hp: { base: 100, current: 100, bon: 0 },
-          mp: { base: 20, current: 20, bon: 0 },
-          pow: { base: 10, current: 10, bon: 0 },
-          STR: { base: 15, current: 15, bon: 0 },
-          resist: {
-            FIR: { base: 5, current: 5, bon: 0 },
-            POI: { base: 0, current: 0, bon: 0 },
-            WAT: { base: 0, current: 0, bon: 0 },
-            EAR: { base: 0, current: 0, bon: 0 },
-            WIN: { base: 0, current: 0, bon: 0 },
-          },
-        },
-        name: "Lord Rick",
-
-        items: [
-          {
-            name: "Heal Potion",
-            description: "Restores 20 HP.",
-            amount: 2,
-          },
-          {
-            name: "Mana Potion",
-            description: "Restores 5 HP.",
-            amount: 1,
-          },
-        ],
-        equipped: [
-          {
-            name: "Iron Sword",
-            type: "weapon",
-            description: "A sturdy sword that deals a bit of damage.",
-            damage: [1, 6],
-          },
-          {
-            name: "Icy Helmet",
-            type: "armor",
-            description: "An icy helmet that protects your head.",
-            AC: 1,
-            resist: { WAT: 3 },
-          },
-          {
-            name: "Leather Armor",
-            type: "armor",
-            description: "Light armor that provides some protection.",
-            AC: 3,
-          },
-        ],
-        spellbook: [
-          {
-            name: "Fireball",
-            cost: 5,
-            damage: 20,
-            description: "A powerful fire spell that deals damage to the enemy.",
-          },
-          {
-            name: "Heal",
-            cost: 3,
-            heal: 15,
-            description: "A spell that heals the player for a small amount.",
-          },
-        ],
-        specials: [
-          {
-            name: "Power Strike",
-            cost: 10,
-            damage: 25,
-            description: "A powerful strike that deals extra damage to the enemy.",
-          },
-          {
-            name: "Stamp",
-            cost: 15,
-            damage: 40,
-            description: "A strong stamp on the ground that stunns your enemy",
-          },
-        ],
-      },
-      enemy: {
-        name: "Weird Goblin",
-        stats: {
-          AC: { base: 5, current: 5, bon: 0 },
-          hp: { base: 80, current: 80, bon: 0 },
-          mp: { base: 10, current: 10, bon: 0 },
-          pow: { base: 5, current: 5, bon: 0 },
-          STR: { base: 12, current: 12, bon: 0 },
-          resist: {
-            FIR: { base: 0, current: 0, bon: 0 },
-            POI: { base: 5, current: 5, bon: 0 },
-            WAT: { base: 0, current: 0, bon: 0 },
-            EAR: { base: 0, current: 0, bon: 0 },
-            WIN: { base: 0, current: 0, bon: 0 },
-          },
-        },
-        equipped: [
-          {
-            name: "Goblin Dagger",
-            type: "weapon",
-            description: "A small dagger that deals a bit of damage.",
-            damage: [1, 4],
-          },
-          {
-            name: "Goblin Shield",
-            type: "armor",
-            description: "A small shield that provides some protection.",
-            AC: 2,
-          },
-          {
-            name: "Toxic Goblin Helmet",
-            type: "armor",
-            description: "A small helmet that protects you with poison resistance.",
-            resist: { POI: 2 },
-          },
-        ],
-      },
+      player: player,
+      enemy: enemy,
     };
   },
   methods: {
@@ -193,8 +82,6 @@ export default {
       const dmg = this.calcHitAndDmg("player").dmg;
       const color = this.colors.name;
       const AC = this.enemy.stats.AC.base + this.enemy.stats.AC.bon;
-
-      this.log.push("");
 
       if (hit >= AC) {
         this.enemy.stats.hp.current -= dmg;
@@ -266,21 +153,29 @@ export default {
 
     // apply equipped items to player stats
     applyStats(actor) {
+      // reset the bonuses
+      for (const stat in this[actor]["stats"]) {
+        if (stat === "resist") {
+          for (const resist in this[actor]["stats"]["resist"]) {
+            this[actor]["stats"]["resist"][resist].bon = 0;
+          }
+        } else {
+          this[actor]["stats"][stat].bon = 0;
+        }
+      }
+      // apply bonuses from equipped items
       this[actor]["equipped"].forEach((item) => {
         for (const key in item) {
-          if (key === "name" || key === "description" || key === "type" | key === "damage") continue;
+          if (key === "name" || key === "description" || (key === "type") | (key === "damage")) continue;
           if (key === "resist") {
             for (const resist in item.resist) {
-              console.log(resist)
-              this[actor]["stats"]["resist"][resist].bon = 0;
               this[actor]["stats"]["resist"][resist].bon += item.resist[resist];
             }
           } else {
-            this[actor]["stats"][key].bon= 0;
             this[actor]["stats"][key].bon += item[key];
           }
         }
-      })
+      });
     },
     executeCommand(event) {
       const key = parseInt(event.key) - 1;
