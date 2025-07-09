@@ -17,20 +17,26 @@ export default {
         pow: "orange",
         AC: "yellow",
         STR: "green",
-        resist: { FIR: "red", ICE: "aqua", POI: "green" },
+        resist: { FIR: "red", WAT: "aqua", POI: "lightgreen" },
         details: "#666",
       },
       player: {
-        name: "Lord Rick",
-        AC: 5,
-        hp: 100,
-        mp: 20,
-        pow: 10,
-        STR: 15,
-        resist: {
-          FIR: 5,
-          ICE: 2,
+        stats: {
+          AC: { base: 5, current: 5, bon: 0 },
+          hp: { base: 100, current: 100, bon: 0 },
+          mp: { base: 20, current: 20, bon: 0 },
+          pow: { base: 10, current: 10, bon: 0 },
+          STR: { base: 15, current: 15, bon: 0 },
+          resist: {
+            FIR: { base: 5, current: 5, bon: 0 },
+            POI: { base: 0, current: 0, bon: 0 },
+            WAT: { base: 0, current: 0, bon: 0 },
+            EAR: { base: 0, current: 0, bon: 0 },
+            WIN: { base: 0, current: 0, bon: 0 },
+          },
         },
+        name: "Lord Rick",
+
         items: [
           {
             name: "Heal Potion",
@@ -55,7 +61,7 @@ export default {
             type: "armor",
             description: "An icy helmet that protects your head.",
             AC: 1,
-            resist: { ICE: 3 },
+            resist: { WAT: 3 },
           },
           {
             name: "Leather Armor",
@@ -95,12 +101,20 @@ export default {
       },
       enemy: {
         name: "Weird Goblin",
-        AC: 5,
-        hp: 60,
-        mp: 5,
-        pow: 5,
-        STR: 10,
-        resist: { POI: 5, FIR: 1 },
+        stats: {
+          AC: { base: 5, current: 5, bon: 0 },
+          hp: { base: 80, current: 80, bon: 0 },
+          mp: { base: 10, current: 10, bon: 0 },
+          pow: { base: 5, current: 5, bon: 0 },
+          STR: { base: 12, current: 12, bon: 0 },
+          resist: {
+            FIR: { base: 0, current: 0, bon: 0 },
+            POI: { base: 5, current: 5, bon: 0 },
+            WAT: { base: 0, current: 0, bon: 0 },
+            EAR: { base: 0, current: 0, bon: 0 },
+            WIN: { base: 0, current: 0, bon: 0 },
+          },
+        },
         equipped: [
           {
             name: "Goblin Dagger",
@@ -150,7 +164,9 @@ export default {
       }
     },
     calcHitAndDmg(actor) {
-      const hit = this.getRandomInt(1, 20) + Math.floor((this[actor].STR - 10) / 2);
+      const STR = this[actor].stats.STR.base + this[actor].stats.STR.bon;
+      const hit = this.getRandomInt(1, 20) + Math.floor((STR - 10) / 2);
+
       const dmg = this[actor].equipped.reduce((total, item) => {
         if (item.type === "weapon") {
           const weaponDmg = this.getRandomInt(item.damage[0], item.damage[1]);
@@ -164,9 +180,9 @@ export default {
       const hit = this.calcHitAndDmg("enemy").hit;
       const dmg = this.calcHitAndDmg("enemy").dmg;
       const color = this.colors.name;
-
-      if (hit >= this.player.AC) {
-        this.player.hp -= dmg;
+      const AC = this.player.stats.AC.base + this.player.stats.AC.bon;
+      if (hit >= AC) {
+        this.player.stats.hp.current -= dmg;
         this.log.push(`The <span style='color:${color}'>${this.enemy.name}</span> hits you for ${dmg} damage!`);
       } else {
         this.log.push(`The <span style='color:${color}'>${this.enemy.name}</span> misses you!`);
@@ -176,11 +192,12 @@ export default {
       const hit = this.calcHitAndDmg("player").hit;
       const dmg = this.calcHitAndDmg("player").dmg;
       const color = this.colors.name;
+      const AC = this.enemy.stats.AC.base + this.enemy.stats.AC.bon;
 
       this.log.push("");
 
-      if (hit >= this.enemy.AC) {
-        this.enemy.hp -= dmg;
+      if (hit >= AC) {
+        this.enemy.stats.hp.current -= dmg;
         this.log.push(`You hit the <span style='color:${color}'>${this.enemy.name}</span> for ${dmg} damage! `);
       } else {
         this.log.push(`You missed the <span style='color:${color}'>${this.enemy.name}</span>!`);
@@ -217,24 +234,53 @@ export default {
       this.commands.push("Back");
       this.log.push("You open your spellbook. Choose a spell.");
     },
+    hud(actor) {
+      const hudText = [];
+
+      // name
+      hudText.push(`<span style='color:${this.colors["name"]}'>${this[actor].name}: </span>`);
+      for (const stat in this[actor]["stats"]) {
+        // resistances
+        if (stat === "resist") {
+          hudText.push("Resistances: ");
+          for (const resist in this[actor]["stats"]["resist"]) {
+            hudText.push(
+              ` <span style='color:${this.colors.resist[resist]}'>${resist}:</span> ${this[actor]["stats"]["resist"][resist].base} + ${this[actor]["stats"]["resist"][resist].bon}`
+            );
+          }
+        } else {
+          // other stats
+          if (stat === "hp" || stat === "mp" || stat === "pow") {
+            hudText.push(
+              `<span style='color:${this.colors[stat]}'>${stat}:</span> ${this[actor]["stats"][stat].current}/${this[actor]["stats"][stat].base} + ${this[actor]["stats"][stat].bon}`
+            );
+          } else {
+            hudText.push(
+              `<span style='color:${this.colors[stat]}'>${stat}:</span> ${this[actor]["stats"][stat].base} + ${this[actor]["stats"][stat].bon}`
+            );
+          }
+        }
+      }
+      return hudText.join("\n");
+    },
 
     // apply equipped items to player stats
     applyStats(actor) {
-      for (const key in this[actor]) {
-        if (key === "name" || key === "equipped" || key === "spellbook" || key === "specials" || key === "items") {
-          continue;
-        }
-
-        this[actor][key] = this[actor].equipped.reduce((total, item) => {
+      this[actor]["equipped"].forEach((item) => {
+        for (const key in item) {
+          if (key === "name" || key === "description" || key === "type" | key === "damage") continue;
           if (key === "resist") {
-            return Object.entries(total).reduce((acc, [res, value]) => {
-              acc[res] = (value || 0) + (item.resist ? item.resist[res] || 0 : 0);
-              return acc;
-            }, {});
+            for (const resist in item.resist) {
+              console.log(resist)
+              this[actor]["stats"]["resist"][resist].bon = 0;
+              this[actor]["stats"]["resist"][resist].bon += item.resist[resist];
+            }
+          } else {
+            this[actor]["stats"][key].bon= 0;
+            this[actor]["stats"][key].bon += item[key];
           }
-          return total + (item[key] || 0);
-        }, this[actor][key]);
-      }
+        }
+      })
     },
     executeCommand(event) {
       const key = parseInt(event.key) - 1;
@@ -243,32 +289,6 @@ export default {
       }
       const command = this.commands[key].toLowerCase();
       this[command]();
-    },
-    hud(actor) {
-      const hudText = [];
-      let colors = this.colors;
-
-      for (const key in this[actor]) {
-        if (this[actor].hasOwnProperty(key)) {
-          if (key === "equipped" || key === "spellbook" || key === "specials" || key === "items") {
-            continue;
-          }
-          if (key === "name") {
-            hudText.push(`<span style='color:${colors[key]}'>${this[actor][key]}</span>`);
-            hudText.push("----------------------------------------");
-            continue;
-          }
-          if (key === "resist") {
-            const resist = Object.entries(this[actor].resist)
-              .map(([res, value]) => `<span style='color:${colors[key][res]}'>${res}: ${value}</span>`)
-              .join(", ");
-            hudText.push(`RESIST: <span style='color:${colors[key]}'>${resist}</span>`);
-            continue;
-          }
-          hudText.push(`${key.toUpperCase()}: <span style='color:${colors[key]}'>${this[actor][key]}</span>`);
-        }
-      }
-      return hudText.join("\n");
     },
     showDetails(command) {
       function showStats(obj) {
@@ -337,6 +357,12 @@ export default {
     logEntries() {
       return this.log.slice(-this.maxLogEntries);
     },
+    hudPlayer() {
+      return this.hud("player");
+    },
+    hudEnemy() {
+      return this.hud("enemy");
+    },
   },
 
   mounted() {
@@ -359,8 +385,9 @@ export default {
 
 <template>
   <div id="hud" class="flex">
-    <pre v-html="hud('player')" id="player"></pre>
-    <pre v-html="hud('enemy')" id="enemy"></pre>
+    <!--pre v-html="hudPlayer" id="player"></pre-->
+    <pre v-html="hudPlayer" id="player"></pre>
+    <pre v-html="hudEnemy" id="enemy"></pre>
   </div>
   <hr />
   <pre v-html="logEntries.join('\n')" id="log"></pre>
