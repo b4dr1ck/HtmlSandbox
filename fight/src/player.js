@@ -1,10 +1,10 @@
 export const player = {
   name: "Lord Rick",
   stats: {
-    AC: { base: 5, current: 5, bon: 0 },
     hp: { base: 100, current: 100, bon: 0 },
     mp: { base: 20, current: 20, bon: 0 },
     pow: { base: 10, current: 10, bon: 0 },
+    AC: { base: 5, current: 5, bon: 0 },
     STR: { base: 15, current: 15, bon: 0 },
     resist: {
       FIR: { base: 5, current: 5, bon: 0 },

@@ -20,7 +20,8 @@ export default {
         pow: "orange",
         AC: "yellow",
         STR: "green",
-        resist: { FIR: "red", WAT: "aqua", POI: "lightgreen" },
+        bon: "BurlyWood",
+        resist: { FIR: "red", WAT: "aqua", POI: "lightgreen", EAR: "brown", WIN: "grey" },
         details: "#666",
       },
       player: player,
@@ -95,7 +96,9 @@ export default {
       }, 1000);
     },
 
-    defend() {},
+    defend() {
+
+    },
     run() {},
     inventory() {
       this.mode = "inventory";
@@ -126,24 +129,31 @@ export default {
 
       // name
       hudText.push(`<span style='color:${this.colors["name"]}'>${this[actor].name}: </span>`);
+      hudText.push("=".repeat(this[actor].name.length * 2));
       for (const stat in this[actor]["stats"]) {
         // resistances
         if (stat === "resist") {
           hudText.push("Resistances: ");
           for (const resist in this[actor]["stats"]["resist"]) {
             hudText.push(
-              ` <span style='color:${this.colors.resist[resist]}'>${resist}:</span> ${this[actor]["stats"]["resist"][resist].base} + ${this[actor]["stats"]["resist"][resist].bon}`
+              ` <span style='color:${this.colors.resist[resist]}'>${resist}:</span>` +
+                ` ${this[actor]["stats"]["resist"][resist].base}` +
+                ` + <span style='color:${this.colors.bon}'>${this[actor]["stats"]["resist"][resist].bon}</span>`
             );
           }
         } else {
           // other stats
           if (stat === "hp" || stat === "mp" || stat === "pow") {
             hudText.push(
-              `<span style='color:${this.colors[stat]}'>${stat}:</span> ${this[actor]["stats"][stat].current}/${this[actor]["stats"][stat].base} + ${this[actor]["stats"][stat].bon}`
+              `<span style='color:${this.colors[stat]}'>${stat}:</span>` +
+                ` ${this[actor]["stats"][stat].current}/${this[actor]["stats"][stat].base}` +
+                ` + <span style='color:${this.colors.bon}'>${this[actor]["stats"][stat].bon}</span>`
             );
           } else {
             hudText.push(
-              `<span style='color:${this.colors[stat]}'>${stat}:</span> ${this[actor]["stats"][stat].base} + ${this[actor]["stats"][stat].bon}`
+              `<span style='color:${this.colors[stat]}'>${stat}:</span>` +
+                `${this[actor]["stats"][stat].base}` +
+                ` + <span style='color:${this.colors.bon}'>${this[actor]["stats"][stat].bon}</span>`
             );
           }
         }
@@ -182,7 +192,7 @@ export default {
       if (isNaN(key) || key < 0 || key >= this.commands.length) {
         return;
       }
-      const command = this.commands[key].toLowerCase();
+      const command = this.commands[key].toLowerCase().replace(/\s+/g, "");
       this[command]();
     },
     showDetails(command) {
@@ -207,7 +217,7 @@ export default {
         case "attack":
           const commandDetails = {
             attack: "Normal attack with your weapon",
-            defend: "...",
+            defend: "Apply Shield AC bonus on next attack",
             special: "Using a special skill",
             magic: "Cast a spell from you spellbook",
             run: "Attempt to flee from a battle",
@@ -333,14 +343,11 @@ pre {
 #detailList {
   list-style-type: none;
   padding: 0;
-}
-
-#detailList {
-  width: 100%;
+  flex-grow: 3;
 }
 
 #commandList {
-  width: 50%;
+  flex-grow: 1;
 }
 
 #log {

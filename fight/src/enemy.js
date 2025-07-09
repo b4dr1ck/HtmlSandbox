@@ -1,10 +1,10 @@
 export const enemy = {
   name: "Weird Goblin",
   stats: {
-    AC: { base: 5, current: 5, bon: 0 },
     hp: { base: 80, current: 80, bon: 0 },
     mp: { base: 10, current: 10, bon: 0 },
     pow: { base: 5, current: 5, bon: 0 },
+    AC: { base: 5, current: 5, bon: 0 },
     STR: { base: 12, current: 12, bon: 0 },
     resist: {
       FIR: { base: 0, current: 0, bon: 0 },
