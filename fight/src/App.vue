@@ -96,9 +96,7 @@ export default {
       }, 1000);
     },
 
-    defend() {
-
-    },
+    defend() {},
     run() {},
     inventory() {
       this.mode = "inventory";
@@ -135,25 +133,27 @@ export default {
         if (stat === "resist") {
           hudText.push("Resistances: ");
           for (const resist in this[actor]["stats"]["resist"]) {
+            const bonResist = this[actor]["stats"]["resist"][resist].bon;
             hudText.push(
               ` <span style='color:${this.colors.resist[resist]}'>${resist}:</span>` +
                 ` ${this[actor]["stats"]["resist"][resist].base}` +
-                ` + <span style='color:${this.colors.bon}'>${this[actor]["stats"]["resist"][resist].bon}</span>`
+                (bonResist ? ` + <span style='color:${this.colors.bon}'>${bonResist}</span>` : "")
             );
           }
         } else {
           // other stats
+          const bonStat = this[actor]["stats"][stat].bon;
           if (stat === "hp" || stat === "mp" || stat === "pow") {
             hudText.push(
               `<span style='color:${this.colors[stat]}'>${stat}:</span>` +
                 ` ${this[actor]["stats"][stat].current}/${this[actor]["stats"][stat].base}` +
-                ` + <span style='color:${this.colors.bon}'>${this[actor]["stats"][stat].bon}</span>`
+                (bonStat ? ` + <span style='color:${this.colors.bon}'>${bonStat}</span>` : "")
             );
           } else {
             hudText.push(
               `<span style='color:${this.colors[stat]}'>${stat}:</span>` +
-                `${this[actor]["stats"][stat].base}` +
-                ` + <span style='color:${this.colors.bon}'>${this[actor]["stats"][stat].bon}</span>`
+                ` ${this[actor]["stats"][stat].base}` +
+                (bonStat ? ` + <span style='color:${this.colors.bon}'>${bonStat}</span>` : "")
             );
           }
         }
@@ -187,8 +187,13 @@ export default {
         }
       });
     },
-    executeCommand(event) {
-      const key = parseInt(event.key) - 1;
+    executeCommand(event,index) {
+      let key = parseInt(event.key) - 1;
+
+      if (event.type === "click") {
+        key = index;
+      } 
+
       if (isNaN(key) || key < 0 || key >= this.commands.length) {
         return;
       }
@@ -206,6 +211,10 @@ export default {
             Object.entries(value).forEach(([res, resValue]) => {
               output += `${res}: ${resValue}, `;
             });
+            return;
+          }
+          if (key === "damage") {
+            output += `damage: ${value[0]}d${value[1]}, `;
             return;
           }
           output += `${key}: ${value}, `;
@@ -289,26 +298,28 @@ export default {
 </script>
 
 <template>
-  <div id="hud" class="flex">
-    <!--pre v-html="hudPlayer" id="player"></pre-->
-    <pre v-html="hudPlayer" id="player"></pre>
-    <pre v-html="hudEnemy" id="enemy"></pre>
-  </div>
-  <hr />
-  <pre v-html="logEntries.join('\n')" id="log"></pre>
-  <hr />
-  <div class="flex">
-    <ol id="commandList">
-      <li v-for="(command, index) in commands" :key="index">
-        {{ command }}
-      </li>
-    </ol>
+  <div>
+    <div id="hud" class="flex">
+      <!--pre v-html="hudPlayer" id="player"></pre-->
+      <pre v-html="hudPlayer" id="player"></pre>
+      <pre v-html="hudEnemy" id="enemy"></pre>
+    </div>
+    <hr />
+    <pre v-html="logEntries.join('\n')" id="log"></pre>
+    <hr />
+    <div class="flex">
+      <ol id="commandList">
+        <li v-for="(command, index) in commands" :key="index" @click="executeCommand($event,index)">
+          {{ command }}
+        </li>
+      </ol>
 
-    <ul id="detailList">
-      <li v-html="showDetails(command.toLowerCase())" v-for="(command, index) in commands" :key="index"></li>
-    </ul>
+      <ul id="detailList">
+        <li v-html="showDetails(command.toLowerCase())" v-for="(command, index) in commands" :key="index"></li>
+      </ul>
+    </div>
+    <hr />
   </div>
-  <hr />
 </template>
 
 <style>
@@ -338,6 +349,11 @@ pre {
 
 #commandList li::marker {
   color: yellow;
+}
+
+#commandList li:hover {
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 #detailList {
