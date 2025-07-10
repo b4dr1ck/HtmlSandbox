@@ -1,7 +1,8 @@
 export const player = {
   name: "Lord Rick",
   conditions: [
-    //{ name: "poisoned", duration: 3, stunned: true, damage: [{ type: "POI", value: 5 }], text: "You are poisened" },
+    { name: "poisoned", duration: 3, stunned: false, damage: [{ type: "POI", value: 5 }] },
+    { name: "iced", duration: 5, stunned: true, damage: [{ type: "WAT", value: 0 }] },
   ],
   stats: {
     hp: { base: 100, current: 100, bon: 0 },
