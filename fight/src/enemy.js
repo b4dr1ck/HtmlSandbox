@@ -7,11 +7,12 @@ export const enemy = {
     AC: { base: 5, current: 5, bon: 0 },
     STR: { base: 12, current: 12, bon: 0 },
     resist: {
-      FIR: { base: 0, current: 0, bon: 0 },
+      FIR: { base: 5, current: 5, bon: 0 },
       POI: { base: 5, current: 5, bon: 0 },
       WAT: { base: 0, current: 0, bon: 0 },
       EAR: { base: 0, current: 0, bon: 0 },
       WIN: { base: 0, current: 0, bon: 0 },
+      PHY: { base: 0, current: 0, bon: 0 },
     },
   },
   equipped: [
@@ -19,7 +20,7 @@ export const enemy = {
       name: "Goblin Dagger",
       type: "weapon",
       description: "A small dagger that deals a bit of damage.",
-      damage: [1, 4],
+      damage: [{ value: [1, 4], type: "PHY" }],
     },
     {
       name: "Goblin Shield",

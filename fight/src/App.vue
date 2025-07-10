@@ -10,8 +10,11 @@ export default {
       mode: "attack",
       log: [],
       basicCommands: ["Attack", "Defend", "Special", "Magic", "Run", "Inventory", "Equipment"],
+      lastAttackLog: {
+        enemy: [],
+        player: [],
+      },
       commands: [],
-
       maxLogEntries: 10,
       colors: {
         name: "MediumPurple",
@@ -21,7 +24,7 @@ export default {
         AC: "yellow",
         STR: "green",
         bon: "BurlyWood",
-        resist: { FIR: "red", WAT: "aqua", POI: "lightgreen", EAR: "brown", WIN: "grey" },
+        resist: { FIR: "red", WAT: "aqua", POI: "lightgreen", EAR: "brown", WIN: "grey",PHY: "white" },
         details: "#666",
       },
       player: player,
@@ -53,50 +56,101 @@ export default {
         this.commands = this.basicCommands;
       }
     },
-    calcHitAndDmg(actor) {
+    calcHitAndDmg(actor, actor2) {
       const STR = this[actor].stats.STR.base + this[actor].stats.STR.bon;
-      const hit = this.getRandomInt(1, 20) + Math.floor((STR - 10) / 2);
-
+      const modifier = Math.floor((STR - 10) / 2);
+      const d20 = this.getRandomInt(1, 20);
+      const hit = d20 === 1 ? 1 : d20 + modifier;
+      let dmgCalcString="";
       const dmg = this[actor].equipped.reduce((total, item) => {
+        let weaponDmg = 0;
+        let resist = 0;
+        let dmgValue = 0;
         if (item.type === "weapon") {
-          const weaponDmg = this.getRandomInt(item.damage[0], item.damage[1]);
+          // apply all dmg-types from the weapon
+          item.damage.forEach((dmg) => {
+            if (dmg.type === "PHY") {
+              dmgValue = this.getRandomInt(dmg.value[0], dmg.value[1]);
+            } else {
+              dmgValue = dmg.value;
+            }
+            weaponDmg += dmgValue;
+            resist = this[actor2].stats.resist[dmg.type].base + this[actor2].stats.resist[dmg.type].bon;
+            weaponDmg -= Math.floor((dmgValue * resist) / 100);
+            dmgCalcString += `(${dmg.type}): ${dmgValue} - (${dmgValue} * ${resist}) / 100); `;
+          });
           return total + weaponDmg;
         }
         return total;
       }, 0);
+      this.lastAttackLog[actor].push(`<span style='color:#666;'>Hit: ${d20} + ${modifier}; Dmg: ${dmgCalcString}</span>`);
       return { hit, dmg };
     },
+
     enemyAttack() {
-      const hit = this.calcHitAndDmg("enemy").hit;
-      const dmg = this.calcHitAndDmg("enemy").dmg;
+      const { hit: hit, dmg: dmg } = this.calcHitAndDmg("enemy", "player");
+
       const color = this.colors.name;
       const AC = this.player.stats.AC.base + this.player.stats.AC.bon;
-      if (hit >= AC) {
+      if (hit === 1) {
+        const critDmg = Math.floor(dmg / 2);
+        this.enemy.stats.hp.current -= critDmg;
+        this.log.push(
+          `The <span style='color:${color}'>${this.enemy.name}</span> critically misses you and hurts itself for ${critDmg}!`
+        );
+      } else if (hit >= 20) {
+        this.player.stats.hp.current -= dmg * 2;
+        this.log.push(
+          `The <span style='color:${color}'>${this.enemy.name}</span> critically hits you for ${dmg * 2} damage!`
+        );
+      } else if (hit >= AC) {
         this.player.stats.hp.current -= dmg;
         this.log.push(`The <span style='color:${color}'>${this.enemy.name}</span> hits you for ${dmg} damage!`);
       } else {
         this.log.push(`The <span style='color:${color}'>${this.enemy.name}</span> misses you!`);
       }
+      //this.log.push(this.lastAttackLog.enemy[this.lastAttackLog.enemy.length - 1]);
     },
     attack() {
-      const hit = this.calcHitAndDmg("player").hit;
-      const dmg = this.calcHitAndDmg("player").dmg;
+      const { hit: hit, dmg: dmg } = this.calcHitAndDmg("player", "enemy");
+
       const color = this.colors.name;
       const AC = this.enemy.stats.AC.base + this.enemy.stats.AC.bon;
 
-      if (hit >= AC) {
+      if (hit === 1) {
+        const critDmg = Math.floor(dmg / 2);
+        this.player.stats.hp.current -= critDmg;
+        this.log.push(
+          `You critically miss the <span style='color:${color}'>${this.enemy.name}</span> and hurt yourself for ${critDmg}!`
+        );
+      } else if (hit >= 20) {
+        this.enemy.stats.hp.current -= dmg * 2;
+        this.log.push(
+          `You critically hit the <span style='color:${color}'>${this.enemy.name}</span> for ${dmg * 2} damage!`
+        );
+      } else if (hit >= AC) {
         this.enemy.stats.hp.current -= dmg;
-        this.log.push(`You hit the <span style='color:${color}'>${this.enemy.name}</span> for ${dmg} damage! `);
+        this.log.push(`You hit the <span style='color:${color}'>${this.enemy.name}</span> for ${dmg} damage!`);
       } else {
         this.log.push(`You missed the <span style='color:${color}'>${this.enemy.name}</span>!`);
       }
+      //this.log.push(this.lastAttackLog.player[this.lastAttackLog.player.length - 1]);
 
       setTimeout(() => {
         this.enemyAttack();
       }, 1000);
     },
+    defend() {
+      const AC = this.player.stats.AC.base + this.player.stats.AC.bon;
+      const tempBon = this["player"].equipped.find((item) => item.type === "shield")?.AC || 0;
+      this.log.push(`You brace yourself, increasing your AC by ${tempBon} for the next attack.`);
+      this.player.stats.AC.bon += tempBon;
 
-    defend() {},
+      setTimeout(() => {
+        this.enemyAttack();
+        this.player.stats.AC.bon -= tempBon;
+      }, 1000);
+    },
     run() {},
     inventory() {
       this.mode = "inventory";
@@ -131,11 +185,10 @@ export default {
       for (const stat in this[actor]["stats"]) {
         // resistances
         if (stat === "resist") {
-          hudText.push("Resistances: ");
           for (const resist in this[actor]["stats"]["resist"]) {
             const bonResist = this[actor]["stats"]["resist"][resist].bon;
             hudText.push(
-              ` <span style='color:${this.colors.resist[resist]}'>${resist}:</span>` +
+              `<span style='color:${this.colors.resist[resist]}'>${resist}:</span>` +
                 ` ${this[actor]["stats"]["resist"][resist].base}` +
                 (bonResist ? ` + <span style='color:${this.colors.bon}'>${bonResist}</span>` : "")
             );
@@ -162,7 +215,7 @@ export default {
     },
 
     // apply equipped items to player stats
-    applyStats(actor) {
+    applyBonStats(actor) {
       // reset the bonuses
       for (const stat in this[actor]["stats"]) {
         if (stat === "resist") {
@@ -176,6 +229,7 @@ export default {
       // apply bonuses from equipped items
       this[actor]["equipped"].forEach((item) => {
         for (const key in item) {
+          if (item.type === "shield" && key === "AC") continue; // skip shield items for now (only in defend mode)
           if (key === "name" || key === "description" || (key === "type") | (key === "damage")) continue;
           if (key === "resist") {
             for (const resist in item.resist) {
@@ -187,12 +241,12 @@ export default {
         }
       });
     },
-    executeCommand(event,index) {
+    executeCommand(event, index) {
       let key = parseInt(event.key) - 1;
 
       if (event.type === "click") {
         key = index;
-      } 
+      }
 
       if (isNaN(key) || key < 0 || key >= this.commands.length) {
         return;
@@ -214,7 +268,14 @@ export default {
             return;
           }
           if (key === "damage") {
-            output += `damage: ${value[0]}d${value[1]}, `;
+            output += `dmg: ${value
+              .map((dmg) => {
+                if (dmg.type === "PHY") {
+                  return `${dmg.value[0]}d${dmg.value[1]}`;
+                }
+                return `+ ${dmg.value} ${dmg.type}`;
+              })
+              .join(", ")}, `;
             return;
           }
           output += `${key}: ${value}, `;
@@ -287,8 +348,8 @@ export default {
       this.executeCommand(event);
     });
 
-    this.applyStats("player");
-    this.applyStats("enemy");
+    this.applyBonStats("player");
+    this.applyBonStats("enemy");
 
     const color = this.colors.name;
     this.log.push(`You start a fight against a <span style='color:${color};'>${this.enemy.name}</span>`);
@@ -300,7 +361,6 @@ export default {
 <template>
   <div>
     <div id="hud" class="flex">
-      <!--pre v-html="hudPlayer" id="player"></pre-->
       <pre v-html="hudPlayer" id="player"></pre>
       <pre v-html="hudEnemy" id="enemy"></pre>
     </div>
@@ -309,11 +369,10 @@ export default {
     <hr />
     <div class="flex">
       <ol id="commandList">
-        <li v-for="(command, index) in commands" :key="index" @click="executeCommand($event,index)">
+        <li v-for="(command, index) in commands" :key="index" @click="executeCommand($event, index)">
           {{ command }}
         </li>
       </ol>
-
       <ul id="detailList">
         <li v-html="showDetails(command.toLowerCase())" v-for="(command, index) in commands" :key="index"></li>
       </ul>
