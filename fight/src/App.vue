@@ -17,14 +17,14 @@ export default {
       commands: [],
       maxLogEntries: 10,
       colors: {
-        name: "MediumPurple",
+        name: { player: "MediumPurple", enemy: "coral" },
         hp: "red",
         mp: "CornflowerBlue",
         pow: "orange",
         AC: "yellow",
         STR: "green",
         bon: "BurlyWood",
-        resist: { FIR: "red", WAT: "aqua", POI: "lightgreen", EAR: "brown", WIN: "grey",PHY: "white" },
+        resist: { FIR: "red", WAT: "aqua", POI: "lightgreen", EAR: "brown", WIN: "grey", PHY: "white" },
         details: "#666",
       },
       player: player,
@@ -56,12 +56,37 @@ export default {
         this.commands = this.basicCommands;
       }
     },
+    checkConditions(actor) {
+      this[actor].conditions = this[actor].conditions.filter((condition) => condition.duration > 0);
+
+      this[actor].conditions.forEach((condition) => {
+        if (condition.damage) {
+          const resist =
+            this[actor].stats.resist[condition.damage[0].type].base +
+            this[actor].stats.resist[condition.damage[0].type].bon;
+          const dmg = condition.damage[0].value - (resist * condition.damage[0].value) / 100;
+          this[actor].stats.hp.current -= dmg;
+          condition.duration--;
+          this.log.push(`<span style='color:${this.colors.resist.POI}'>${condition.text}</span>`);
+          this.log.push(
+            `<span style='color:${this.colors.name[actor]}'>${this[actor].name}</span> takes ${dmg} damage from ${condition.name}!`
+          );
+        }
+        if (condition.stunned) {
+          condition.duration--;
+          this.log.push(
+            `<span style='color:${this.colors.name[actor]}'>${this[actor].name}</span> is stunned and cannot act!`
+          );
+        }
+      });
+    },
     calcHitAndDmg(actor, actor2) {
       const STR = this[actor].stats.STR.base + this[actor].stats.STR.bon;
       const modifier = Math.floor((STR - 10) / 2);
       const d20 = this.getRandomInt(1, 20);
       const hit = d20 === 1 ? 1 : d20 + modifier;
-      let dmgCalcString="";
+      let dmgCalcString = "";
+
       const dmg = this[actor].equipped.reduce((total, item) => {
         let weaponDmg = 0;
         let resist = 0;
@@ -83,72 +108,72 @@ export default {
         }
         return total;
       }, 0);
-      this.lastAttackLog[actor].push(`<span style='color:#666;'>Hit: ${d20} + ${modifier}; Dmg: ${dmgCalcString}</span>`);
+      this.lastAttackLog[actor].push(
+        `<span style='color:#666;'>${this[actor].name}...Hit: ${d20} + ${modifier}; Dmg: ${dmgCalcString}</span>`
+      );
       return { hit, dmg };
     },
+    turn(cmd) {
+      this.checkConditions("player");
+      const isStunned = this.player.conditions.some((condition) => condition.stunned);
 
-    enemyAttack() {
-      const { hit: hit, dmg: dmg } = this.calcHitAndDmg("enemy", "player");
-
-      const color = this.colors.name;
-      const AC = this.player.stats.AC.base + this.player.stats.AC.bon;
-      if (hit === 1) {
-        const critDmg = Math.floor(dmg / 2);
-        this.enemy.stats.hp.current -= critDmg;
-        this.log.push(
-          `The <span style='color:${color}'>${this.enemy.name}</span> critically misses you and hurts itself for ${critDmg}!`
-        );
-      } else if (hit >= 20) {
-        this.player.stats.hp.current -= dmg * 2;
-        this.log.push(
-          `The <span style='color:${color}'>${this.enemy.name}</span> critically hits you for ${dmg * 2} damage!`
-        );
-      } else if (hit >= AC) {
-        this.player.stats.hp.current -= dmg;
-        this.log.push(`The <span style='color:${color}'>${this.enemy.name}</span> hits you for ${dmg} damage!`);
-      } else {
-        this.log.push(`The <span style='color:${color}'>${this.enemy.name}</span> misses you!`);
+      if (!isStunned) {
+        if (cmd === "attack") {
+          this.attack("player", "enemy");
+        } else if (cmd === "defend") {
+          this.defend("player");
+        }
       }
-      //this.log.push(this.lastAttackLog.enemy[this.lastAttackLog.enemy.length - 1]);
-    },
-    attack() {
-      const { hit: hit, dmg: dmg } = this.calcHitAndDmg("player", "enemy");
-
-      const color = this.colors.name;
-      const AC = this.enemy.stats.AC.base + this.enemy.stats.AC.bon;
-
-      if (hit === 1) {
-        const critDmg = Math.floor(dmg / 2);
-        this.player.stats.hp.current -= critDmg;
-        this.log.push(
-          `You critically miss the <span style='color:${color}'>${this.enemy.name}</span> and hurt yourself for ${critDmg}!`
-        );
-      } else if (hit >= 20) {
-        this.enemy.stats.hp.current -= dmg * 2;
-        this.log.push(
-          `You critically hit the <span style='color:${color}'>${this.enemy.name}</span> for ${dmg * 2} damage!`
-        );
-      } else if (hit >= AC) {
-        this.enemy.stats.hp.current -= dmg;
-        this.log.push(`You hit the <span style='color:${color}'>${this.enemy.name}</span> for ${dmg} damage!`);
-      } else {
-        this.log.push(`You missed the <span style='color:${color}'>${this.enemy.name}</span>!`);
-      }
-      //this.log.push(this.lastAttackLog.player[this.lastAttackLog.player.length - 1]);
 
       setTimeout(() => {
-        this.enemyAttack();
+        this.checkConditions("enemy");
+        this.attack("enemy", "player");
       }, 1000);
     },
-    defend() {
-      const AC = this.player.stats.AC.base + this.player.stats.AC.bon;
-      const tempBon = this["player"].equipped.find((item) => item.type === "shield")?.AC || 0;
-      this.log.push(`You brace yourself, increasing your AC by ${tempBon} for the next attack.`);
-      this.player.stats.AC.bon += tempBon;
+    attack(actor1, actor2) {
+      const { hit: hit, dmg: dmg } = this.calcHitAndDmg(actor1, actor2);
+
+      const color = this.colors.name[actor1];
+      const color2 = this.colors.name[actor2];
+
+      const AC = this[actor2].stats.AC.base + this[actor2].stats.AC.bon;
+
+      if (hit === 1) {
+        const critDmg = Math.floor(dmg / 2);
+        this[actor1].stats.hp.current -= critDmg;
+        this.log.push(
+          `<span style='color:${color}'>${this[actor1].name}</span> critically missed <span style='color:${color2}'>${this[actor2].name}</span> and hurt yourself for ${critDmg}!`
+        );
+      } else if (hit >= 20) {
+        this[actor2].stats.hp.current -= dmg * 2;
+        this.log.push(
+          `<span style='color:${color}'>${this[actor1].name}</span> critically hit <span style='color:${color2}'>${
+            this[actor2].name
+          }</span> for ${dmg * 2} damage!`
+        );
+      } else if (hit >= AC) {
+        this[actor2].stats.hp.current -= dmg;
+        this.log.push(
+          `<span style='color:${color}'>${this[actor1].name}</span> hit <span style='color:${color2}'>${this[actor2].name}</span> for ${dmg} damage!`
+        );
+      } else {
+        this.log.push(
+          `<span style='color:${color}'>${this[actor1].name}</span> missed <span style='color:${color2}'>${this[actor2].name}</span>!`
+        );
+      }
+
+      this.log.push(this.lastAttackLog[actor1][this.lastAttackLog[actor1].length - 1]);
+    },
+    defend(actor) {
+      const tempBon = this[actor].equipped.find((item) => item.type === "shield")?.AC || 0;
+      this.log.push(
+        `<span style='color:${this.colors.name[actor]}'>${this[actor].name}</span> braces himself and increasing AC by ${tempBon} for the next attack.`
+      );
+      this[actor].stats.AC.bon += tempBon;
 
       setTimeout(() => {
-        this.enemyAttack();
-        this.player.stats.AC.bon -= tempBon;
+        this.attack("enemy", "player");
+        this[actor].stats.AC.bon -= tempBon;
       }, 1000);
     },
     run() {},
@@ -252,6 +277,10 @@ export default {
         return;
       }
       const command = this.commands[key].toLowerCase().replace(/\s+/g, "");
+      if (command === "attack" || command === "defend") {
+        this.turn(command);
+        return;
+      }
       this[command]();
     },
     showDetails(command) {
@@ -351,7 +380,7 @@ export default {
     this.applyBonStats("player");
     this.applyBonStats("enemy");
 
-    const color = this.colors.name;
+    const color = this.colors.name.enemy;
     this.log.push(`You start a fight against a <span style='color:${color};'>${this.enemy.name}</span>`);
     this.log.push("Make your move...");
   },

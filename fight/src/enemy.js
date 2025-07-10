@@ -1,5 +1,6 @@
 export const enemy = {
   name: "Weird Goblin",
+  conditions: [],
   stats: {
     hp: { base: 80, current: 80, bon: 0 },
     mp: { base: 10, current: 10, bon: 0 },
