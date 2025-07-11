@@ -137,7 +137,7 @@ export const player = {
     {
       name: "Stamp",
       command: "stamp",
-      cost: 15,
+      cost: 10,
       damage: [{ type: "PHY", value: 15 }],
       effects: [{ name: "stunned", duration: 1, stunned: true, damage: [{ type: "PHY" }] }],
       description: "A strong stamp on the ground that stunns your enemy",

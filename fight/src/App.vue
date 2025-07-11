@@ -397,7 +397,7 @@ export default {
       // name
       hudText.push(`${actorName}`);
       hudText.push("=".repeat(this[actor].name.length * 2));
-      hudText.push(`<small>[details]${this[actor].description}[/details]</small>` || "...");
+      hudText.push(`<small>[details]${this[actor].description}[/details]</small>\n` || "...");
 
       // check if the actor is identified
       if (!this[actor].identified) {
@@ -405,17 +405,19 @@ export default {
         return this.replaceColorTags(hudText).join("\n");
       }
 
+      hudText.push("[details]Stats:[/details]");
       for (const stat in this[actor]["stats"]) {
         // resistances
         if (stat === "resist") {
+          let resistText = "[details]Resist:[/details] \n";
           for (const resist in this[actor]["stats"]["resist"]) {
             const bonResist = this[actor]["stats"]["resist"][resist].bon;
-            hudText.push(
-              `[${resist}]${resist}:[/${resist}]` +
-                ` ${this[actor]["stats"]["resist"][resist].base}` +
-                (bonResist ? ` + [bon]${bonResist}[/bon]` : "")
-            );
+            resistText +=
+              `[${resist}]${resist}:[/${resist}] ` +
+              `${this[actor]["stats"]["resist"][resist].base} ` +
+              (bonResist ? `+ [bon]${bonResist}[/bon]; ` : "; ");
           }
+          hudText.push(resistText.replace(/; $/, "")); // remove trailing semicolon
         } else {
           // other stats
           const bonStat = this[actor]["stats"][stat].bon;
