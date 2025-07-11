@@ -10,10 +10,6 @@ export default {
       mode: "attack",
       log: [],
       basicCommands: ["Attack", "Defend", "Special", "Magic", "Run", "Inventory", "Equipment"],
-      calcLog: {
-        enemy: [],
-        player: [],
-      },
       commands: [],
       maxLogEntries: 10,
       colors: {
@@ -32,6 +28,9 @@ export default {
         WIN: "grey",
         PHY: "white",
         details: "#666",
+        special: "violet",
+        spell: "CornflowerBlue",
+        item: "yellow",
       },
       player: player,
       enemy: enemy,
@@ -67,26 +66,51 @@ export default {
     checkConditions(actor) {
       this[actor].conditions = this[actor].conditions.filter((condition) => condition.duration > 0); // remove expired conditions
 
-      const actorName = `[${actor}]${this.player.name}[/${actor}]`;
-      let conditionName;
+      const actorName = `[${actor}]${this[actor].name}[/${actor}]`;
 
       this[actor].conditions.forEach((condition) => {
-        conditionName = `[${condition.damage[0].type}]${condition.name}[/${condition.damage[0].type}]`;
-        this.log.push(`${actorName} is ${conditionName}`);
+        this.log.push(`${actorName} is ${condition.name}`);
         condition.duration--;
-        if (condition.damage) {
-          const resist =
-            this[actor].stats.resist[condition.damage[0].type].base +
-            this[actor].stats.resist[condition.damage[0].type].bon;
-          const dmg = condition.damage[0].value - Math.floor((resist * condition.damage[0].value) / 100);
-          this[actor].stats.hp.current -= dmg;
 
-          this.log.push(`${actorName} takes ${dmg} damage from ${conditionName}!`);
+        let resist = 0;
+        let dmg = 0;
+        let dmgTotal = 0;
+        if (condition.damage) {
+          condition.damage.forEach((damage) => {
+            resist = this[actor].stats.resist[damage.type].base + this[actor].stats.resist[damage.type].bon;
+            dmg = damage.value - Math.floor((resist * damage.value) / 100);
+            dmgTotal += dmg;
+          });
+          this[actor].stats.hp.current -= dmgTotal;
+          this.log.push(
+            `${actorName} takes ${dmgTotal} damage from [${damage.type}]${condition.name}[/${damage.type}]!`
+          );
+        }
+        if (condition.stats) {
+          for (const stat in condition.stats) {
+            if (this[actor].stats[stat]) {
+              this[actor].stats[stat].current += condition.stats[stat];
+              if (condition.stats[stat] > 0) {
+                this.log.push(`${actorName} gains ${condition.stats[stat]} ${stat} from ${condition.name}!`);
+              } else {
+                this.log.push(`${actorName} loses ${condition.stats[stat]} ${stat} from ${condition.name}!`);
+              }
+            }
+          }
         }
         if (condition.stunned) {
-          this.log.push(`${actorName} is stunned and cannot act ${conditionName})!`);
+          this.log.push(
+            `${actorName} is stunned and cannot act ( [${damage.type}]${condition.name}[/${damage.type}])!`
+          );
         }
       });
+    },
+    normalizeStats(actor) {
+      for (const stat in this[actor].stats) {
+        if (this[actor].stats[stat].current > this[actor].stats[stat].base) {
+          this[actor].stats[stat].current = this[actor].stats[stat].base;
+        }
+      }
     },
     calcHitAndDmg(actor, actor2) {
       const STR = this[actor].stats.STR.base + this[actor].stats.STR.bon;
@@ -116,17 +140,22 @@ export default {
         }
         return total;
       }, 0);
-      this.calcLog[actor].push(
-        `[details]${this[actor].name}...Hit: ${d20} + ${modifier}; Dmg: ${dmgCalcString}[/details]`
-      );
       return { hit, dmg };
     },
     turn(cmd) {
       this.checkConditions("player");
-      const isStunned = this.player.conditions.some((condition) => condition.stunned);
+      const isStunnedP = this.player.conditions.some((condition) => condition.stunned);
 
-      if (!isStunned) {
-        if (cmd === "attack") {
+      if (this.mode === "inventory") {
+        this.useItem(cmd, "player");
+      }
+
+      this.normalizeStats("player");
+
+      if (!isStunnedP) {
+        if (this.mode === "special" || this.mode === "magic") {
+          this.useSpecialOrSpell(cmd, "player", "enemy");
+        } else if (cmd === "attack") {
           this.attack("player", "enemy");
         } else if (cmd === "defend") {
           this.defend("player");
@@ -135,36 +164,110 @@ export default {
 
       setTimeout(() => {
         this.checkConditions("enemy");
-        this.attack("enemy", "player");
+        const isStunnedE = this.enemy.conditions.some((condition) => condition.stunned);
+        if (!isStunnedE) {
+          this.attack("enemy", "player");
+        }
         this.log.push("-".repeat(50));
       }, 1000);
+    },
+    useItem(name, actor) {
+      const item = this[actor].items.find((item) => item.command === name);
+
+      if (item) {
+        for (const stat in item.use) {
+          this[actor].stats[stat].current += item.use[stat];
+        }
+
+        if (item.effects) {
+          this[actor].conditions.push(...item.effects);
+        }
+
+        this.log.push(`[${actor}]${this[actor].name}[/${actor}] uses [item]${item.name}[/item]`);
+        item.amount--;
+
+        if (item.amount === 0) {
+          this.log.push(`[${actor}]${this[actor].name}[/${actor}] has no more [item]${item.name}[/item] left!`);
+        }
+      }
+
+      // remove the used item from the inventory
+      this.player.items = this.player.items.filter((i) => i.amount > 0);
+
+      this.commands = this.player.items.map((item) => `${item.name}`);
+      this.commands.push("Back");
+    },
+    useSpecialOrSpell(name, actor, actor2) {
+      const special = this[actor].specials.find((special) => special.command === name); // find special based on command-name
+      const spell = this[actor].spellbook.find((spell) => spell.command === name); // find spell based on command-name
+      const costType = special ? "pow" : "mp";
+      const specialOrSpell = special || spell;
+
+      if (specialOrSpell) {
+        if (specialOrSpell.cost > this[actor].stats[costType].current) {
+          this.log.push(
+            `[${actor}]${this[actor].name}[/${actor}] does not have enough ${costType} to use [special]${specialOrSpell.name}[/special]`
+          );
+          return;
+        }
+        if (specialOrSpell === special) {
+          this.log.push(
+            `[${actor}]${this[actor].name}[/${actor}] uses a special power [special]${specialOrSpell.name}[/special]`
+          );
+        } else {
+          this.log.push(`[${actor}]${this[actor].name}[/${actor}] casts a spell [spell]${specialOrSpell.name}[/spell]`);
+        }
+      } else {
+        return;
+      }
+
+      this[actor].stats[costType].current -= specialOrSpell.cost;
+
+      if (specialOrSpell.effects) {
+        this[actor2].conditions.push(...specialOrSpell.effects);
+      }
+
+      let resist = 0;
+      let dmg = 0;
+      let dmgTotal = 0;
+      if (specialOrSpell.damage) {
+        specialOrSpell.damage.forEach((damage) => {
+          resist = this[actor2].stats.resist[damage.type].base + this[actor2].stats.resist[damage.type].bon;
+          dmg = damage.value - Math.floor((resist * damage.value) / 100);
+          dmgTotal += dmg;
+        });
+
+        this[actor2].stats.hp.current -= dmgTotal;
+        this.log.push(
+          `[${actor}]${this[actor].name}[/${actor}] deals ${dmgTotal} damage to [${actor2}]${this[actor2].name}[/${actor2}]`
+        );
+      }
     },
     attack(actor1, actor2) {
       const { hit: hit, dmg: dmg } = this.calcHitAndDmg(actor1, actor2);
 
       const actorName1 = `[${actor1}]${this[actor1].name}[/${actor1}]`;
-      const actorName2 = `[${actor2}]>${this[actor2].name}[/${actor2}]`;
+      const actorName2 = `[${actor2}]${this[actor2].name}[/${actor2}]`;
 
       const AC = this[actor2].stats.AC.base + this[actor2].stats.AC.bon;
 
       if (hit === 1) {
-        const critDmg = Math.floor(dmg / 2);
+        const critDmg = Math.ceil(dmg / 2);
         this[actor1].stats.hp.current -= critDmg;
-        this.log.push(`${actorName1} critically misses ${actorName2} and gets ${critDmg} dmg!`);
+        this.log.push(`${actorName1} critically misses ${actorName2} and injures himself for ${critDmg} dmg!`);
       } else if (hit >= 20) {
         this[actor2].stats.hp.current -= dmg * 2;
-        this.log.push(`${actorName1} critically hits ${actorName2}}</span> for ${dmg * 2} damage!`);
+        this.log.push(`${actorName1} critically hits ${actorName2}</span> for ${dmg * 2} damage!`);
       } else if (hit >= AC) {
         this[actor2].stats.hp.current -= dmg;
         this.log.push(`${actorName1} hits ${actorName2} for ${dmg} damage!`);
       } else {
         this.log.push(`${actorName1} misses ${actorName2}!`);
       }
-
-      //this.log.push(this.calcLog[actor1][this.calcLog[actor1].length - 1]);
     },
+
     defend(actor) {
-      const actorName = `[${actor}]>${this[actor].name}[/${actor}]`;
+      const actorName = `[${actor}]${this[actor].name}[/${actor}]`;
       const tempBon = this[actor].equipped.find((item) => item.type === "shield")?.AC || 0;
 
       this.log.push(`${actorName} increases AC by ${tempBon} for the next attack.`);
@@ -275,8 +378,23 @@ export default {
       if (isNaN(key) || key < 0 || key >= this.commands.length) {
         return;
       }
-      const command = this.commands[key].toLowerCase().replace(/\s+/g, "");
-      if (command === "attack" || command === "defend") {
+
+      if (this.mode === "equip") {
+        return;
+      }
+
+      const command = this.commands[key].toLowerCase().replace(/\s+/g, ""); // cut whitespace and convert to lowercase
+      if (command === "back") {
+        this.back();
+        return;
+      }
+      if (
+        command === "attack" ||
+        command === "defend" ||
+        this.mode === "special" ||
+        this.mode === "magic" ||
+        this.mode === "inventory"
+      ) {
         this.turn(command);
         return;
       }
@@ -285,13 +403,20 @@ export default {
     showDetails(command) {
       function showStats(obj) {
         const stats = Object.entries(obj);
+        const skipKeys = ["name", "description", "type", "command"];
         let output = "";
         stats.forEach(([key, value]) => {
-          if (key === "name" || key === "description" || key === "type") return;
+          if (skipKeys.includes(key)) return;
           if (key === "resist") {
-            output += `resist: `;
+            output += `${key}: `;
             Object.entries(value).forEach(([res, resValue]) => {
               output += `${res}: ${resValue}, `;
+            });
+            return;
+          }
+          if (key === "use") {
+            Object.entries(value).forEach(([stat, statValue]) => {
+              output += `${stat}: ${statValue}, `;
             });
             return;
           }
@@ -301,9 +426,19 @@ export default {
                 if (dmg.value instanceof Array) {
                   return `${dmg.value[0]}d${dmg.value[1]}`;
                 }
+                if (dmg.type === "PHY") {
+                  return `${dmg.value}`;
+                }
                 return `+ ${dmg.value} ${dmg.type}`;
               })
               .join(", ")}, `;
+            return;
+          }
+          if (key === "effects") {
+            output += `effects: `;
+            value.forEach((effect) => {
+              output += `${effect.name} `;
+            });
             return;
           }
           output += `${key}: ${value}, `;
@@ -323,21 +458,19 @@ export default {
             equipment: "Check your equipped items",
           };
           3;
-          return `[details]${commandDetails[command]}[/details]` || "";
+          return `${commandDetails[command]}` || "";
         case "magic":
           const spellDetails = this.player.spellbook.find((spell) => spell.name.toLowerCase() === command);
-          return spellDetails ? `[details]${spellDetails.description} ${showStats(spellDetails)}[/details]` : "";
+          return spellDetails ? `${spellDetails.description} ${showStats(spellDetails)}` : "";
         case "special":
           const specialDetails = this.player.specials.find((special) => special.name.toLowerCase() === command);
-          return specialDetails ? `[details]${specialDetails.description} ${showStats(specialDetails)}[/details]` : "";
+          return specialDetails ? `${specialDetails.description} ${showStats(specialDetails)}` : "";
         case "inventory":
           const imtemDetails = this.player.items.find((item) => item.name.toLowerCase() === command);
-          return imtemDetails ? `[details]${imtemDetails.description} ${showStats(imtemDetails)}[/details]` : "";
+          return imtemDetails ? `${imtemDetails.description} ${showStats(imtemDetails)}` : "";
         case "equip":
           const equippedDetails = this.player.equipped.find((equipped) => equipped.name.toLowerCase() === command);
-          return equippedDetails
-            ? `[details]${equippedDetails.description} ${showStats(equippedDetails)}[/details]`
-            : "";
+          return equippedDetails ? `${equippedDetails.description} ${showStats(equippedDetails)}` : "";
       }
     },
     replaceColorTags(text) {
@@ -391,12 +524,12 @@ export default {
     <div class="flex">
       <ol id="commandList">
         <li v-for="(command, index) in commands" :key="index" @click="executeCommand($event, index)">
-          {{ command }}
+          <div class="flex">
+            <p>{{ command }}</p>
+            <p>{{ showDetails(command.toLowerCase()) }}</p>
+          </div>
         </li>
       </ol>
-      <ul id="detailList">
-        <li v-html="replaceColorTags([showDetails(command.toLowerCase())])" v-for="(command, index) in commands" :key="index"></li>
-      </ul>
     </div>
     <hr />
   </div>
@@ -405,15 +538,15 @@ export default {
 <style>
 * {
   color: white;
-  font-size: 20px;
   font-family: monospace;
 }
 body {
   background-color: black;
+  font-size: 20px;
 }
 .flex {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 #hud pre {
@@ -427,6 +560,10 @@ pre {
   padding: 0px;
 }
 
+#commandList {
+  width: 100%;
+}
+
 #commandList li::marker {
   color: yellow;
 }
@@ -436,14 +573,20 @@ pre {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-#detailList {
-  list-style-type: none;
-  padding: 0;
-  flex-grow: 3;
+#commandList .flex p {
+  margin: 0px;
+  padding: 0px;
+  text-align: left;
+}
+#commandList .flex p:nth-of-type(1) {
+  width: 20%;
 }
 
-#commandList {
-  flex-grow: 1;
+#commandList .flex p:nth-of-type(2) {
+  font-size: 0.8em;
+  color: #666;
+  padding-left: 10px;
+  width: 80%;
 }
 
 #log {

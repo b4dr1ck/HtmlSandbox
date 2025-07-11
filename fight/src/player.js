@@ -1,8 +1,11 @@
+import { effect } from "vue";
+
 export const player = {
   name: "Lord Rick",
   conditions: [
-    { name: "poisoned", duration: 3, stunned: false, damage: [{ type: "POI", value: 5 }] },
-    { name: "iced", duration: 5, stunned: true, damage: [{ type: "WAT", value: 0 }] },
+    /*{ name: "poisoned", duration: 3, stunned: false, damage: [{ type: "POI", value: 5 }] },
+    { name: "iced", duration: 5, stunned: true, damage: [{ type: "WAT" }] },*/
+    //{ name: "healing", duration: 5, stunned: false, stats: { hp: 5 } },
   ],
   stats: {
     hp: { base: 100, current: 100, bon: 0 },
@@ -21,14 +24,49 @@ export const player = {
   },
   items: [
     {
+      name: "Healing Orb",
+      command: "healingorb",
+      description: "Restores 5 HP over time",
+      amount: 1,
+      effects: [{ name: "healing", duration: 5, stunned: false, stats: { hp: 5 } }],
+    },
+    {
+      name: "Mega Potion",
+      command: "megapotion",
+      description: "Restores 10 HP, 10 MP, 10 POW.",
+      amount: 2,
+      use: {
+        hp: 10,
+        mp: 10,
+        pow: 10,
+      },
+    },
+    {
       name: "Heal Potion",
+      command: "healpotion",
       description: "Restores 20 HP.",
       amount: 2,
+      use: {
+        hp: 20,
+      },
     },
     {
       name: "Mana Potion",
+      command: "manapotion",
       description: "Restores 5 HP.",
       amount: 1,
+      use: {
+        mp: 5,
+      },
+    },
+    {
+      name: "Power Potion",
+      command: "powerpotion",
+      description: "Restores 5 POW.",
+      amount: 1,
+      use: {
+        pow: 5,
+      },
     },
   ],
   equipped: [
@@ -66,28 +104,34 @@ export const player = {
   spellbook: [
     {
       name: "Fireball",
+      command: "fireball",
       cost: 5,
       damage: [{ type: "FIR", value: 20 }],
       description: "A powerful fire spell that deals damage to the enemy.",
     },
     {
       name: "Icicle",
+      command: "icicle",
       cost: 3,
-      damage: [{ type: "ICE", value: 12 }],
+      damage: [{ type: "WAT", value: 12 }],
       description: "A chilling spell that deals ice damage to the enemy.",
+      effects: [{ name: "iced", duration: 2, stunned: true, damage: [{ type: "WAT" }] }],
     },
   ],
   specials: [
     {
       name: "Power Strike",
+      command: "powerstrike",
       cost: 10,
       damage: [{ type: "PHY", value: 25 }],
       description: "A powerful strike that deals extra damage to the enemy.",
     },
     {
       name: "Stamp",
+      command: "stamp",
       cost: 15,
       damage: [{ type: "PHY", value: 15 }],
+      effects: [{ name: "stunned", duration: 1, stunned: true, damage: [{ type: "PHY" }] }],
       description: "A strong stamp on the ground that stunns your enemy",
     },
   ],
