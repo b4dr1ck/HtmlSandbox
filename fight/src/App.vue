@@ -223,7 +223,7 @@ export default {
                 break;
               case 4:
                 const maxItems = this.enemy.items.length;
-                if (maxItems.length === 0) {
+                if (maxItems === 0) {
                   continue;
                 }
                 this.useItem(this.enemy.items[this.getRandomInt(0, maxItems - 1)].command, "enemy");
