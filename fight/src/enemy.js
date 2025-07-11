@@ -18,7 +18,16 @@ export const enemy = {
       PHY: { base: 0, current: 0, bon: 0 },
     },
   },
-  specials: [],
+  specials: [
+    {
+      name: "Goblin Bite",
+      command: "goblinbite",
+      cost: 3,
+      damage: [{ type: "PHY", value: 10 }],
+      description: "A nasty goblin bite that makes you sick.",
+      effects: [{ name: "poisoned", duration: 2, stunned: false, damage: [{ type: "POI", value: 5 }] }],
+    },
+  ],
   spellbook: [
     {
       name: "Fireball",
@@ -48,7 +57,7 @@ export const enemy = {
     },
     {
       name: "Goblin Shield",
-      type: "armor",
+      type: "shield",
       description: "A small shield that provides some protection.",
       AC: 2,
     },

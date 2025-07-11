@@ -40,7 +40,7 @@ export default {
     getRandomInt(min, max) {
       const minCeiled = Math.ceil(min);
       const maxFloored = Math.floor(max);
-      return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
+      return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled);
     },
     back() {
       const actorName = `[player]${this.player.name}[/player]`;
@@ -177,17 +177,65 @@ export default {
 
       // Enemy Turn
       setTimeout(() => {
+        let randomCmd = 0;
+        let retry = true;
         this.checkConditions("enemy");
         const isStunnedE = this.enemy.conditions.some((condition) => condition.stunned);
 
+        if (!isStunnedE) {
+          while (retry) {
+            randomCmd = this.getRandomInt(0, 4);
+            switch (randomCmd) {
+              case 0:
+                if (this.enemy.stats.pow.current <= 0) {
+                  continue;
+                }
+                const maxSpecial = this.enemy.specials.length;
+                this.useSpecialOrSpell(
+                  this.enemy.specials[this.getRandomInt(0, maxSpecial - 1)].command,
+                  "enemy",
+                  "player"
+                );
+                retry = false;
+                break;
+              case 1:
+                if (this.enemy.stats.mp.current <= 0) {
+                  continue;
+                }
+                const maxSpells = this.enemy.spellbook.length;
+                this.useSpecialOrSpell(
+                  this.enemy.spellbook[this.getRandomInt(0, maxSpells - 1)].command,
+                  "enemy",
+                  "player"
+                );
+                retry = false;
+                break;
+              case 2:
+                this.attack("enemy", "player");
+                retry = false;
+                break;
+              case 3:
+                this.defend("enemy");
+                retry = false;
+                break;
+              case 4:
+                const maxItems = this.enemy.items.length;
+                if (maxItems.length === 0) {
+                  continue;
+                }
+                this.useItem(this.enemy.items[this.getRandomInt(0, maxItems - 1)].command, "enemy");
+                retry = false;
+            }
+          }
+        }
+
         // cap the current stats to the base value
         this.normalizeStats("enemy");
-
-        if (!isStunnedE) {
-          this.attack("enemy", "player");
-        }
+        
         this.log.push("-".repeat(50));
       }, 1000);
+
+
     },
     useItem(name, actor) {
       const item = this[actor].items.find((item) => item.command === name);
@@ -579,7 +627,7 @@ export default {
 }
 body {
   background-color: black;
-  font-size: 20px;
+  font-size: 18px;
 }
 .flex {
   display: flex;
