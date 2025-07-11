@@ -80,14 +80,15 @@ export default {
         // damage-based conditions
         if (condition.damage) {
           condition.damage.forEach((damage) => {
-            resist = this[actor].stats.resist[damage.type].base + this[actor].stats.resist[damage.type].bon;
-            dmg = damage.value - Math.floor((resist * damage.value) / 100);
-            dmgTotal += dmg;
+            if (damage.value) {
+              resist = this[actor].stats.resist[damage.type].base + this[actor].stats.resist[damage.type].bon;
+              dmg = damage.value - Math.floor((resist * damage.value) / 100);
+              this[actor].stats.hp.current -= dmg;
+              this.log.push(
+                `${actorName} takes ${dmg} damage from [${damage.type}]${condition.name}[/${damage.type}]!`
+              );
+            }
           });
-          this[actor].stats.hp.current -= dmgTotal;
-          this.log.push(
-            `${actorName} takes ${dmgTotal} damage from [${damage.type}]${condition.name}[/${damage.type}]!`
-          );
         }
         // stats-based conditions
         if (condition.stats) {
@@ -104,9 +105,7 @@ export default {
         }
         // stunned condition (special case)
         if (condition.stunned) {
-          this.log.push(
-            `${actorName} is stunned and cannot act ( [${damage.type}]${condition.name}[/${damage.type}])!`
-          );
+          this.log.push(`${actorName} is stunned and cannot act!`);
         }
       });
     },
@@ -295,7 +294,7 @@ export default {
       this[actor].stats.AC.bon += tempBon;
     },
     run() {
-         const actorName = `[player]${this.player.name}[/player]`;
+      const actorName = `[player]${this.player.name}[/player]`;
       const d20 = this.getRandomInt(1, 20);
       const dc = 10; // difficulty class for running away
 
@@ -415,15 +414,16 @@ export default {
         return;
       }
 
-      if (this.mode === "equip") {
-        return;
-      }
-
       const command = this.commands[key].toLowerCase().replace(/\s+/g, ""); // cut whitespace and convert to lowercase
       if (command === "back") {
         this.back();
         return;
       }
+
+      if (this.mode === "equip") {
+        return;
+      }
+
       if (
         command === "attack" ||
         command === "run" ||

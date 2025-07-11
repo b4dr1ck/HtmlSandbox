@@ -117,6 +117,14 @@ export const player = {
       description: "A chilling spell that deals ice damage to the enemy.",
       effects: [{ name: "iced", duration: 2, stunned: true, damage: [{ type: "WAT" }] }],
     },
+    {
+      name: "Poison Cloud",
+      command: "poisoncloud",
+      cost: 8,
+      damage: [{ type: "POI", value: 10 }],
+      description: "A poisenous cloud that deals damage over time.",
+      effects: [{ name: "poisoned", duration: 5, stunned: false, damage: [{ type: "POI", value: 5 }] }],
+    },
   ],
   specials: [
     {
