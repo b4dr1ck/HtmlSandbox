@@ -26,14 +26,14 @@ export const player = {
     {
       name: "Healing Orb",
       command: "healingorb",
-      description: "Restores 5 HP over time",
+      description: "Restores some health over time",
       amount: 1,
       effects: [{ name: "healing", duration: 5, stunned: false, stats: { hp: 5 } }],
     },
     {
       name: "Mega Potion",
       command: "megapotion",
-      description: "Restores 10 HP, 10 MP, 10 POW.",
+      description: "Restores health, mana and power.",
       amount: 2,
       use: {
         hp: 10,
@@ -44,7 +44,7 @@ export const player = {
     {
       name: "Heal Potion",
       command: "healpotion",
-      description: "Restores 20 HP.",
+      description: "Restores some health.",
       amount: 2,
       use: {
         hp: 20,
@@ -53,7 +53,7 @@ export const player = {
     {
       name: "Mana Potion",
       command: "manapotion",
-      description: "Restores 5 HP.",
+      description: "Restores some mana.",
       amount: 1,
       use: {
         mp: 5,
@@ -62,7 +62,7 @@ export const player = {
     {
       name: "Power Potion",
       command: "powerpotion",
-      description: "Restores 5 POW.",
+      description: "Restores some power",
       amount: 1,
       use: {
         pow: 5,

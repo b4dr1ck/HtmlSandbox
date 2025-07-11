@@ -18,6 +18,27 @@ export const enemy = {
       PHY: { base: 0, current: 0, bon: 0 },
     },
   },
+  specials: [],
+  spellbook: [
+    {
+      name: "Fireball",
+      command: "fireball",
+      cost: 5,
+      damage: [{ type: "FIR", value: 20 }],
+      description: "A powerful fire spell that deals damage to the enemy.",
+    },
+  ],
+  items: [
+    {
+      name: "Heal Potion",
+      command: "healpotion",
+      description: "Restores some health.",
+      amount: 2,
+      use: {
+        hp: 20,
+      },
+    },
+  ],
   equipped: [
     {
       name: "Goblin Dagger",

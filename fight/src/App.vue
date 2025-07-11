@@ -45,6 +45,7 @@ export default {
     back() {
       const actorName = `[player]${this.player.name}[/player]`;
 
+      // get back in the last menu and reset mode and commands
       if (this.mode === "magic") {
         this.mode = "attack";
         this.commands = this.basicCommands;
@@ -68,6 +69,7 @@ export default {
 
       const actorName = `[${actor}]${this[actor].name}[/${actor}]`;
 
+      // loop through all conditions and apply effects
       this[actor].conditions.forEach((condition) => {
         this.log.push(`${actorName} is ${condition.name}`);
         condition.duration--;
@@ -75,6 +77,7 @@ export default {
         let resist = 0;
         let dmg = 0;
         let dmgTotal = 0;
+        // damage-based conditions
         if (condition.damage) {
           condition.damage.forEach((damage) => {
             resist = this[actor].stats.resist[damage.type].base + this[actor].stats.resist[damage.type].bon;
@@ -86,6 +89,7 @@ export default {
             `${actorName} takes ${dmgTotal} damage from [${damage.type}]${condition.name}[/${damage.type}]!`
           );
         }
+        // stats-based conditions
         if (condition.stats) {
           for (const stat in condition.stats) {
             if (this[actor].stats[stat]) {
@@ -98,6 +102,7 @@ export default {
             }
           }
         }
+        // stunned condition (special case)
         if (condition.stunned) {
           this.log.push(
             `${actorName} is stunned and cannot act ( [${damage.type}]${condition.name}[/${damage.type}])!`
@@ -105,6 +110,7 @@ export default {
         }
       });
     },
+    // cap the current stats to the base value
     normalizeStats(actor) {
       for (const stat in this[actor].stats) {
         if (this[actor].stats[stat].current > this[actor].stats[stat].base) {
@@ -115,16 +121,15 @@ export default {
     calcHitAndDmg(actor, actor2) {
       const STR = this[actor].stats.STR.base + this[actor].stats.STR.bon;
       const modifier = Math.floor((STR - 10) / 2);
-      const d20 = this.getRandomInt(1, 20);
+      const d20 = this.getRandomInt(1, 20); // for hit-chance
       const hit = d20 === 1 ? 1 : d20 + modifier;
-      let dmgCalcString = "";
 
       const dmg = this[actor].equipped.reduce((total, item) => {
         let weaponDmg = 0;
         let resist = 0;
         let dmgValue = 0;
         if (item.type === "weapon") {
-          // apply all dmg-types from the weapon
+          // apply all dmg-types from the weapon(s)
           item.damage.forEach((dmg) => {
             if (dmg.type === "PHY") {
               dmgValue = this.getRandomInt(dmg.value[0], dmg.value[1]);
@@ -134,7 +139,6 @@ export default {
             weaponDmg += dmgValue;
             resist = this[actor2].stats.resist[dmg.type].base + this[actor2].stats.resist[dmg.type].bon;
             weaponDmg -= Math.floor((dmgValue * resist) / 100);
-            dmgCalcString += `(${dmg.type}): ${dmgValue} - (${dmgValue} * ${resist}) / 100); `;
           });
           return total + weaponDmg;
         }
@@ -143,28 +147,39 @@ export default {
       return { hit, dmg };
     },
     turn(cmd) {
+      // Condition Check
       this.checkConditions("player");
       const isStunnedP = this.player.conditions.some((condition) => condition.stunned);
 
+      // using an item
       if (this.mode === "inventory") {
         this.useItem(cmd, "player");
       }
 
+      // cap the current stats to the base value
       this.normalizeStats("player");
 
       if (!isStunnedP) {
+        // Magic or Special
         if (this.mode === "special" || this.mode === "magic") {
           this.useSpecialOrSpell(cmd, "player", "enemy");
+          // Normal Attack
         } else if (cmd === "attack") {
           this.attack("player", "enemy");
+          // Defense
         } else if (cmd === "defend") {
           this.defend("player");
         }
       }
 
+      // Enemy Turn
       setTimeout(() => {
         this.checkConditions("enemy");
         const isStunnedE = this.enemy.conditions.some((condition) => condition.stunned);
+
+        // cap the current stats to the base value
+        this.normalizeStats("enemy");
+
         if (!isStunnedE) {
           this.attack("enemy", "player");
         }
@@ -192,10 +207,12 @@ export default {
       }
 
       // remove the used item from the inventory
-      this.player.items = this.player.items.filter((i) => i.amount > 0);
+      this[actor].items = this[actor].items.filter((i) => i.amount > 0);
 
-      this.commands = this.player.items.map((item) => `${item.name}`);
-      this.commands.push("Back");
+      if (actor === "player") {
+        this.commands = this[actor].items.map((item) => `${item.name}`);
+        this.commands.push("Back");
+      }
     },
     useSpecialOrSpell(name, actor, actor2) {
       const special = this[actor].specials.find((special) => special.command === name); // find special based on command-name
