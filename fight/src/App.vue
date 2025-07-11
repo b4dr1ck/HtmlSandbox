@@ -147,6 +147,10 @@ export default {
       return { hit, dmg };
     },
     turn(cmd) {
+      // check if run is possible
+      if (cmd === "run") {
+        if (this.run()) return;
+      }
       // Condition Check
       this.checkConditions("player");
       const isStunnedP = this.player.conditions.some((condition) => condition.stunned);
@@ -290,7 +294,21 @@ export default {
       this.log.push(`${actorName} increases AC by ${tempBon} for the next attack.`);
       this[actor].stats.AC.bon += tempBon;
     },
-    run() {},
+    run() {
+         const actorName = `[player]${this.player.name}[/player]`;
+      const d20 = this.getRandomInt(1, 20);
+      const dc = 10; // difficulty class for running away
+
+      if (d20 >= dc) {
+        this.log.push(`${actorName} successfully flees from the battle!`);
+        this.enemy = null; // remove enemy from the fight
+        this.commands = [];
+        return true;
+      } else {
+        this.log.push(`${actorName} fails to run away!`);
+        return false;
+      }
+    },
     inventory() {
       const actorName = `[player]${this.player.name}[/player]`;
       this.mode = "inventory";
@@ -320,6 +338,7 @@ export default {
       this.log.push(`${actorName} opens the spellbook.`);
     },
     hud(actor) {
+      if (!this[actor]) return "";
       const hudText = [];
       const actorName = `[${actor}]${this[actor].name}[/${actor}]`;
 
@@ -407,6 +426,7 @@ export default {
       }
       if (
         command === "attack" ||
+        command === "run" ||
         command === "defend" ||
         this.mode === "special" ||
         this.mode === "magic" ||
