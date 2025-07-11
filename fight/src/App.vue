@@ -11,7 +11,7 @@ export default {
       log: [],
       basicCommands: ["Attack", "Defend", "Special", "Magic", "Run", "Inventory", "Equipment"],
       commands: [],
-      maxLogEntries: 10,
+      maxLogEntries: 26,
       colors: {
         player: "MediumPurple",
         enemy: "coral",
@@ -174,6 +174,9 @@ export default {
           this.defend("player");
         }
       }
+      // reset enemy ac after player attack
+      this.enemy.stats.AC.bon = 0;
+      this.applyBonStats("enemy");
 
       // Enemy Turn
       setTimeout(() => {
@@ -229,13 +232,15 @@ export default {
           }
         }
 
+        // reset player ac after attack
+        this.player.stats.AC.bon = 0;
+        this.applyBonStats("player");
+
         // cap the current stats to the base value
         this.normalizeStats("enemy");
-        
+
         this.log.push("-".repeat(50));
       }, 1000);
-
-
     },
     useItem(name, actor) {
       const item = this[actor].items.find((item) => item.command === name);
@@ -392,6 +397,14 @@ export default {
       // name
       hudText.push(`${actorName}`);
       hudText.push("=".repeat(this[actor].name.length * 2));
+      hudText.push(`<small>[details]${this[actor].description}[/details]</small>` || "...");
+
+      // check if the actor is identified
+      if (!this[actor].identified) {
+        hudText.push("???\n???\n???");
+        return this.replaceColorTags(hudText).join("\n");
+      }
+
       for (const stat in this[actor]["stats"]) {
         // resistances
         if (stat === "resist") {
@@ -599,12 +612,13 @@ export default {
 
 <template>
   <div>
-    <div id="hud" class="flex">
-      <pre v-html="hudPlayer" id="player"></pre>
-      <pre v-html="hudEnemy" id="enemy"></pre>
+    <div id="wrapper" class="flex">
+      <div id="hud" class="column">
+        <pre v-html="hudPlayer" id="player"></pre>
+        <pre v-html="hudEnemy" id="enemy"></pre>
+      </div>
+      <pre v-html="logEntries.join('\n')" id="log"></pre>
     </div>
-    <hr />
-    <pre v-html="logEntries.join('\n')" id="log"></pre>
     <hr />
     <div class="flex">
       <ol id="commandList">
@@ -625,28 +639,54 @@ export default {
   color: white;
   font-family: monospace;
 }
+
 body {
   background-color: black;
   font-size: 18px;
+}
+
+#app {
+  height: 100vh;
+  width: 100%;
+}
+
+#wrapper {
+  height: 70vh;
+  padding: 5px;
+}
+
+pre {
+  padding: 0px;
+  margin: 0px;
 }
 .flex {
   display: flex;
   justify-content: flex-start;
 }
 
-#hud pre {
-  width: 100%;
-  border: 1px solid white;
-  padding: 10px;
+.column {
+  display: flex;
+  flex-direction: column;
 }
 
-pre {
-  margin: 10px 0px 10px 0px;
-  padding: 0px;
+#hud pre {
+  border: 1px solid white;
+  padding: 5px;
+  height: 100%;
+}
+
+#log {
+  height: 100%;
+  width: 100%;
+  border: 1px solid white;
+  box-sizing: border-box;
+  margin-left: 5px;
+  padding: 5px;
 }
 
 #commandList {
   width: 100%;
+  margin: 0px;
 }
 
 #commandList li::marker {
@@ -672,9 +712,5 @@ pre {
   color: #666;
   padding-left: 10px;
   width: 80%;
-}
-
-#log {
-  height: 260px;
 }
 </style>

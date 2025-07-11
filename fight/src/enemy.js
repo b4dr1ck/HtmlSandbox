@@ -1,8 +1,8 @@
 export const enemy = {
   name: "Weird Goblin",
-  conditions: [
-    /*{ name: "poisoned", duration: 3, stunned: false, damage: [{ type: "POI", value: 5 }] }*/
-  ],
+  description: "A strange goblin with a nasty bite and a penchant for poison.",
+  identified: false,
+  conditions: [],
   stats: {
     hp: { base: 80, current: 80, bon: 0 },
     mp: { base: 10, current: 10, bon: 0 },

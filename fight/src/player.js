@@ -1,7 +1,7 @@
-import { effect } from "vue";
-
 export const player = {
   name: "Lord Rick",
+  description: "A brave warrior with a strong will and a heart of gold.",
+  identified: true,
   conditions: [
     /*{ name: "poisoned", duration: 3, stunned: false, damage: [{ type: "POI", value: 5 }] },
     { name: "iced", duration: 5, stunned: true, damage: [{ type: "WAT" }] },*/
