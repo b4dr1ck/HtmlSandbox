@@ -112,11 +112,11 @@ export default {
     },
     // cap the current stats to the base value
     normalizeStats(actor) {
-      for (const stat in this[actor].stats) {
+      ["hp", "mp", "pow"].forEach((stat) => {
         if (this[actor].stats[stat].current > this[actor].stats[stat].base) {
           this[actor].stats[stat].current = this[actor].stats[stat].base;
         }
-      }
+      });
     },
     calcHitAndDmg(actor, actor2) {
       const STR = this[actor].stats.STR.base + this[actor].stats.STR.bon;
@@ -166,9 +166,6 @@ export default {
         this.useEqupiment(cmd);
       }
 
-      // cap the current stats to the base value
-      this.normalizeStats("player");
-
       if (!isStunnedP) {
         // Magic or Special
         if (this.mode === "special" || this.mode === "magic") {
@@ -181,6 +178,10 @@ export default {
           this.defend("player");
         }
       }
+
+      // cap the current stats to the base value
+      this.normalizeStats("player");
+
       // reset enemy ac after player attack
       this.enemy.stats.AC.bon = 0;
       this.applyBonStats("enemy");
@@ -299,12 +300,14 @@ export default {
       const specialOrSpell = special || spell;
 
       if (specialOrSpell) {
+        // not enough resources
         if (specialOrSpell.cost > this[actor].stats[costType].current) {
           this.log.push(
             `[${actor}]${this[actor].name}[/${actor}] does not have enough ${costType} to use [special]${specialOrSpell.name}[/special]`
           );
           return;
         }
+        // log the action
         if (specialOrSpell === special) {
           this.log.push(
             `[${actor}]${this[actor].name}[/${actor}] uses a special power [special]${specialOrSpell.name}[/special]`
@@ -316,12 +319,21 @@ export default {
         return;
       }
 
+      // spell costs
       this[actor].stats[costType].current -= specialOrSpell.cost;
 
+      // apply effects
       if (specialOrSpell.effects) {
         this[actor2].conditions.push(...specialOrSpell.effects);
       }
-
+      // apply stats changes
+      if (specialOrSpell.stats) {
+        const target = specialOrSpell.target || "enemy"; // default target is enemy
+        for (const stat in specialOrSpell.stats) {
+          this[target].stats[stat].current += specialOrSpell.stats[stat];
+        }
+      }
+      // deal damage
       let resist = 0;
       let dmg = 0;
       let dmgTotal = 0;
@@ -534,20 +546,14 @@ export default {
     showDetails(command) {
       function showStats(obj) {
         const stats = Object.entries(obj);
-        const skipKeys = ["name", "description", "type", "command","equipped"];
+        const skipKeys = ["name", "description", "type", "command", "equipped", "target"];
         let output = "";
         stats.forEach(([key, value]) => {
           if (skipKeys.includes(key)) return;
-          if (key === "resist") {
+          if (key === "resist" || key === "stats" || key === "use") {
             output += `${key}: `;
-            Object.entries(value).forEach(([res, resValue]) => {
-              output += `${res}: ${resValue}, `;
-            });
-            return;
-          }
-          if (key === "use") {
-            Object.entries(value).forEach(([stat, statValue]) => {
-              output += `${stat}: ${statValue}, `;
+            Object.entries(value).forEach(([name, val]) => {
+              output += `${name}: ${val}, `;
             });
             return;
           }

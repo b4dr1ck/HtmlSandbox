@@ -42,7 +42,7 @@ export const player = {
       },
     },
     {
-      name: "Heal Potion",
+      name: "Healing Potion",
       command: "healpotion",
       description: "Restores some health.",
       amount: 2,
@@ -119,8 +119,17 @@ export const player = {
   ],
   spellbook: [
     {
+      name: "Healing Touch",
+      command: "healingtouch",
+      cost: 10,
+      target: "player",
+      stats: { hp: 20 },
+      description: "Heals the target for a small amount of health.",
+    },
+    {
       name: "Fireball",
       command: "fireball",
+      target: "enemy",
       cost: 5,
       damage: [{ type: "FIR", value: 20 }],
       description: "A powerful fire spell that deals damage to the enemy.",
@@ -128,6 +137,7 @@ export const player = {
     {
       name: "Icicle",
       command: "icicle",
+      target: "enemy",
       cost: 3,
       damage: [{ type: "WAT", value: 12 }],
       description: "A chilling spell that deals ice damage to the enemy.",
@@ -136,6 +146,7 @@ export const player = {
     {
       name: "Poison Cloud",
       command: "poisoncloud",
+      target: "enemy",
       cost: 8,
       damage: [{ type: "POI", value: 10 }],
       description: "A poisenous cloud that deals damage over time.",

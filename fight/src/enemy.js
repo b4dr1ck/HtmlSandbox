@@ -32,6 +32,7 @@ export const enemy = {
     {
       name: "Fireball",
       command: "fireball",
+      target: "player",
       cost: 5,
       damage: [{ type: "FIR", value: 20 }],
       description: "A powerful fire spell that deals damage to the enemy.",
