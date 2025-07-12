@@ -5,7 +5,7 @@ export const enemy = {
   conditions: [],
   stats: {
     hp: { base: 80, current: 80, bon: 0 },
-    mp: { base: 10, current: 10, bon: 0 },
+    mp: { base: 20, current: 20, bon: 0 },
     pow: { base: 5, current: 5, bon: 0 },
     AC: { base: 5, current: 5, bon: 0 },
     STR: { base: 12, current: 12, bon: 0 },
@@ -22,6 +22,7 @@ export const enemy = {
     {
       name: "Goblin Bite",
       command: "goblinbite",
+      target: "player",
       cost: 3,
       damage: [{ type: "PHY", value: 10 }],
       description: "A nasty goblin bite that makes you sick.",
@@ -36,6 +37,14 @@ export const enemy = {
       cost: 5,
       damage: [{ type: "FIR", value: 20 }],
       description: "A powerful fire spell that deals damage to the enemy.",
+    },
+    {
+      name: "Fart",
+      command: "fart",
+      target: "player",
+      cost: 3,
+      effects: [{ name: "poisoned", duration: 10, stunned: false, damage: [{ type: "POI", value: 1 }] }],
+      description: "a nasty fart that stinks for a long time",
     },
   ],
   items: [

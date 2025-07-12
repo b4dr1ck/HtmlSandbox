@@ -208,40 +208,47 @@ export default {
             randomCmd = this.getRandomInt(0, 4);
             switch (randomCmd) {
               case 0:
-                if (this.enemy.stats.pow.current <= 0) {
+                // Using a Special
+                const maxSpecial = this.enemy.specials.length;
+                const special = this.enemy.specials[this.getRandomInt(0, maxSpecial - 1)];
+                if (special.cost > this.enemy.stats.pow.current) {
                   continue;
                 }
-                const maxSpecial = this.enemy.specials.length;
-                this.useSpecialOrSpell(
-                  this.enemy.specials[this.getRandomInt(0, maxSpecial - 1)].command,
-                  "enemy",
-                  "player"
-                );
+                this.useSpecialOrSpell(special.command, "enemy", "player");
                 retry = false;
                 break;
               case 1:
-                if (this.enemy.stats.mp.current <= 0) {
+                // Using a Spell
+                const maxSpells = this.enemy.spellbook.length;
+                const spell = this.enemy.spellbook[this.getRandomInt(0, maxSpells - 1)];
+                if (spell.cost > this.enemy.stats.mp.current) {
                   continue;
                 }
-                const maxSpells = this.enemy.spellbook.length;
-                this.useSpecialOrSpell(
-                  this.enemy.spellbook[this.getRandomInt(0, maxSpells - 1)].command,
-                  "enemy",
-                  "player"
-                );
+                this.useSpecialOrSpell(spell.command, "enemy", "player");
                 retry = false;
                 break;
               case 2:
+                // Normal Attack
                 this.attack("enemy", "player");
                 retry = false;
                 break;
               case 3:
+                // Defense
                 this.defend("enemy");
                 retry = false;
                 break;
               case 4:
+                // Using an Item
                 const maxItems = this.enemy.items.length;
                 if (maxItems === 0) {
+                  continue;
+                }
+                // check if the enemies stats are too high to use an item
+                if (
+                  this.enemy.stats.mp.current > this.enemy.stats.mp.base * 0.2 ||
+                  this.enemy.stats.pow.current > this.enemy.stats.pow.base * 0.2 ||
+                  this.enemy.stats.hp.current > this.enemy.stats.hp.base * 0.2
+                ) {
                   continue;
                 }
                 this.useItem(this.enemy.items[this.getRandomInt(0, maxItems - 1)].command, "enemy");
@@ -290,7 +297,8 @@ export default {
         }
 
         if (item.effects) {
-          this[actor].conditions.push(...item.effects);
+          // make a copy of the effects to avoid reference issues
+          this[actor].conditions.push(...item.effects.map(e => JSON.parse(JSON.stringify(e))));
         }
 
         this.log.push(`[${actor}]${this[actor].name}[/${actor}] uses [item]${item.name}[/item]`);
@@ -340,7 +348,8 @@ export default {
 
       // apply effects
       if (specialOrSpell.effects) {
-        this[actor2].conditions.push(...specialOrSpell.effects);
+        // make a copy of the effects to avoid reference issues
+        this[actor2].conditions.push(...specialOrSpell.effects.map((e) => JSON.parse(JSON.stringify(e))));
       }
       // apply stats changes
       if (specialOrSpell.stats) {
@@ -460,7 +469,6 @@ export default {
         return this.replaceColorTags(hudText).join("\n");
       }
 
-      hudText.push("[details]Stats:[/details]");
       for (const stat in this[actor]["stats"]) {
         // resistances
         if (stat === "resist") {
@@ -480,7 +488,7 @@ export default {
             hudText.push(
               `[${stat}]${stat}:[/${stat}]` +
                 ` ${this[actor]["stats"][stat].current}/${this[actor]["stats"][stat].base}` +
-                (bonStat ? ` + [bon]'>${bonStat}[/bon]` : "")
+                (bonStat ? ` + [bon]${bonStat}[/bon]` : "")
             );
           } else {
             hudText.push(

@@ -155,6 +155,7 @@ export const player = {
     {
       name: "Power Strike",
       command: "powerstrike",
+      target: "enemy",
       cost: 10,
       damage: [{ type: "PHY", value: 25 }],
       description: "A powerful strike that deals extra damage to the enemy.",
@@ -162,6 +163,7 @@ export const player = {
     {
       name: "Stamp",
       command: "stamp",
+      target: "enemy",
       cost: 10,
       damage: [{ type: "PHY", value: 15 }],
       effects: [{ name: "stunned", duration: 1, stunned: true, damage: [{ type: "PHY" }] }],
