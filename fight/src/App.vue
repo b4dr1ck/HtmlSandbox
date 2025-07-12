@@ -448,7 +448,7 @@ export default {
       for (const stat in this[actor]["stats"]) {
         // resistances
         if (stat === "resist") {
-          let resistText = "[details]Resist:[/details] \n";
+          let resistText = "";
           for (const resist in this[actor]["stats"]["resist"]) {
             const bonResist = this[actor]["stats"]["resist"][resist].bon;
             resistText +=
@@ -475,6 +475,14 @@ export default {
           }
         }
       }
+      // conditions
+      let condText = "";
+      this[actor].conditions.forEach((cond) => {
+        const color = cond.damage ? cond.damage[0].type : "details";
+        condText += `[${color}]${cond.name[0].toUpperCase()}(${cond.duration})[/${color}] `;
+      });
+      hudText.push(`${condText}`);
+
       return this.replaceColorTags(hudText).join("\n");
     },
 

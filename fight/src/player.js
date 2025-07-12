@@ -3,9 +3,9 @@ export const player = {
   description: "A brave warrior with a strong will and a heart of gold.",
   identified: true,
   conditions: [
-    /*{ name: "poisoned", duration: 3, stunned: false, damage: [{ type: "POI", value: 5 }] },
-    { name: "iced", duration: 5, stunned: true, damage: [{ type: "WAT" }] },*/
-    //{ name: "healing", duration: 5, stunned: false, stats: { hp: 5 } },
+   /* { name: "poisoned", duration: 3, stunned: false, damage: [{ type: "POI", value: 5 }] },
+    { name: "iced", duration: 5, stunned: true, damage: [{ type: "WAT" }] },
+    { name: "healing", duration: 5, stunned: false, stats: { hp: 5 } },*/
   ],
   stats: {
     hp: { base: 100, current: 100, bon: 0 },
@@ -43,7 +43,7 @@ export const player = {
     },
     {
       name: "Healing Potion",
-      command: "healpotion",
+      command: "healingpotion",
       description: "Restores some health.",
       amount: 2,
       use: {
