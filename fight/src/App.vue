@@ -8,6 +8,7 @@ export default {
     return {
       disabledInput: false,
       mode: "attack",
+      debug: "",
       log: [],
       basicCommands: ["Attack", "Defend", "Special", "Magic", "Run", "Inventory", "Equipment"],
       commands: [],
@@ -439,9 +440,9 @@ export default {
           for (const resist in this[actor]["stats"]["resist"]) {
             const bonResist = this[actor]["stats"]["resist"][resist].bon;
             resistText +=
-              `[${resist}]${resist}:[/${resist}] ` +
-              `${this[actor]["stats"]["resist"][resist].base} ` +
-              (bonResist ? `+ [bon]${bonResist}[/bon]; ` : "; ");
+              `[${resist}]${resist}:[/${resist}]` +
+              `${this[actor]["stats"]["resist"][resist].base}` +
+              (bonResist ? `+[bon]${bonResist}[/bon]; ` : "; ");
           }
           hudText.push(resistText.replace(/; $/, "")); // remove trailing semicolon
         } else {
@@ -533,7 +534,7 @@ export default {
     showDetails(command) {
       function showStats(obj) {
         const stats = Object.entries(obj);
-        const skipKeys = ["name", "description", "type", "command"];
+        const skipKeys = ["name", "description", "type", "command","equipped"];
         let output = "";
         stats.forEach(([key, value]) => {
           if (skipKeys.includes(key)) return;
@@ -600,10 +601,17 @@ export default {
           return imtemDetails ? `${imtemDetails.description} ${showStats(imtemDetails)}` : "";
         case "equip":
           const equippedDetails = this.player.equipped.find((equipped) => equipped.name.toLowerCase() === command);
-          return equippedDetails ? `${equippedDetails.description} ${showStats(equippedDetails)}` : "";
+          return equippedDetails
+            ? `${equippedDetails.equipped ? "[item]X[/item] " : " "}${equippedDetails.description} ${showStats(
+                equippedDetails
+              )}`
+            : "";
       }
     },
     replaceColorTags(text) {
+      if (!Array.isArray(text)) {
+        text = [text];
+      }
       return text.map((entry) => {
         let regexp = /\[(.+?)\](.+?)\[\/.+?\]/g;
         return entry.replace(regexp, (match, name, text) => {
@@ -644,6 +652,7 @@ export default {
 
 <template>
   <div>
+    <p id="debug">{{ debug }}</p>
     <div id="wrapper" class="flex">
       <div id="hud" class="column">
         <pre v-html="hudPlayer" id="player"></pre>
@@ -657,7 +666,7 @@ export default {
         <li v-for="(command, index) in commands" :key="index" @click="executeCommand($event, index)">
           <div class="flex">
             <p>{{ command }}</p>
-            <p>{{ showDetails(command.toLowerCase()) }}</p>
+            <p v-html="replaceColorTags(showDetails(command.toLowerCase()))"></p>
           </div>
         </li>
       </ol>
@@ -675,6 +684,16 @@ export default {
 body {
   background-color: black;
   font-size: 18px;
+}
+
+#debug {
+  position: fixed;
+  top: 0;
+  left: 0;
+  color: white;
+  background-color: black;
+  padding: 5px;
+  z-index: 1000;
 }
 
 #app {
