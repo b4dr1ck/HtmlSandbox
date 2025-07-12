@@ -1,7 +1,7 @@
 export const enemy = {
   name: "Weird Goblin",
   description: "A strange goblin with a nasty bite and a penchant for poison.",
-  identified: false,
+  identified: true,
   conditions: [],
   stats: {
     hp: { base: 80, current: 80, bon: 0 },
@@ -50,22 +50,29 @@ export const enemy = {
   ],
   equipped: [
     {
+      equipped: true,
       name: "Goblin Dagger",
+      command: "goblindagger",
       type: "weapon",
       description: "A small dagger that deals a bit of damage.",
       damage: [{ value: [1, 4], type: "PHY" }],
     },
     {
+      equipped: true,
       name: "Goblin Shield",
+      command: "goblindshield",
       type: "shield",
       description: "A small shield that provides some protection.",
       AC: 2,
     },
     {
+      equipped: true,
       name: "Toxic Goblin Helmet",
+      command: "toxicgoblinhelmet",
       type: "armor",
       description: "A small helmet that protects you with poison resistance.",
       resist: { POI: 2 },
+      AC: 1,
     },
   ],
 };

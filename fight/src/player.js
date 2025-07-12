@@ -71,7 +71,9 @@ export const player = {
   ],
   equipped: [
     {
+      equipped: true,
       name: "Iron Sword",
+      command: "ironsword",
       type: "weapon",
       description: "A sturdy sword that deals a bit of damage.",
       damage: [
@@ -80,20 +82,34 @@ export const player = {
       ],
     },
     {
+      equipped: false,
       name: "Icy Helmet",
-      type: "armor",
+      command: "icyhelmet",
+      type: "head",
       description: "An icy helmet that protects your head.",
       AC: 1,
       resist: { WAT: 3 },
     },
     {
+      equipped: false,
+      name: "Leather cap",
+      command: "leathercap",
+      type: "head",
+      description: "a simple leather cap",
+      AC: 1,
+    },
+    {
+      equipped: true,
       name: "Hot Iron Shield",
+      command: "hotironshield",
       type: "shield",
       description: "A sturdy shield that provides extra fire protection.",
       AC: 2,
       resist: { FIR: 1 },
     },
     {
+      equipped: true,
+      command: "icyleatherarmor",
       name: "Icy Leather Armor",
       type: "armor",
       description: "Light armor that provides some protection.",

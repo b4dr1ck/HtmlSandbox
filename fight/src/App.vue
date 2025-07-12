@@ -122,28 +122,29 @@ export default {
       const modifier = Math.floor((STR - 10) / 2);
       const d20 = this.getRandomInt(1, 20); // for hit-chance
       const hit = d20 === 1 ? 1 : d20 + modifier;
+      const weapon = this[actor].equipped.find((item) => item.type === "weapon" && item.equipped);
 
-      const dmg = this[actor].equipped.reduce((total, item) => {
-        let weaponDmg = 0;
-        let resist = 0;
-        let dmgValue = 0;
-        if (item.type === "weapon") {
-          // apply all dmg-types from the weapon(s)
-          item.damage.forEach((dmg) => {
-            if (dmg.type === "PHY") {
-              dmgValue = this.getRandomInt(dmg.value[0], dmg.value[1]);
-            } else {
-              dmgValue = dmg.value;
-            }
-            weaponDmg += dmgValue;
-            resist = this[actor2].stats.resist[dmg.type].base + this[actor2].stats.resist[dmg.type].bon;
-            weaponDmg -= Math.floor((dmgValue * resist) / 100);
-          });
-          return total + weaponDmg;
-        }
-        return total;
-      }, 0);
-      return { hit, dmg };
+      let weaponDmg = 0;
+      let resist = 0;
+      let dmgValue = 0;
+      if (weapon && weapon.equipped) {
+        // apply all dmg-types from the weapon(s)
+        weapon.damage.forEach((dmg) => {
+          if (dmg.type === "PHY") {
+            dmgValue = this.getRandomInt(dmg.value[0], dmg.value[1]);
+          } else {
+            dmgValue = dmg.value;
+          }
+          weaponDmg += dmgValue;
+          resist = this[actor2].stats.resist[dmg.type].base + this[actor2].stats.resist[dmg.type].bon;
+          weaponDmg -= Math.floor((dmgValue * resist) / 100);
+        });
+      } else {
+        this.log.push(`[${actor}]${this[actor].name}[/${actor}] has no weapon equipped!`);
+        return { hit: 0, dmg: 0 };
+      }
+
+      return { hit: hit, dmg: weaponDmg };
     },
     turn(cmd) {
       // check if run is possible
@@ -157,6 +158,11 @@ export default {
       // using an item
       if (this.mode === "inventory") {
         this.useItem(cmd, "player");
+      }
+
+      // using an equipment
+      if (this.mode === "equip") {
+        this.useEqupiment(cmd);
       }
 
       // cap the current stats to the base value
@@ -241,6 +247,21 @@ export default {
 
         this.log.push("-".repeat(50));
       }, 1000);
+    },
+    useEqupiment(name) {
+      const item = this.player.equipped.find((item) => item.command.toLowerCase() === name.toLowerCase());
+
+      if (!item.equipped) {
+        const itemToUnequip = this.player.equipped.find((equipped) => equipped.type === item.type && equipped.equipped);
+        if (itemToUnequip) itemToUnequip.equipped = false; // unequip the previous item of the same type
+
+        this.log.push(`[player]${this.player.name}[/player] equips [item]${item.name}[/item]`);
+        item.equipped = true; // mark the item as equipped
+      } else {
+        this.log.push(`[player]${this.player.name}[/player] unequips [item]${item.name}[/item]`);
+        item.equipped = false; // mark the item as unequipped
+      }
+      this.applyBonStats("player"); // apply the bonuses from the equipped item
     },
     useItem(name, actor) {
       const item = this[actor].items.find((item) => item.command === name);
@@ -341,7 +362,12 @@ export default {
 
     defend(actor) {
       const actorName = `[${actor}]${this[actor].name}[/${actor}]`;
-      const tempBon = this[actor].equipped.find((item) => item.type === "shield")?.AC || 0;
+      const shield = this[actor].equipped.find((item) => item.type === "shield" && item.equipped);
+      if (!shield) {
+        this.log.push(`${actorName} has no shield equipped!`);
+        return;
+      }
+      const tempBon = shield?.AC || 0;
 
       this.log.push(`${actorName} increases AC by ${tempBon} for the next attack.`);
       this[actor].stats.AC.bon += tempBon;
@@ -453,16 +479,23 @@ export default {
       }
       // apply bonuses from equipped items
       this[actor]["equipped"].forEach((item) => {
+        if (!item.equipped) return; // skip unequipped items
         for (const key in item) {
           if (item.type === "shield" && key === "AC") continue; // skip shield items for now (only in defend mode)
-          if (key === "name" || key === "description" || (key === "type") | (key === "damage")) continue;
+          if (
+            key === "name" ||
+            key === "description" ||
+            key === "type" ||
+            key === "damage" ||
+            key === "equipped" ||
+            key === "command"
+          )
+            continue;
           if (key === "resist") {
             for (const resist in item.resist) {
               this[actor]["stats"]["resist"][resist].bon += item.resist[resist];
             }
-          } else {
-            this[actor]["stats"][key].bon += item[key];
-          }
+          } else this[actor]["stats"][key].bon += item[key];
         }
       });
     },
@@ -483,17 +516,14 @@ export default {
         return;
       }
 
-      if (this.mode === "equip") {
-        return;
-      }
-
       if (
         command === "attack" ||
         command === "run" ||
         command === "defend" ||
         this.mode === "special" ||
         this.mode === "magic" ||
-        this.mode === "inventory"
+        this.mode === "inventory" ||
+        this.mode === "equip"
       ) {
         this.turn(command);
         return;
