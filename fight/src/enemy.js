@@ -56,7 +56,8 @@ export const enemy = {
       command: "goblindagger",
       type: "weapon",
       description: "A small dagger that deals a bit of damage.",
-      damage: [{ value: [1, 4], type: "PHY" }],
+      damage: [1, 4],
+      extra: [],
     },
     {
       equipped: true,

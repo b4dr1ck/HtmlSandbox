@@ -65,6 +65,7 @@ export default {
         this.commands = this.basicCommands;
       }
     },
+    // check all conditions of the actor and apply effects
     checkConditions(actor) {
       this[actor].conditions = this[actor].conditions.filter((condition) => condition.duration > 0); // remove expired conditions
 
@@ -118,27 +119,30 @@ export default {
         }
       });
     },
+    checkDeath(actor) {
+      if (this[actor].stats.hp.current <= 0) {
+        this.log.push(`[${actor}]${this[actor].name}[/${actor}] has died!`);
+        this[actor].stats.hp.current = 0; // ensure hp does not go below 0
+        return true;
+      }
+      return false;
+    },
     calcHitAndDmg(actor, actor2) {
       const STR = this[actor].stats.STR.base + this[actor].stats.STR.bon;
       const modifier = Math.floor((STR - 10) / 2);
       const d20 = this.getRandomInt(1, 20); // for hit-chance
       const hit = d20 === 1 ? 1 : d20 + modifier;
       const weapon = this[actor].equipped.find((item) => item.type === "weapon" && item.equipped);
-
       let weaponDmg = 0;
       let resist = 0;
-      let dmgValue = 0;
+
       if (weapon && weapon.equipped) {
-        // apply all dmg-types from the weapon(s)
-        weapon.damage.forEach((dmg) => {
-          if (dmg.type === "PHY") {
-            dmgValue = this.getRandomInt(dmg.value[0], dmg.value[1]);
-          } else {
-            dmgValue = dmg.value;
-          }
-          weaponDmg += dmgValue;
-          resist = this[actor2].stats.resist[dmg.type].base + this[actor2].stats.resist[dmg.type].bon;
-          weaponDmg -= Math.floor((dmgValue * resist) / 100);
+        weaponDmg = this.getRandomInt(weapon.damage[0], weapon.damage[1]);
+
+        weapon.extra.forEach((extraDmg) => {
+          weaponDmg += extraDmg.value;
+          resist = this[actor2].stats.resist[extraDmg.type].base + this[actor2].stats.resist[extraDmg.type].bon;
+          weaponDmg -= Math.floor((extraDmg.value * resist) / 100);
         });
       } else {
         this.log.push(`[${actor}]${this[actor].name}[/${actor}] has no weapon equipped!`);
@@ -185,6 +189,12 @@ export default {
       // reset enemy ac after player attack
       this.enemy.stats.AC.bon = 0;
       this.applyBonStats("enemy");
+
+      // check if enemy is dead after player's turn
+      if (this.checkDeath("enemy")) {
+        this.commands = [];
+        return;
+      }
 
       // Enemy Turn
       setTimeout(() => {
@@ -246,6 +256,12 @@ export default {
 
         // cap the current stats to the base value
         this.normalizeStats("enemy");
+
+        // check if player is dead after enemy's turn
+        if (this.checkDeath("player")) {
+          this.commands = [];
+          return;
+        }
 
         this.log.push("-".repeat(50));
       }, 1000);
@@ -509,7 +525,8 @@ export default {
             key === "type" ||
             key === "damage" ||
             key === "equipped" ||
-            key === "command"
+            key === "command" ||
+            key === "extra"
           )
             continue;
           if (key === "resist") {
@@ -669,8 +686,8 @@ export default {
     <p id="debug">{{ debug }}</p>
     <div id="wrapper" class="flex">
       <div id="hud" class="column">
-        <pre v-html="hudPlayer" id="player"></pre>
-        <pre v-html="hudEnemy" id="enemy"></pre>
+        <pre :class="player.stats.hp.current <= 0 ? 'redBorder' : ''" v-html="hudPlayer" id="player"></pre>
+        <pre :class="enemy.stats.hp.current <= 0 ? 'redBorder' : ''" v-html="hudEnemy" id="enemy"></pre>
       </div>
       <pre v-html="logEntries.join('\n')" id="log"></pre>
     </div>
@@ -738,6 +755,11 @@ pre {
   border: 1px solid white;
   padding: 5px;
   height: 100%;
+}
+
+.redBorder {
+  border: 2px solid red !important;
+  text-decoration: line-through !important;
 }
 
 #log {

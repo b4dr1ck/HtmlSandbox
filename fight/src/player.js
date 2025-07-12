@@ -3,7 +3,7 @@ export const player = {
   description: "A brave warrior with a strong will and a heart of gold.",
   identified: true,
   conditions: [
-   /* { name: "poisoned", duration: 3, stunned: false, damage: [{ type: "POI", value: 5 }] },
+    /* { name: "poisoned", duration: 3, stunned: false, damage: [{ type: "POI", value: 5 }] },
     { name: "iced", duration: 5, stunned: true, damage: [{ type: "WAT" }] },
     { name: "healing", duration: 5, stunned: false, stats: { hp: 5 } },*/
   ],
@@ -72,14 +72,12 @@ export const player = {
   equipped: [
     {
       equipped: true,
-      name: "Iron Sword",
-      command: "ironsword",
+      name: "Burning Iron Sword",
+      command: "burningironsword",
       type: "weapon",
       description: "A sturdy sword that deals a bit of damage.",
-      damage: [
-        { value: [1, 6], type: "PHY" },
-        { value: 2, type: "FIR" },
-      ],
+      damage: [1, 6],
+      extra: [{ value: 2, type: "FIR" }],
     },
     {
       equipped: false,
