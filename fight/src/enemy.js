@@ -6,7 +6,7 @@ import { spells } from "./spells.js";
 export const enemy = {
   name: "Weird Goblin",
   description: "A strange goblin with a nasty bite and a penchant for poison.",
-  identified: true,
+  identified: false,
   conditions: [],
   stats: {
     hp: { base: 80, current: 80, bon: 0 },

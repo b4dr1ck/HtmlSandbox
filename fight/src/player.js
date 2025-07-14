@@ -44,6 +44,6 @@ export const player = {
     equipment.hotironshield,
     equipment.icyleatherarmor,
   ],
-  spellbook: [spells.healingtouch, spells.fireball, spells.icicle, spells.poisoncloud],
+  spellbook: [spells.healingtouch, spells.fireball, spells.icicle, spells.poisoncloud, spells.identify],
   specials: [specials.powerstrike, specials.stamp],
 };

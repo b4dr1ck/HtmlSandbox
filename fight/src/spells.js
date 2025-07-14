@@ -1,3 +1,5 @@
+import { effect } from "vue";
+
 export const spells = {
   healingtouch: {
     name: "Healing Touch",
@@ -40,5 +42,13 @@ export const spells = {
     cost: 3,
     effects: [{ name: "poisoned", duration: 10, stunned: false, damage: [{ type: "POI", value: 1 }] }],
     description: "a nasty fart that stinks for a long time",
+  },
+  identify: {
+    name: "Identify",
+    command: "identify",
+    target: "enemy",
+    cost: 5,
+    description: "Reveals the enemy's weaknesses and resistances.",
+    effects: [{ name: "identified", duration: 2, stunned: false, identified: true }],
   },
 };

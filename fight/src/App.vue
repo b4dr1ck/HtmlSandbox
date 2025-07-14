@@ -75,7 +75,17 @@ export default {
 
       // loop through all conditions and apply effects
       this[actor].conditions.forEach((condition) => {
-        this.log.push(`${actorName} is ${condition.name}`);
+
+        // special case for identified condition
+        if (condition.identified) {
+          this[actor].identified = true;
+          if (condition.duration === 1) this[actor].identified = false;
+
+          this.log.push(`${actorName} is now identified!`);
+        } else {
+          this.log.push(`${actorName} is ${condition.name}`);
+        }
+
         condition.duration--;
 
         let resist = 0;
@@ -617,7 +627,7 @@ export default {
     showDetails(command) {
       function showStats(obj) {
         const stats = Object.entries(obj);
-        const skipKeys = ["name", "description", "type", "command", "equipped", "target", "amount"];
+        const skipKeys = ["name", "description", "type", "command", "equipped", "target", "amount", "identified"];
         let output = "";
         stats.forEach(([key, value]) => {
           if (skipKeys.includes(key)) return;
