@@ -1,3 +1,8 @@
+import { equipment } from "./equipment.js";
+import { items } from "./items.js";
+import { specials } from "./specials.js";
+import { spells } from "./spells.js";
+
 export const enemy = {
   name: "Weird Goblin",
   description: "A strange goblin with a nasty bite and a penchant for poison.",
@@ -20,72 +25,8 @@ export const enemy = {
       PHY: { base: 0, current: 0, bon: 0 },
     },
   },
-  specials: [
-    {
-      name: "Goblin Bite",
-      command: "goblinbite",
-      target: "player",
-      cost: 3,
-      extra: [{ type: "PHY", value: 10 }],
-      description: "A nasty goblin bite that makes you sick.",
-      effects: [{ name: "poisoned", duration: 2, stunned: false, damage: [{ type: "POI", value: 5 }] }],
-    },
-  ],
-  spellbook: [
-    {
-      name: "Fireball",
-      command: "fireball",
-      target: "player",
-      cost: 5,
-      extra: [{ type: "FIR", value: 20 }],
-      description: "A powerful fire spell that deals damage to the enemy.",
-    },
-    {
-      name: "Fart",
-      command: "fart",
-      target: "player",
-      cost: 3,
-      effects: [{ name: "poisoned", duration: 10, stunned: false, damage: [{ type: "POI", value: 1 }] }],
-      description: "a nasty fart that stinks for a long time",
-    },
-  ],
-  items: [
-    {
-      name: "Heal Potion",
-      command: "healpotion",
-      description: "Restores some health.",
-      amount: 2,
-      use: {
-        hp: 20,
-      },
-    },
-  ],
-  equipped: [
-    {
-      equipped: true,
-      name: "Goblin Dagger",
-      command: "goblindagger",
-      type: "weapon",
-      description: "A small dagger that deals a bit of damage.",
-      damage: [1, 4],
-      extra: [],
-    },
-    {
-      equipped: true,
-      name: "Goblin Shield",
-      command: "goblindshield",
-      type: "shield",
-      description: "A small shield that provides some protection.",
-      AC: 2,
-    },
-    {
-      equipped: true,
-      name: "Toxic Goblin Helmet",
-      command: "toxicgoblinhelmet",
-      type: "armor",
-      description: "A small helmet that protects you with poison resistance.",
-      resist: { POI: 2 },
-      AC: 1,
-    },
-  ],
+  specials: [specials.goblinbite],
+  spellbook: [spells.fart],
+  items: [items.healingpotion],
+  equipped: [equipment.goblindagger, equipment.goblindshield, equipment.toxicgoblinhelmet],
 };
