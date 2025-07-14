@@ -146,7 +146,7 @@ export default {
         });
       } else {
         this.log.push(`[${actor}]${this[actor].name}[/${actor}] has no weapon equipped!`);
-        return { hit: 0, dmg: 0 };
+        return { hit: hit, dmg: 1 };
       }
 
       return { hit: hit, dmg: weaponDmg };
@@ -384,9 +384,9 @@ export default {
       const AC = this[actor2].stats.AC.base + this[actor2].stats.AC.bon;
 
       if (hit === 1) {
-        const critDmg = Math.ceil(dmg / 2);
-        this[actor1].stats.hp.current -= critDmg;
-        this.log.push(`${actorName1} critically misses ${actorName2} and injures himself for ${critDmg} dmg!`);
+        const critFailDmg = Math.ceil(dmg / 2);
+        this[actor1].stats.hp.current -= critFailDmg;
+        this.log.push(`${actorName1} critically misses ${actorName2} and injures himself for ${critFailDmg} dmg!`);
       } else if (hit >= 20) {
         this[actor2].stats.hp.current -= dmg * 2;
         this.log.push(`${actorName1} critically hits ${actorName2}</span> for ${dmg * 2} damage!`);
@@ -590,18 +590,19 @@ export default {
             });
             return;
           }
-          if (key === "damage") {
-            output += `dmg: ${value
+          if (key === "extra") {
+            output += `extra: ${value
               .map((dmg) => {
-                if (dmg.value instanceof Array) {
-                  return `${dmg.value[0]}d${dmg.value[1]}`;
-                }
                 if (dmg.type === "PHY") {
                   return `${dmg.value}`;
                 }
                 return `+ ${dmg.value} ${dmg.type}`;
               })
               .join(", ")}, `;
+            return;
+          }
+          if (key === "damage") {
+            output += `damage: ${value[0]}d${value[1]}, `;
             return;
           }
           if (key === "effects") {
