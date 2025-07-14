@@ -366,14 +366,13 @@ export default {
       let resist = 0;
       let dmg = 0;
       let dmgTotal = 0;
-      if (specialOrSpell.damage) {
-        specialOrSpell.damage.forEach((damage) => {
+      if (specialOrSpell.extra) {
+        specialOrSpell.extra.forEach((damage) => {
           resist = this[actor2].stats.resist[damage.type].base + this[actor2].stats.resist[damage.type].bon;
           dmg = damage.value - Math.floor((resist * damage.value) / 100);
           dmgTotal += dmg;
         });
 
-        console.log(hit);
         if (hit === 0) {
           const critFailDmg = Math.ceil(dmgTotal / 2);
           this.log.push(
