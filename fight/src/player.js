@@ -53,6 +53,13 @@ export const player = {
       },
     },
     {
+      name: "Potion of Wisdom",
+      command: "potionofwisdom",
+      description: "Increases INT for a short duration.",
+      amount: 2,
+      effects: [{ name: "intelligent", duration: 5, stunned: false, set: true, stats: { INT: 4 } }],
+    },
+    {
       name: "Mana Potion",
       command: "manapotion",
       description: "Restores some mana.",
@@ -97,6 +104,7 @@ export const player = {
       type: "head",
       description: "a simple leather cap",
       AC: 1,
+      hp: 5,
     },
     {
       equipped: true,

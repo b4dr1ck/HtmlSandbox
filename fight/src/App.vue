@@ -21,6 +21,8 @@ export default {
         pow: "orange",
         AC: "yellow",
         STR: "green",
+        DEX: "green",
+        INT: "green",
         bon: "BurlyWood",
         FIR: "red",
         WAT: "aqua",
@@ -78,7 +80,6 @@ export default {
 
         let resist = 0;
         let dmg = 0;
-        let dmgTotal = 0;
         // damage-based conditions
         if (condition.damage) {
           condition.damage.forEach((damage) => {
@@ -96,11 +97,19 @@ export default {
         if (condition.stats) {
           for (const stat in condition.stats) {
             if (this[actor].stats[stat]) {
-              this[actor].stats[stat].current += condition.stats[stat];
-              if (condition.stats[stat] > 0) {
-                this.log.push(`${actorName} gains ${condition.stats[stat]} ${stat} from ${condition.name}!`);
+              if (condition.set) {
+                this[actor].stats[stat].bon = condition.stats[stat];
               } else {
-                this.log.push(`${actorName} loses ${condition.stats[stat]} ${stat} from ${condition.name}!`);
+                this[actor].stats[stat].current += condition.stats[stat];
+              }
+              if (condition.stats[stat] > 0) {
+                this.log.push(
+                  `${actorName} gains ${condition.stats[stat]} ${stat} from [details]${condition.name}[/details]!`
+                );
+              } else {
+                this.log.push(
+                  `${actorName} loses ${condition.stats[stat]} ${stat} from [details]${condition.name}[/details]!`
+                );
               }
             }
           }
@@ -114,8 +123,8 @@ export default {
     // cap the current stats to the base value
     normalizeStats(actor) {
       ["hp", "mp", "pow"].forEach((stat) => {
-        if (this[actor].stats[stat].current > this[actor].stats[stat].base) {
-          this[actor].stats[stat].current = this[actor].stats[stat].base;
+        if (this[actor].stats[stat].current > this[actor].stats[stat].base + this[actor].stats[stat].bon) {
+          this[actor].stats[stat].current = this[actor].stats[stat].base + this[actor].stats[stat].bon;
         }
       });
     },
@@ -185,7 +194,6 @@ export default {
           this.defend("player");
         }
       }
-
       // cap the current stats to the base value
       this.normalizeStats("player");
 
@@ -237,6 +245,10 @@ export default {
                 break;
               case 3:
                 // Defense
+                const shield = this.enemy.equipped.find((item) => item.type === "shield" && item.equipped);
+                if (this.enemy.stats.AC === shield.AC + this.enemy.stats.AC.bon) {
+                  continue; // skip if already defending
+                }
                 this.defend("enemy");
                 retry = false;
                 break;
@@ -517,7 +529,7 @@ export default {
           } else {
             hudText.push(
               `[${stat}]${stat}:[/${stat}]` +
-                ` ${this[actor]["stats"][stat].base}` +
+                ` ${this[actor]["stats"][stat].current}` +
                 (bonStat ? ` + [bon]${bonStat}[/bon]` : "")
             );
           }
@@ -565,7 +577,9 @@ export default {
             for (const resist in item.resist) {
               this[actor]["stats"]["resist"][resist].bon += item.resist[resist];
             }
-          } else this[actor]["stats"][key].bon += item[key];
+          } else {
+            this[actor]["stats"][key].bon += item[key];
+          }
         }
       });
     },
@@ -603,7 +617,7 @@ export default {
     showDetails(command) {
       function showStats(obj) {
         const stats = Object.entries(obj);
-        const skipKeys = ["name", "description", "type", "command", "equipped", "target","amount"];
+        const skipKeys = ["name", "description", "type", "command", "equipped", "target", "amount"];
         let output = "";
         stats.forEach(([key, value]) => {
           if (skipKeys.includes(key)) return;

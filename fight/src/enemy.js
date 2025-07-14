@@ -26,7 +26,7 @@ export const enemy = {
       command: "goblinbite",
       target: "player",
       cost: 3,
-      damage: [{ type: "PHY", value: 10 }],
+      extra: [{ type: "PHY", value: 10 }],
       description: "A nasty goblin bite that makes you sick.",
       effects: [{ name: "poisoned", duration: 2, stunned: false, damage: [{ type: "POI", value: 5 }] }],
     },
@@ -37,7 +37,7 @@ export const enemy = {
       command: "fireball",
       target: "player",
       cost: 5,
-      damage: [{ type: "FIR", value: 20 }],
+      extra: [{ type: "FIR", value: 20 }],
       description: "A powerful fire spell that deals damage to the enemy.",
     },
     {
