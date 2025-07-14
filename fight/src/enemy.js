@@ -9,6 +9,8 @@ export const enemy = {
     pow: { base: 5, current: 5, bon: 0 },
     AC: { base: 5, current: 5, bon: 0 },
     STR: { base: 12, current: 12, bon: 0 },
+    DEX: { base: 10, current: 10, bon: 0 },
+    INT: { base: 8, current: 8, bon: 0 },
     resist: {
       FIR: { base: 5, current: 5, bon: 0 },
       POI: { base: 5, current: 5, bon: 0 },

@@ -127,11 +127,14 @@ export default {
       }
       return false;
     },
-    calcHitAndDmg(actor, actor2) {
-      const STR = this[actor].stats.STR.base + this[actor].stats.STR.bon;
-      const modifier = Math.floor((STR - 10) / 2);
+    calcHitChance(actor, atrribute) {
+      const attr = this[actor].stats[atrribute].base + this[actor].stats[atrribute].bon;
+      const modifier = Math.floor((attr - 10) / 2);
       const d20 = this.getRandomInt(1, 20); // for hit-chance
-      const hit = d20 === 1 ? 1 : d20 + modifier;
+      return d20 === 1 ? 1 : d20 + modifier; // return 1 on critical fail
+    },
+    calcWeaponDamge(actor, actor2) {
+      const hit = this.calcHitChance(actor, "STR");
       const weapon = this[actor].equipped.find((item) => item.type === "weapon" && item.equipped);
       let weaponDmg = 0;
       let resist = 0;
@@ -298,7 +301,7 @@ export default {
 
         if (item.effects) {
           // make a copy of the effects to avoid reference issues
-          this[actor].conditions.push(...item.effects.map(e => JSON.parse(JSON.stringify(e))));
+          this[actor].conditions.push(...item.effects.map((e) => JSON.parse(JSON.stringify(e))));
         }
 
         this.log.push(`[${actor}]${this[actor].name}[/${actor}] uses [item]${item.name}[/item]`);
@@ -322,6 +325,7 @@ export default {
       const spell = this[actor].spellbook.find((spell) => spell.command === name); // find spell based on command-name
       const costType = special ? "pow" : "mp";
       const specialOrSpell = special || spell;
+      const hit = this.calcHitChance(actor, "INT");
 
       if (specialOrSpell) {
         // not enough resources
@@ -369,14 +373,35 @@ export default {
           dmgTotal += dmg;
         });
 
-        this[actor2].stats.hp.current -= dmgTotal;
-        this.log.push(
-          `[${actor}]${this[actor].name}[/${actor}] deals ${dmgTotal} damage to [${actor2}]${this[actor2].name}[/${actor2}]`
-        );
+        console.log(hit);
+        if (hit === 0) {
+          const critFailDmg = Math.ceil(dmgTotal / 2);
+          this.log.push(
+            `[${actor}]${this[actor].name}[/${actor}] critically failed using spell and hurts hiself for ${critFailDmg} dmg!`
+          );
+          this[actor].stats[costType].current -= specialOrSpell.cost;
+          this[actor].stats.hp.current -= critFailDmg;
+        } else if (hit >= 20) {
+          const critDmg = Math.ceil(dmgTotal * 2);
+          this.log.push(
+            `[${actor}]${this[actor].name}[/${actor}] critically hits [${actor2}]${this[actor2].name}[/${actor2}] for ${critDmg} dmg!`
+          );
+          this[actor].stats[costType].current -= specialOrSpell.cost;
+          this[actor2].stats.hp.current -= critDmg;
+        } else if (hit > this[actor2].stats.AC.current) {
+          this[actor2].stats.hp.current -= dmgTotal;
+          this.log.push(
+            `[${actor}]${this[actor].name}[/${actor}] deals ${dmgTotal} damage to [${actor2}]${this[actor2].name}[/${actor2}]`
+          );
+        } else {
+          this.log.push(
+            `[${actor}]${this[actor].name}[/${actor}] misses [${actor2}]${this[actor2].name}[/${actor2}] with the spell!`
+          );
+        }
       }
     },
     attack(actor1, actor2) {
-      const { hit: hit, dmg: dmg } = this.calcHitAndDmg(actor1, actor2);
+      const { hit: hit, dmg: dmg } = this.calcWeaponDamge(actor1, actor2);
 
       const actorName1 = `[${actor1}]${this[actor1].name}[/${actor1}]`;
       const actorName2 = `[${actor2}]${this[actor2].name}[/${actor2}]`;
@@ -579,7 +604,7 @@ export default {
     showDetails(command) {
       function showStats(obj) {
         const stats = Object.entries(obj);
-        const skipKeys = ["name", "description", "type", "command", "equipped", "target"];
+        const skipKeys = ["name", "description", "type", "command", "equipped", "target","amount"];
         let output = "";
         stats.forEach(([key, value]) => {
           if (skipKeys.includes(key)) return;
@@ -638,7 +663,9 @@ export default {
           return specialDetails ? `${specialDetails.description} ${showStats(specialDetails)}` : "";
         case "inventory":
           const imtemDetails = this.player.items.find((item) => item.name.toLowerCase() === command);
-          return imtemDetails ? `${imtemDetails.description} ${showStats(imtemDetails)}` : "";
+          return imtemDetails
+            ? `[item](${imtemDetails.amount})[/item] ${imtemDetails.description} ${showStats(imtemDetails)}`
+            : "";
         case "equip":
           const equippedDetails = this.player.equipped.find((equipped) => equipped.name.toLowerCase() === command);
           return equippedDetails
