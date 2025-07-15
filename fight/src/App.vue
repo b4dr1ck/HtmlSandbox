@@ -75,7 +75,6 @@ export default {
 
       // loop through all conditions and apply effects
       this[actor].conditions.forEach((condition) => {
-
         // special case for identified condition
         if (condition.identified) {
           this[actor].identified = true;
@@ -152,8 +151,11 @@ export default {
       const d20 = this.getRandomInt(1, 20); // for hit-chance
       return d20 === 1 ? 1 : d20 + modifier; // return 1 on critical fail
     },
-    calcWeaponDamge(actor, actor2) {
-      const hit = this.calcHitChance(actor, "STR");
+    calcDamage(actor, actor2, attr, overrideDmg) {
+      const hit = this.calcHitChance(actor, attr);
+      if (overrideDmg) {
+        return { hit: hit, dmg: overrideDmg };
+      }
       const weapon = this[actor].equipped.find((item) => item.type === "weapon" && item.equipped);
       let weaponDmg = 0;
       let resist = 0;
@@ -184,7 +186,7 @@ export default {
 
       // using an item
       if (this.mode === "inventory") {
-        this.useItem(cmd, "player");
+        this.useItem(cmd, "player", "enemy");
       }
 
       // using an equipment
@@ -198,7 +200,7 @@ export default {
           this.useSpecialOrSpell(cmd, "player", "enemy");
           // Normal Attack
         } else if (cmd === "attack") {
-          this.attack("player", "enemy");
+          this.attack("player", "enemy", "STR");
           // Defense
         } else if (cmd === "defend") {
           this.defend("player");
@@ -250,7 +252,7 @@ export default {
                 break;
               case 2:
                 // Normal Attack
-                this.attack("enemy", "player");
+                this.attack("enemy", "player", "STR");
                 retry = false;
                 break;
               case 3:
@@ -276,7 +278,7 @@ export default {
                 ) {
                   continue;
                 }
-                this.useItem(this.enemy.items[this.getRandomInt(0, maxItems - 1)].command, "enemy");
+                this.useItem(this.enemy.items[this.getRandomInt(0, maxItems - 1)].command, "enemy", "player");
                 retry = false;
             }
           }
@@ -313,64 +315,70 @@ export default {
       }
       this.applyBonStats("player"); // apply the bonuses from the equipped item
     },
-    useItem(name, actor) {
-      const item = this[actor].items.find((item) => item.command === name);
+    useItem(name, actor1, actor2) {
+      const item = this[actor1].items.find((item) => item.command === name);
 
       if (item) {
+        // items with stat-change
         for (const stat in item.use) {
-          this[actor].stats[stat].current += item.use[stat];
+          if (stat === "damage") continue;
+          this[actor1].stats[stat].current += item.use[stat];
         }
 
         if (item.effects) {
           // make a copy of the effects to avoid reference issues
-          this[actor].conditions.push(...item.effects.map((e) => JSON.parse(JSON.stringify(e))));
+          this[actor1].conditions.push(...item.effects.map((e) => JSON.parse(JSON.stringify(e))));
         }
 
-        this.log.push(`[${actor}]${this[actor].name}[/${actor}] uses [item]${item.name}[/item]`);
+        this.log.push(`[${actor1}]${this[actor1].name}[/${actor1}] uses [item]${item.name}[/item]`);
         item.amount--;
 
         if (item.amount === 0) {
-          this.log.push(`[${actor}]${this[actor].name}[/${actor}] has no more [item]${item.name}[/item] left!`);
+          this.log.push(`[${actor1}]${this[actor1].name}[/${actor1}] has no more [item]${item.name}[/item](s) left!`);
         }
+      }
+      // items that have a damage value
+      if (item.use.damage) {
+        this.attack(actor1, actor2, "DEX", item.use.damage);
       }
 
       // remove the used item from the inventory
-      this[actor].items = this[actor].items.filter((i) => i.amount > 0);
+      this[actor1].items = this[actor1].items.filter((i) => i.amount > 0);
 
-      if (actor === "player") {
-        this.commands = this[actor].items.map((item) => `${item.name}`);
+      if (actor1 === "player") {
+        this.commands = this[actor1].items.map((item) => `${item.name}`);
         this.commands.push("Back");
       }
     },
-    useSpecialOrSpell(name, actor, actor2) {
-      const special = this[actor].specials.find((special) => special.command === name); // find special based on command-name
-      const spell = this[actor].spellbook.find((spell) => spell.command === name); // find spell based on command-name
+    useSpecialOrSpell(name, actor1, actor2) {
+      const special = this[actor1].specials.find((special) => special.command === name); // find special based on command-name
+      const spell = this[actor1].spellbook.find((spell) => spell.command === name); // find spell based on command-name
       const costType = special ? "pow" : "mp";
       const specialOrSpell = special || spell;
-      const hit = this.calcHitChance(actor, "INT");
+      const hit = this.calcHitChance(actor1, "INT");
 
       if (specialOrSpell) {
         // not enough resources
-        if (specialOrSpell.cost > this[actor].stats[costType].current) {
+        if (specialOrSpell.cost > this[actor1].stats[costType].current) {
           this.log.push(
-            `[${actor}]${this[actor].name}[/${actor}] does not have enough ${costType} to use [special]${specialOrSpell.name}[/special]`
+            `[${actor1}]${this[actor1].name}[/${actor1}] does not have enough ${costType} to use [special]${specialOrSpell.name}[/special]`
           );
           return;
         }
         // log the action
         if (specialOrSpell === special) {
           this.log.push(
-            `[${actor}]${this[actor].name}[/${actor}] uses a special power [special]${specialOrSpell.name}[/special]`
+            `[${actor1}]${this[actor1].name}[/${actor1}] uses a special power [special]${specialOrSpell.name}[/special]`
           );
         } else {
-          this.log.push(`[${actor}]${this[actor].name}[/${actor}] casts a spell [spell]${specialOrSpell.name}[/spell]`);
+          this.log.push(`[${actor1}]${this[actor1].name}[/${actor1}] casts a spell [spell]${specialOrSpell.name}[/spell]`);
         }
       } else {
         return;
       }
 
       // spell costs
-      this[actor].stats[costType].current -= specialOrSpell.cost;
+      this[actor1].stats[costType].current -= specialOrSpell.cost;
 
       // apply effects
       if (specialOrSpell.effects) {
@@ -379,7 +387,7 @@ export default {
       }
       // apply stats changes
       if (specialOrSpell.stats) {
-        const target = specialOrSpell.target || "enemy"; // default target is enemy
+        const target = specialOrSpell.targetEnemy && actor1 === "player" ? "enemy" : "player";
         for (const stat in specialOrSpell.stats) {
           this[target].stats[stat].current += specialOrSpell.stats[stat];
         }
@@ -398,31 +406,31 @@ export default {
         if (hit === 0) {
           const critFailDmg = Math.ceil(dmgTotal / 2);
           this.log.push(
-            `[${actor}]${this[actor].name}[/${actor}] critically failed using spell and hurts hiself for ${critFailDmg} dmg!`
+            `[${actor1}]${this[actor1].name}[/${actor1}] critically failed using spell and hurts hiself for ${critFailDmg} dmg!`
           );
-          this[actor].stats[costType].current -= specialOrSpell.cost;
-          this[actor].stats.hp.current -= critFailDmg;
+          this[actor1].stats[costType].current -= specialOrSpell.cost;
+          this[actor1].stats.hp.current -= critFailDmg;
         } else if (hit >= 20) {
           const critDmg = Math.ceil(dmgTotal * 2);
           this.log.push(
-            `[${actor}]${this[actor].name}[/${actor}] critically hits [${actor2}]${this[actor2].name}[/${actor2}] for ${critDmg} dmg!`
+            `[${actor1}]${this[actor1].name}[/${actor1}] critically hits [${actor1}]${this[actor2].name}[/${actor2}] for ${critDmg} dmg!`
           );
-          this[actor].stats[costType].current -= specialOrSpell.cost;
+          this[actor1].stats[costType].current -= specialOrSpell.cost;
           this[actor2].stats.hp.current -= critDmg;
         } else if (hit > this[actor2].stats.AC.current) {
           this[actor2].stats.hp.current -= dmgTotal;
           this.log.push(
-            `[${actor}]${this[actor].name}[/${actor}] deals ${dmgTotal} damage to [${actor2}]${this[actor2].name}[/${actor2}]`
+            `[${actor1}]${this[actor1].name}[/${actor1}] deals ${dmgTotal} damage to [${actor2}]${this[actor2].name}[/${actor2}]`
           );
         } else {
           this.log.push(
-            `[${actor}]${this[actor].name}[/${actor}] misses [${actor2}]${this[actor2].name}[/${actor2}] with the spell!`
+            `[${actor1}]${this[actor1].name}[/${actor1}] misses [${actor2}]${this[actor2].name}[/${actor2}] with the spell!`
           );
         }
       }
     },
-    attack(actor1, actor2) {
-      const { hit: hit, dmg: dmg } = this.calcWeaponDamge(actor1, actor2);
+    attack(actor1, actor2, attr, overrideDmg = null) {
+      const { hit: hit, dmg: dmg } = this.calcDamage(actor1, actor2, attr, overrideDmg);
 
       const actorName1 = `[${actor1}]${this[actor1].name}[/${actor1}]`;
       const actorName2 = `[${actor2}]${this[actor2].name}[/${actor2}]`;

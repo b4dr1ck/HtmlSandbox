@@ -51,4 +51,13 @@ export const items = {
       pow: 5,
     },
   },
+  bomb: {
+    name: "Bomb",
+    command: "bomb",
+    description: "a small bomb that deals some damage",
+    amount: 1,
+    use: {
+      damage: 10,
+    },
+  }
 };

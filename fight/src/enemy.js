@@ -26,7 +26,7 @@ export const enemy = {
     },
   },
   specials: [specials.goblinbite],
-  spellbook: [spells.fart],
-  items: [items.healingpotion],
+  spellbook: [spells.fart,spells.fireball],
+  items: [items.healingpotion,items.bomb],
   equipped: [equipment.goblindagger, equipment.goblindshield, equipment.toxicgoblinhelmet],
 };

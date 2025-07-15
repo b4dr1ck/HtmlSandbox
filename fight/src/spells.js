@@ -1,18 +1,16 @@
-import { effect } from "vue";
-
 export const spells = {
   healingtouch: {
     name: "Healing Touch",
     command: "healingtouch",
     cost: 10,
-    target: "player",
+    targetEnemy: false,
     stats: { hp: 20 },
     description: "Heals the target for a small amount of health.",
   },
   fireball: {
     name: "Fireball",
     command: "fireball",
-    target: "enemy",
+    targetEnemy: true,
     cost: 5,
     extra: [{ type: "FIR", value: 20 }],
     description: "A powerful fire spell that deals damage to the enemy.",
@@ -20,7 +18,7 @@ export const spells = {
   icicle: {
     name: "Icicle",
     command: "icicle",
-    target: "enemy",
+    targetEnemy: true,
     cost: 3,
     extra: [{ type: "WAT", value: 12 }],
     description: "A chilling spell that deals ice damage to the enemy.",
@@ -29,7 +27,7 @@ export const spells = {
   poisoncloud: {
     name: "Poison Cloud",
     command: "poisoncloud",
-    target: "enemy",
+    targetEnemy: true,
     cost: 8,
     extra: [{ type: "POI", value: 10 }],
     description: "A poisenous cloud that deals damage over time.",
@@ -38,7 +36,7 @@ export const spells = {
   fart: {
     name: "Fart",
     command: "fart",
-    target: "player",
+    targetEnemy: true,
     cost: 3,
     effects: [{ name: "poisoned", duration: 10, stunned: false, damage: [{ type: "POI", value: 1 }] }],
     description: "a nasty fart that stinks for a long time",
@@ -46,7 +44,7 @@ export const spells = {
   identify: {
     name: "Identify",
     command: "identify",
-    target: "enemy",
+    targetEnemy: true,
     cost: 5,
     description: "Reveals the enemy's weaknesses and resistances.",
     effects: [{ name: "identified", duration: 2, stunned: false, identified: true }],

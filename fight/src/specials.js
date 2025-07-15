@@ -2,7 +2,7 @@ export const specials = {
   powerstrike: {
     name: "Power Strike",
     command: "powerstrike",
-    target: "enemy",
+    targetEnemy: true,
     cost: 10,
     extra: [{ type: "PHY", value: 25 }],
     description: "A powerful strike that deals extra damage to the enemy.",
@@ -10,7 +10,7 @@ export const specials = {
   stamp: {
     name: "Stamp",
     command: "stamp",
-    target: "enemy",
+    targetEnemy: true,
     cost: 10,
     extra: [{ type: "PHY", value: 15 }],
     effects: [{ name: "stunned", duration: 1, stunned: true, damage: [{ type: "PHY" }] }],
@@ -19,7 +19,7 @@ export const specials = {
   goblinbite: {
     name: "Goblin Bite",
     command: "goblinbite",
-    target: "player",
+    targetEnemy: true,
     cost: 3,
     extra: [{ type: "PHY", value: 10 }],
     description: "A nasty goblin bite that makes you sick.",
