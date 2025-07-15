@@ -129,6 +129,19 @@ export default {
         }
       });
     },
+    groupItems(actor) {
+      // group items by name and sum their amounts
+      const groupedItems = {};
+      this[actor].items.forEach((item) => {
+        if (groupedItems[item.name]) {
+          groupedItems[item.name].amount += item.amount;
+        } else {
+          groupedItems[item.name] = { ...item };
+        }
+      });
+      // convert the grouped items back to an array
+      this[actor].items = Object.values(groupedItems);
+    },
     // cap the current stats to the base value
     normalizeStats(actor) {
       ["hp", "mp", "pow"].forEach((stat) => {
@@ -757,6 +770,9 @@ export default {
 
     this.applyBonStats("player");
     this.applyBonStats("enemy");
+
+    this.groupItems("player");
+    this.groupItems("enemy");
 
     this.log.push(
       `[player]${this.player.name}[/player] starts a fight against [enemy]${this.enemy.name}[/enemy]</span>\n`

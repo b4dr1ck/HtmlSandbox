@@ -33,6 +33,8 @@ export const player = {
     items.healingorb,
     items.megapotion,
     items.healingpotion,
+    items.healingpotion,
+    items.healingpotion,
     items.potionofwisdom,
     items.manapotion,
     items.powerpotion,
