@@ -270,6 +270,12 @@ export default {
                 if (maxItems === 0) {
                   continue;
                 }
+                const item = this.enemy.items[this.getRandomInt(0, maxItems - 1)];
+                // always use an item with damage
+                if (item.use.damage) {
+                  this.useItem(item.command, "enemy", "player");
+                  retry = false;
+                }
                 // check if the enemies stats are too high to use an item
                 if (
                   this.enemy.stats.mp.current > this.enemy.stats.mp.base * 0.2 ||
@@ -278,7 +284,7 @@ export default {
                 ) {
                   continue;
                 }
-                this.useItem(this.enemy.items[this.getRandomInt(0, maxItems - 1)].command, "enemy", "player");
+                this.useItem(item.command, "enemy", "player");
                 retry = false;
             }
           }
@@ -371,7 +377,9 @@ export default {
             `[${actor1}]${this[actor1].name}[/${actor1}] uses a special power [special]${specialOrSpell.name}[/special]`
           );
         } else {
-          this.log.push(`[${actor1}]${this[actor1].name}[/${actor1}] casts a spell [spell]${specialOrSpell.name}[/spell]`);
+          this.log.push(
+            `[${actor1}]${this[actor1].name}[/${actor1}] casts a spell [spell]${specialOrSpell.name}[/spell]`
+          );
         }
       } else {
         return;
