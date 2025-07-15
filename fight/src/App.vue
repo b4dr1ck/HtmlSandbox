@@ -344,7 +344,7 @@ export default {
         }
       }
       // items that have a damage value
-      if (item.use.damage) {
+      if (item.use && item.use.damage) {
         this.attack(actor1, actor2, "DEX", item.use.damage);
       }
 
