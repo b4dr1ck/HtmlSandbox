@@ -51,6 +51,15 @@ export const items = {
       pow: 5,
     },
   },
+  antidote: {
+    name: "Antidote",
+    command: "antidote",
+    description: "Cures poison.",
+    amount: 1,
+    use: {
+      conditions: ["poisoned"],
+    },
+  },
   bomb: {
     name: "Bomb",
     command: "bomb",

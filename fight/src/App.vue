@@ -258,7 +258,7 @@ export default {
               case 3:
                 // Defense
                 const shield = this.enemy.equipped.find((item) => item.type === "shield" && item.equipped);
-                if (this.enemy.stats.AC === shield.AC + this.enemy.stats.AC.bon) {
+                if (this.enemy.stats.AC.bon === shield.AC + this.enemy.stats.AC.bon) {
                   continue; // skip if already defending
                 }
                 this.defend("enemy");
@@ -327,7 +327,7 @@ export default {
       if (item) {
         // items with stat-change
         for (const stat in item.use) {
-          if (stat === "damage") continue;
+          if (stat === "damage" || stat === "conditions") continue;
           this[actor1].stats[stat].current += item.use[stat];
         }
 
@@ -346,6 +346,15 @@ export default {
       // items that have a damage value
       if (item.use && item.use.damage) {
         this.attack(actor1, actor2, "DEX", item.use.damage);
+      }
+
+      if (item.use && item.use.conditions) {
+        this[actor1].conditions.forEach((condition) => {
+          // check if the item removes a condition
+          if (item.use.conditions.includes(condition.name)) {
+            this[actor1].conditions = this[actor1].conditions.filter((c) => c.name !== condition.name);
+          }
+        });
       }
 
       // remove the used item from the inventory
@@ -467,7 +476,7 @@ export default {
         this.log.push(`${actorName} has no shield equipped!`);
         return;
       }
-      const tempBon = shield?.AC || 0;
+      const tempBon = shield.AC || 0;
 
       this.log.push(`${actorName} increases AC by ${tempBon} for the next attack.`);
       this[actor].stats.AC.bon += tempBon;

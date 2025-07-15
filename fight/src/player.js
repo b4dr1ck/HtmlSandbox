@@ -37,6 +37,7 @@ export const player = {
     items.manapotion,
     items.powerpotion,
     items.bomb,
+    items.antidote,
   ],
   equipped: [
     equipment.burningironsword,
