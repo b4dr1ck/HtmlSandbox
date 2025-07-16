@@ -112,6 +112,10 @@ export default {
 
       // Check if the object can be opened
       const object = this.rooms[this.whereAmI].objects[noun];
+      if (!object.hasOwnProperty("open")) {
+        this.output += `<br>You can't open the ${noun}.<br>`;
+        return;
+      }
       if (!object.open) {
         object.open = true;
         this.output += `<br>You open the ${noun}.<br>`;
@@ -120,8 +124,6 @@ export default {
         this.output += `<br>The ${noun} is already open.<br>`;
         return;
       }
-
-      // Open the object
     },
     go(_verb, param) {
       // If no parameter is given, do nothing
@@ -139,7 +141,7 @@ export default {
         .toLowerCase();
       const exits = this.rooms[this.whereAmI].exit;
 
-      if (exits && exits[direction].target) {
+      if (exits && exits[direction]) {
         if (!this.rooms[this.whereAmI].objects[exits[direction].handicap].open) {
           this.output += `<br>The ${exits[direction].handicap} is closed.<br>`;
           this.open("open", [exits[direction].handicap]);
