@@ -7,7 +7,7 @@ export default {
       command: "",
       output: "",
       verbAliases: {
-        "^(look|see|view|examine|inspect)$": "look",
+        look:["look", "see", "view", "examine", "inspect"],
       },
       rooms: {
         room: {
@@ -16,9 +16,9 @@ export default {
             "You are in a small dimly lit room with stone walls and a wooden table in the center. On the table, there is a mysterious book.",
           objects: {
             objectAliases: {
-              "^book$": "book",
-              "^table$": "table",
-              "^(wall|walls|stone wall)$": "wall",
+              book: ["book"],
+              table: ["tabel", "desk", "wooden table"],
+              wall: ["wall", "walls", "stone wall"],
             },
             book: { look: "You see an old dusty book with a red cover that shows a pentagram" },
             table: { look: "The table is made of oak and has a few scratches on it." },
@@ -34,18 +34,11 @@ export default {
       const verb = splitCmd[0].toLowerCase();
       const param = splitCmd.slice(1).map((x) => x.toLowerCase());
 
-      let verbAlias = verb;
-
-      // Check for verb aliases
-      for (const alias in this.verbAliases) {
-        if (verb.match(new RegExp(alias))) {
-          verbAlias = this.verbAliases[alias];
-          break;
-        }
-      }
+      let verbAlias = this.checkAliases(this.verbAliases, verb);
+     
       // Check if the verb is valid
       if (!verbAlias) {
-        this.output = `I can not ${verb}.`;
+        this.output = `I can not '${verb}'.`;
         return;
       }
 
@@ -53,22 +46,23 @@ export default {
       this[verbAlias](verbAlias, param);
     },
 
+    checkAliases(aliases,noun) {
+      // Check for object aliases
+      for (const alias in aliases) {
+        if (aliases[alias].includes(noun)) {
+          return alias;
+        }
+      }
+    },
     findObject(noun) {
-      console.log("Finding object:", noun);
       // If noun is given, check if it exists in the current room
       if (this.rooms[this.whereAmI].objects[noun]) {
         return noun;
       }
       // Check for object aliases
       const aliases = this.rooms[this.whereAmI].objects.objectAliases;
-      for (const alias in aliases) {
-        console.log(alias)
-        if (noun.match(new RegExp(alias))) {
-          console.log(alias)
-          return aliases[alias];
-        }
-      }
-      return null;
+      return this.checkAliases(aliases,noun);
+
     },
 
     look(verb, param) {
