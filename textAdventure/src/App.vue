@@ -5,6 +5,7 @@ export default {
     return {
       whereAmI: "room",
       lastRoom: "room",
+      lastDoor: "",
       command: "",
       output: "",
       verbAliases: {
@@ -145,10 +146,12 @@ export default {
         if (!this.rooms[this.whereAmI].objects[exits[direction].handicap].open) {
           this.output += `<br>The ${exits[direction].handicap} is closed.<br>`;
           this.open("open", [exits[direction].handicap]);
+          this.lastDoor = [exits[direction].handicap];
         }
 
         this.lastRoom = this.whereAmI;
         this.whereAmI = exits[direction].target;
+        this.rooms[this.whereAmI].objects[this.lastDoor].open = true;
         this.output += `<br>You go ${direction} to the ${this.rooms[this.whereAmI].name}.<br>`;
       } else {
         this.output += `<br>You can't go ${direction} from here.<br>`;
