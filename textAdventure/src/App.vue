@@ -146,9 +146,9 @@ export default {
         if (!this.rooms[this.whereAmI].objects[exits[direction].handicap].open) {
           this.output += `<br>The ${exits[direction].handicap} is closed.<br>`;
           this.open("open", [exits[direction].handicap]);
-          this.lastDoor = [exits[direction].handicap];
         }
-
+        
+        this.lastDoor = [exits[direction].handicap];
         this.lastRoom = this.whereAmI;
         this.whereAmI = exits[direction].target;
         this.rooms[this.whereAmI].objects[this.lastDoor].open = true;
