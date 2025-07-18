@@ -59,6 +59,8 @@ export default {
   },
   methods: {
     parseCommand(_event) {
+      this.output += `> ${this.command}<br>`;
+      
       const splitCmd = this.command
         .replaceAll(" the ", " ")
         .replaceAll(/\s+/g, " ")
