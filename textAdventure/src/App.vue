@@ -12,6 +12,7 @@ export default {
         look: ["look", "see", "view", "examine", "inspect"],
         go: ["go", "walk", "move", "travel", "head"],
         open: ["open", "unlock", "unfasten", "unlatch"],
+        close: ["close", "lock", "fasten", "latch"],
       },
       rooms: {
         hallway: {
@@ -30,7 +31,11 @@ export default {
             },
             torch: { commands: { look: "The torch is flickering and casting eerie shadows on the walls." } },
             wall: { commands: { look: "The walls are made of rough stone and are damp to the touch." } },
-            door: { commands: { look: "The door is heavy and creaks as you push it open." }, open: false },
+            door: {
+              commands: { look: "The door is heavy and creaks as you push it open." },
+              open: false,
+              locked: false,
+            },
           },
         },
         room: {
@@ -51,7 +56,11 @@ export default {
             book: { commands: { look: "You see an old dusty book with a red cover that shows a pentagram" } },
             table: { commands: { look: "The table is made of oak and has a few scratches on it." } },
             wall: { commands: { look: "You see a rough stone wall with moss growing in the cracks." } },
-            door: { commands: { look: "The door is made of heavy oak and has a rusty iron handle." }, open: false },
+            door: {
+              commands: { look: "The door is made of heavy oak and has a rusty iron handle." },
+              open: false,
+              locked: false,
+            },
           },
         },
       },
@@ -60,7 +69,7 @@ export default {
   methods: {
     parseCommand(_event) {
       this.output += `> ${this.command}<br>`;
-      
+
       const splitCmd = this.command
         .replaceAll(" the ", " ")
         .replaceAll(/\s+/g, " ")
@@ -99,34 +108,62 @@ export default {
       const aliases = this.rooms[this.whereAmI].objects.objectAliases;
       return this.checkAliases(aliases, noun);
     },
-    open(_verb, param) {
+    open(verb, param) {
       // If no parameter is given, do nothing
       if (param.length === 0) {
-        this.output += "<br>What do you want to open?<br>";
+        this.output += `<br>What do you want to ${verb}?<br>`;
         return;
       }
 
       // Check if the parameter is a valid object in the room
       const noun = this.findObject(param[0]);
       if (!noun) {
-        this.output += `<br>You can't open '${param[0]}'.<br>`;
+        this.output += `<br>You can't ${verb} '${param[0]}'.<br>`;
         return;
       }
 
       // Check if the object can be opened
       const object = this.rooms[this.whereAmI].objects[noun];
       if (!object.hasOwnProperty("open")) {
-        this.output += `<br>You can't open the ${noun}.<br>`;
+        this.output += `<br>You can't ${verb} the ${noun}.<br>`;
         return;
       }
+
+      // If the object is locked, inform the player and return
+      if (object.locked) {
+        this.output += `<br>The ${noun} is locked. You need a key to open it.<br>`;
+        return;
+      }
+
+      // toggle the open state of the object
       if (!object.open) {
-        object.open = true;
-        this.output += `<br>You open the ${noun}.<br>`;
-        return;
+        if (verb === "open") {
+          object.open = true;
+          this.output += `<br>You ${verb} the ${noun}.<br>`;
+          return;
+        } else {
+          this.output += `<br>The ${noun} is already closed.<br>`;
+          return;
+        }
       } else {
-        this.output += `<br>The ${noun} is already open.<br>`;
+        if (verb === "open") {
+          this.output += `<br>The ${noun} is already open.<br>`;
+          return;
+        } else {
+          object.open = false;
+          this.output += `<br>You ${verb} the ${noun}.<br>`;
+        }
         return;
       }
+    },
+    close(verb, param) {
+      // If no parameter is given, do nothing
+      if (param.length === 0) {
+        this.output += "<br>What do you want to close?<br>";
+        return;
+      }
+
+      this.open(verb, param); // Reuse the open method to close
     },
     go(_verb, param) {
       // If no parameter is given, do nothing
@@ -147,9 +184,9 @@ export default {
       if (exits && exits[direction]) {
         if (!this.rooms[this.whereAmI].objects[exits[direction].handicap].open) {
           this.output += `<br>The ${exits[direction].handicap} is closed.<br>`;
-          this.open("open", [exits[direction].handicap]);
+          return
         }
-        
+
         this.lastDoor = [exits[direction].handicap];
         this.lastRoom = this.whereAmI;
         this.whereAmI = exits[direction].target;
