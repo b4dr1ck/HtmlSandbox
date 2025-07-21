@@ -14,12 +14,15 @@ export default {
         open: ["open", "unlock", "unfasten", "unlatch"],
         close: ["close", "lock", "fasten", "latch"],
       },
+      player: {
+        inventory: [],
+      },
       rooms: {
         hallway: {
           name: "Hallway",
           description:
             "You are in a long dark hallway with flickering torches on the walls. " +
-            "A door in the north leads you back to the room with the book",
+            "A door in the north leads you back to the room with the book.<br>",
           exit: {
             north: { target: "room", handicap: "door" },
           },
@@ -29,12 +32,22 @@ export default {
               wall: ["wall", "walls"],
               door: ["door", "entrance", "exit"],
             },
-            torch: { commands: { look: "The torch is flickering and casting eerie shadows on the walls." } },
-            wall: { commands: { look: "The walls are made of rough stone and are damp to the touch." } },
+            torch: {
+              commands: { look: "The torch is flickering and casting eerie shadows on the walls." },
+              scenery: true,
+              canTake: false,
+            },
+            wall: {
+              commands: { look: "The walls are made of rough stone and are damp to the touch." },
+              scenery: true,
+              canTake: false,
+            },
             door: {
               commands: { look: "The door is heavy and creaks as you push it open." },
               open: false,
               locked: false,
+              scenery: true,
+              canTake: false,
             },
           },
         },
@@ -42,7 +55,7 @@ export default {
           name: "Room",
           description:
             "You are in a small dimly lit room with stone walls and a wooden table in the center." +
-            "On the table, there is a mysterious book. Behind you, in the south, is a door",
+            "On the table, there is a mysterious book. Behind you, in the south, is a door.<br>",
           exit: {
             south: { target: "hallway", handicap: "door" },
           },
@@ -53,18 +66,53 @@ export default {
               wall: ["wall", "walls", "stone wall"],
               door: ["door", "entrance", "exit"],
             },
-            book: { commands: { look: "You see an old dusty book with a red cover that shows a pentagram" } },
-            table: { commands: { look: "The table is made of oak and has a few scratches on it." } },
-            wall: { commands: { look: "You see a rough stone wall with moss growing in the cracks." } },
+            book: {
+              commands: { look: "You see an old dusty book with a red cover that shows a pentagram" },
+              scenery: true,
+              canTake: false,
+            },
+            table: {
+              commands: { look: "The table is made of oak and has a few scratches on it." },
+              scenery: true,
+              canTake: false,
+            },
+            wall: {
+              commands: { look: "You see a rough stone wall with moss growing in the cracks." },
+              scenery: true,
+              canTake: false,
+            },
+            ball: {
+              commands: {
+                look: "A small rubber ball lies on the floor, forgotten.",
+              },
+              scenery: false,
+              sceneryDesc: "A <strong>ball</strong> lies on the floor.",
+              canTake: true,
+            },
             door: {
               commands: { look: "The door is made of heavy oak and has a rusty iron handle." },
               open: false,
               locked: false,
+              scenery: true,
+              canTake: false,
             },
           },
         },
       },
     };
+  },
+  computed: {
+    roomDesc() {
+      let roomDescText = this.rooms[this.whereAmI].description;
+
+      for (const obj in this.rooms[this.whereAmI].objects) {
+        if (!this.rooms[this.whereAmI].objects[obj].scenery && obj != "objectAliases") {
+          roomDescText += `${this.rooms[this.whereAmI].objects[obj].sceneryDesc}<br>`;
+        }
+      }
+
+      return roomDescText;
+    },
   },
   methods: {
     parseCommand(_event) {
@@ -184,7 +232,7 @@ export default {
       if (exits && exits[direction]) {
         if (!this.rooms[this.whereAmI].objects[exits[direction].handicap].open) {
           this.output += `<br>The ${exits[direction].handicap} is closed.<br>`;
-          return
+          return;
         }
 
         this.lastDoor = [exits[direction].handicap];
@@ -230,7 +278,7 @@ export default {
 <template>
   <div id="wrapper">
     <h3>{{ rooms[whereAmI].name }}</h3>
-    <p>{{ rooms[whereAmI].description }}</p>
+    <p v-html="roomDesc"></p>
     <input v-model="command" type="text" />
     <button @click="parseCommand($event)">Parse</button>
     <p v-html="output"></p>
