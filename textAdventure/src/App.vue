@@ -121,7 +121,7 @@ export default {
       const splitCmd = this.command
         .replaceAll(" the ", " ")
         .replaceAll(/\s+/g, " ")
-        .replace(/( at | for | to )/, " ")
+        .replace(/( at | for | to | on )/, " ")
         .split(" ");
       const verb = splitCmd[0].toLowerCase();
       const param = splitCmd.slice(1).map((x) => x.toLowerCase());
@@ -235,7 +235,7 @@ export default {
           return;
         }
 
-        this.lastDoor = [exits[direction].handicap];
+        this.lastDoor = exits[direction].handicap;
         this.lastRoom = this.whereAmI;
         this.whereAmI = exits[direction].target;
         this.rooms[this.whereAmI].objects[this.lastDoor].open = true;
