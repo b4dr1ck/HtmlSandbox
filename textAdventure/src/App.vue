@@ -8,11 +8,23 @@ export default {
       lastDoor: "",
       command: "",
       output: "",
+      objectAliases: {
+        torch: ["torch", "torches"],
+        wall: ["wall", "walls"],
+        door: ["door", "entrance", "exit"],
+        book: ["book"],
+        table: ["tabel", "desk", "wooden table"],
+        ball: ["ball", "rubber ball"],
+        stone: ["stone", "rock","small stone"],
+      },
       verbAliases: {
         look: ["look", "see", "view", "examine", "inspect"],
         go: ["go", "walk", "move", "travel", "head"],
         open: ["open", "unlock", "unfasten", "unlatch"],
         close: ["close", "lock", "fasten", "latch"],
+        take: ["take", "grab", "collect", "get"],
+        drop: ["drop", "discard"],
+        inventory: ["inventory", "items", "bag", "backpack", "pack"],
       },
       player: {
         inventory: [],
@@ -27,22 +39,27 @@ export default {
             north: { target: "room", handicap: "door" },
           },
           objects: {
-            objectAliases: {
-              torch: ["torch", "torches"],
-              wall: ["wall", "walls"],
-              door: ["door", "entrance", "exit"],
-            },
             torch: {
+              name: "torch",
               commands: { look: "The torch is flickering and casting eerie shadows on the walls." },
               scenery: true,
               canTake: false,
             },
+            stone: {
+              name: "stone",
+              commands: { look: "A small stone lies on the ground, it looks like it could be useful." },
+              scenery: false,
+              sceneryDesc: "A <strong>stone</strong> lies on the ground.",
+              canTake: true,
+            },
             wall: {
+              name: "wall",
               commands: { look: "The walls are made of rough stone and are damp to the touch." },
               scenery: true,
               canTake: false,
             },
             door: {
+              name: "door",
               commands: { look: "The door is heavy and creaks as you push it open." },
               open: false,
               locked: false,
@@ -60,28 +77,26 @@ export default {
             south: { target: "hallway", handicap: "door" },
           },
           objects: {
-            objectAliases: {
-              book: ["book"],
-              table: ["tabel", "desk", "wooden table"],
-              wall: ["wall", "walls", "stone wall"],
-              door: ["door", "entrance", "exit"],
-            },
             book: {
+              name: "book",
               commands: { look: "You see an old dusty book with a red cover that shows a pentagram" },
               scenery: true,
               canTake: false,
             },
             table: {
+              name: "table",
               commands: { look: "The table is made of oak and has a few scratches on it." },
               scenery: true,
               canTake: false,
             },
             wall: {
+              name: "wall",
               commands: { look: "You see a rough stone wall with moss growing in the cracks." },
               scenery: true,
               canTake: false,
             },
             ball: {
+              name: "ball",
               commands: {
                 look: "A small rubber ball lies on the floor, forgotten.",
               },
@@ -90,6 +105,7 @@ export default {
               canTake: true,
             },
             door: {
+              name: "door",
               commands: { look: "The door is made of heavy oak and has a rusty iron handle." },
               open: false,
               locked: false,
@@ -137,7 +153,6 @@ export default {
       // Execute the command
       this[verbAlias](verbAlias, param);
     },
-
     checkAliases(aliases, noun) {
       // Check for object aliases
       for (const alias in aliases) {
@@ -146,15 +161,87 @@ export default {
         }
       }
     },
-    findObject(noun) {
+    findItem(noun) {
+      return this.player.inventory.find((item) => item.name.toLowerCase() === noun) || false;
+    },
+    findItemIndex(noun) {
+      return this.player.inventory.findIndex((item) => item.name === noun) 
+    },
+    findObjectName(noun) {
+      // Check for object aliases
+      const aliases = this.objectAliases;
+      let alias = this.checkAliases(aliases, noun);
+
       // If noun is given, check if it exists in the current room
-      if (this.rooms[this.whereAmI].objects[noun]) {
-        return noun;
+      if (this.rooms[this.whereAmI].objects[alias]) {
+        return alias;
+        // If not found in the room, check if it's in the inventory
+      } else if (this.findItem(alias)) {
+        return alias;
+      } else {
+        // If not found, return false
+        return false;
+      }
+    },
+    take(verb, param) {
+      // If no parameter is given, do nothing
+      if (param.length === 0) {
+        this.output += `<br>What do you want to ${verb}?<br>`;
+        return;
+      }
+      // Check if the parameter is a valid object in the room
+
+      const noun = this.findObjectName(param.join(" ").toLowerCase());
+      if (!noun) {
+        this.output += `<br>You can't see '${param[0]}' to ${verb}.<br>`;
+        return;
       }
 
-      // Check for object aliases
-      const aliases = this.rooms[this.whereAmI].objects.objectAliases;
-      return this.checkAliases(aliases, noun);
+      // if item can be taken put it in the inventory
+      if (this.rooms[this.whereAmI].objects[noun].canTake) {
+        this.output += `<br>You ${verb} the ${noun}.<br>`;
+        this.player.inventory.push(this.rooms[this.whereAmI].objects[noun]);
+        // Remove the object from the room
+        delete this.rooms[this.whereAmI].objects[noun];
+      } else {
+        this.output += `<br>You can't ${verb} the ${noun}.<br>`;
+        return;
+      }
+    },
+    drop(verb, param) {
+      // If no parameter is given, do nothing
+      if (param.length === 0) {
+        this.output += `<br>What do you want to ${verb}?<br>`;
+        return;
+      }
+
+      // Check if the parameter is a valid item in the inventory
+      const itemName = this.findObjectName(param.join(" ").toLowerCase());
+      const itemIndex = this.findItemIndex(itemName);
+
+      if (itemIndex === -1) {
+        this.output += `<br>You don't have '${itemName}' in your inventory.<br>`;
+        return;
+      }
+
+      // Add the item back to the room and remove it from the inventory
+      const item = this.player.inventory[itemIndex];
+      this.rooms[this.whereAmI].objects[item.name] = item;
+      this.output += `<br>You ${verb} the ${item.name}.<br>`;
+      this.player.inventory.splice(itemIndex, 1);
+    },
+    inventory() {
+      // If the player has no items in their inventory, inform them
+      if (this.player.inventory.length === 0) {
+        this.output += "<br>Your inventory is empty.<br>";
+        return;
+      }
+
+      // List all items in the player's inventory
+      this.output += "<br>Your inventory contains:<br>";
+      this.player.inventory.forEach((item) => {
+        this.output += `<strong>- ${item.name}</strong><br>`;
+      });
     },
     open(verb, param) {
       // If no parameter is given, do nothing
@@ -164,7 +251,7 @@ export default {
       }
 
       // Check if the parameter is a valid object in the room
-      const noun = this.findObject(param[0]);
+      const noun = this.findObjectName(param.join(" ").toLowerCase());
       if (!noun) {
         this.output += `<br>You can't ${verb} '${param[0]}'.<br>`;
         return;
@@ -252,9 +339,6 @@ export default {
         return;
       }
 
-      // If the parameter is a preposition
-      noun = noun.replace(/(at |for |to )/, "");
-
       // If noun is the room itself, describe the room
       if (noun === this.whereAmI) {
         this.output += `<br>${this.rooms[this.whereAmI].description}<br>`;
@@ -262,10 +346,20 @@ export default {
       }
 
       // If the noun is an object in the room, describe it
-      const foundObject = this.findObject(noun);
+      const foundObject = this.findObjectName(noun);
       if (foundObject) {
-        const lookOutput = this.rooms[this.whereAmI].objects[foundObject].commands[verb];
-        this.output += `<br>${lookOutput}<br>`;
+        // check the room
+        if (this.rooms[this.whereAmI].objects[foundObject]) {
+          const lookOutput = this.rooms[this.whereAmI].objects[foundObject].commands[verb];
+          this.output += `<br>${lookOutput}<br>`;
+        // check your inventory
+        } else if (this.findItem(foundObject)) {
+          const lookOutput = this.findItem(foundObject).commands[verb];
+          this.output += `<br>You open your inventory and look at the ${foundObject}...`;
+          this.output += `<br>${lookOutput}<br>`;
+        } else {
+          this.output += `<br>You can't see '${noun}' here.<br>`;
+        }
       } else {
         //.. otherwise, say a generic message
         this.output += "<br>You see nothing special.<br>";
