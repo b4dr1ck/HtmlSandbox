@@ -1,6 +1,7 @@
 <script>
 import { player } from "./player.js";
-import { enemy } from "./enemy.js";
+import { goblin1 } from "./goblin1.js";
+import { goblin2 } from "./goblin2.js";
 
 export default {
   name: "App",
@@ -36,7 +37,9 @@ export default {
         item: "yellow",
       },
       player: player,
-      enemy: enemy,
+      enemy: goblin1,
+      queueIndex: 1,
+      enemyQueue: [goblin1, goblin2],
     };
   },
   methods: {
@@ -228,7 +231,19 @@ export default {
 
       // check if enemy is dead after player's turn
       if (this.checkDeath("enemy")) {
-        this.commands = [];
+        setTimeout(() => {
+          if (this.queueIndex >= this.enemyQueue.length) {
+            this.log.push("");
+            this.log.push(`[player]${this.player.name}[/player] has defeated all enemies!`);
+            this.commands = [];
+          } else {
+            this.log.push("");
+            this.enemy = this.enemyQueue[this.queueIndex]; // set the next enemy
+            this.log.push(`[enemy]${this.enemy.name}[/enemy] has appeared!`);
+            this.log.push("");
+            this.queueIndex++;
+          }
+        }, 1000);
         return;
       }
 

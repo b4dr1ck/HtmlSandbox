@@ -3,17 +3,17 @@ import { items } from "./items.js";
 import { specials } from "./specials.js";
 import { spells } from "./spells.js";
 
-export const enemy = {
-  name: "Weird Goblin",
-  description: "A strange goblin with a nasty bite and a penchant for poison.",
-  identified: false,
+export const goblin2 = {
+  name: "Fat Goblin",
+  description: "A strange fat goblin with a nasty bite and a penchant for poison.",
+  identified: true,
   conditions: [],
   stats: {
-    hp: { base: 80, current: 80, bon: 0 },
+    hp: { base: 20, current: 20, bon: 0 },
     mp: { base: 20, current: 20, bon: 0 },
     pow: { base: 5, current: 5, bon: 0 },
-    AC: { base: 5, current: 5, bon: 0 },
-    STR: { base: 12, current: 12, bon: 0 },
+    AC: { base: 6, current: 6, bon: 0 },
+    STR: { base: 15, current: 15, bon: 0 },
     DEX: { base: 10, current: 10, bon: 0 },
     INT: { base: 8, current: 8, bon: 0 },
     resist: {
