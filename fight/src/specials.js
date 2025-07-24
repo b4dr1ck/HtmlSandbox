@@ -16,13 +16,13 @@ export const specials = {
     effects: [{ name: "stunned", duration: 1, stunned: true, damage: [{ type: "PHY" }] }],
     description: "A strong stamp on the ground that stunns your enemy",
   },
-  goblinbite: {
-    name: "Goblin Bite",
-    command: "goblinbite",
+  bite: {
+    name: "Bite",
+    command: "bite",
     targetEnemy: true,
-    cost: 3,
-    extra: [{ type: "PHY", value: 10 }],
-    description: "A nasty goblin bite that makes you sick.",
-    effects: [{ name: "poisoned", duration: 2, stunned: false, damage: [{ type: "POI", value: 5 }] }],
+    cost: 2,
+    extra: [{ type: "PHY", value: 5 }],
+    description: "A nasty bite that makes you sick.",
+    effects: [{ name: "poisoned", duration: 5, stunned: false, damage: [{ type: "POI", value: 1 }] }],
   },
 };

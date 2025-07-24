@@ -1,7 +1,7 @@
 <script>
 import { player } from "./player.js";
 import { goblin1 } from "./goblin1.js";
-import { goblin2 } from "./goblin2.js";
+import {sewerRat} from "./rat.js";
 
 export default {
   name: "App",
@@ -37,9 +37,9 @@ export default {
         item: "yellow",
       },
       player: player,
-      enemy: goblin1,
+      enemy: sewerRat,
       queueIndex: 1,
-      enemyQueue: [goblin1, goblin2],
+      enemyQueue: [sewerRat,JSON.parse(JSON.stringify(sewerRat)),goblin1],
     };
   },
   methods: {
@@ -155,7 +155,9 @@ export default {
     },
     checkDeath(actor) {
       if (this[actor].stats.hp.current <= 0) {
+        this.log.push("");
         this.log.push(`[${actor}]${this[actor].name}[/${actor}] has died!`);
+        this.log.push("#".repeat(50))
         this[actor].stats.hp.current = 0; // ensure hp does not go below 0
         return true;
       }
@@ -188,7 +190,7 @@ export default {
         this.log.push(`[${actor}]${this[actor].name}[/${actor}] has no weapon equipped!`);
         return { hit: hit, dmg: 1 };
       }
-
+      
       return { hit: hit, dmg: weaponDmg };
     },
     turn(cmd) {
@@ -257,11 +259,13 @@ export default {
         if (!isStunnedE) {
           while (retry) {
             randomCmd = this.getRandomInt(0, 4);
+            
             switch (randomCmd) {
               case 0:
                 // Using a Special
                 const maxSpecial = this.enemy.specials.length;
                 const special = this.enemy.specials[this.getRandomInt(0, maxSpecial - 1)];
+                if (!special) continue;
                 if (special.cost > this.enemy.stats.pow.current) {
                   continue;
                 }
@@ -272,6 +276,7 @@ export default {
                 // Using a Spell
                 const maxSpells = this.enemy.spellbook.length;
                 const spell = this.enemy.spellbook[this.getRandomInt(0, maxSpells - 1)];
+                if (!spell) continue;
                 if (spell.cost > this.enemy.stats.mp.current) {
                   continue;
                 }
@@ -281,11 +286,13 @@ export default {
               case 2:
                 // Normal Attack
                 this.attack("enemy", "player", "STR");
+
                 retry = false;
                 break;
               case 3:
                 // Defense
                 const shield = this.enemy.equipped.find((item) => item.type === "shield" && item.equipped);
+                if (!this.shield) continue;
                 if (this.enemy.stats.AC.bon === shield.AC + this.enemy.stats.AC.bon) {
                   continue; // skip if already defending
                 }

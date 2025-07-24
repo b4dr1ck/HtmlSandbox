@@ -70,4 +70,13 @@ export const equipment = {
     resist: { POI: 2 },
     AC: 1,
   },
+  ratclaw: {
+    equipped:true,
+    name:"Rat Claw",
+    command:"ratclaw",
+    type:"weapon",
+    description:"A dangerous and sharp claw",
+    damage:[1,4],
+    extra:[]
+  }
 };

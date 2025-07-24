@@ -25,7 +25,7 @@ export const goblin1 = {
       PHY: { base: 0, current: 0, bon: 0 },
     },
   },
-  specials: [specials.goblinbite],
+  specials: [specials.bite],
   spellbook: [spells.fart, spells.fireball],
   items: [items.healingpotion, items.healingpotion, items.bomb],
   equipped: [equipment.goblindagger, equipment.goblindshield, equipment.toxicgoblinhelmet],
