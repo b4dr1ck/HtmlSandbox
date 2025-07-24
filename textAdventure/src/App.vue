@@ -10,7 +10,7 @@ export default {
       output: "",
       objectAliases: {
         torch: ["torch", "torches"],
-        wall: ["wall", "walls"],
+        wall: ["wall", "walls","stone wall"],
         door: ["door", "entrance", "exit"],
         book: ["book"],
         table: ["tabel", "desk", "wooden table"],
@@ -47,7 +47,7 @@ export default {
             },
             stone: {
               name: "stone",
-              commands: { look: "A small stone lies on the ground, it looks like it could be useful." },
+              commands: { look: "A small stone. It looks like it could be useful." },
               scenery: false,
               sceneryDesc: "A <strong>stone</strong> lies on the ground.",
               canTake: true,
@@ -98,7 +98,7 @@ export default {
             ball: {
               name: "ball",
               commands: {
-                look: "A small rubber ball lies on the floor, forgotten.",
+                look: "A small rubber ball.",
               },
               scenery: false,
               sceneryDesc: "A <strong>ball</strong> lies on the floor.",
@@ -162,7 +162,7 @@ export default {
       }
     },
     findItem(noun) {
-      return this.player.inventory.find((item) => item.name.toLowerCase() === noun) || false;
+      return this.player.inventory.find((item) => item.name === noun) || false;
     },
     findItemIndex(noun) {
       return this.player.inventory.findIndex((item) => item.name === noun) 
