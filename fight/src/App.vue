@@ -9,7 +9,7 @@ export default {
     return {
       disabledInput: false,
       mode: "attack",
-      debug: "",
+      debugMsg: [],
       log: [],
       basicCommands: ["Attack", "Defend", "Special", "Magic", "Run", "Inventory", "Equipment"],
       commands: [],
@@ -43,6 +43,9 @@ export default {
     };
   },
   methods: {
+    debug(msg) {
+      this.debugMsg.push(msg);
+    },
     getRandomInt(min, max) {
       const minCeiled = Math.ceil(min);
       const maxFloored = Math.floor(max);
@@ -805,7 +808,7 @@ export default {
 
 <template>
   <div>
-    <p id="debug">{{ debug }}</p>
+    <p v-html="debugMsg.join('<br>')" id="debug"></p>
     <div id="wrapper" class="flex">
       <div id="hud" class="column">
         <pre :class="player.stats.hp.current <= 0 ? 'redBorder' : ''" v-html="hudPlayer" id="player"></pre>
@@ -844,9 +847,9 @@ body {
   top: 0;
   left: 0;
   color: white;
-  background-color: black;
+  background-color: red;
   padding: 5px;
-  z-index: 1000;
+  z-index: 9000;
 }
 
 #app {
