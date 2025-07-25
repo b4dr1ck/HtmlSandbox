@@ -9,7 +9,7 @@ export const goblin = {
   identified: true,
   conditions: [],
   stats: {
-    hp: { base: 10, current: 10, bon: 0 },
+    hp: { base: 50, current: 50, bon: 0 },
     mp: { base: 20, current: 20, bon: 0 },
     pow: { base: 5, current: 5, bon: 0 },
     AC: { base: 5, current: 5, bon: 0 },

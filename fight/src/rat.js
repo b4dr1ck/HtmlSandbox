@@ -27,6 +27,6 @@ export const sewerRat = {
   },
   specials: [specials.bite],
   spellbook: [],
-  items: [],
+  items: [items.antidote],
   equipped: [equipment.ratclaw],
 };

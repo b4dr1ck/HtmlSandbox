@@ -160,6 +160,20 @@ export default {
       if (this[actor].stats.hp.current <= 0) {
         this.log.push("");
         this.log.push(`[${actor}]${this[actor].name}[/${actor}] has died!`);
+
+        if (actor === "enemy") {
+          // get items from enemy
+          this[actor].items.forEach((item) => {
+            const existingItem = this.player.items.find((i) => i.name === item.name);
+            if (existingItem) {
+              existingItem.amount += item.amount; // increase amount if item already exists
+            } else {
+              this.player.items.push(item); // add new item to player's inventory
+            }
+            this.log.push(`[player]${this.player.name}[/player] loots [item]${item.name}[/item] from [enemy]${this[actor].name}[/enemy]`);
+          });
+        }
+
         this.log.push("#".repeat(50))
         this[actor].stats.hp.current = 0; // ensure hp does not go below 0
         return true;
