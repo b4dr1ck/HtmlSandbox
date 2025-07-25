@@ -1,6 +1,6 @@
 <script>
 import { player } from "./player.js";
-import { goblin1 } from "./goblin1.js";
+import { goblin } from "./goblin.js";
 import {sewerRat} from "./rat.js";
 
 export default {
@@ -39,7 +39,7 @@ export default {
       player: player,
       enemy: sewerRat,
       queueIndex: 1,
-      enemyQueue: [sewerRat,JSON.parse(JSON.stringify(sewerRat)),goblin1],
+      enemyQueue: [sewerRat,JSON.parse(JSON.stringify(sewerRat)),goblin],
     };
   },
   methods: {

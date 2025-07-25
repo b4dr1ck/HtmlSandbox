@@ -3,9 +3,9 @@ import { items } from "./items.js";
 import { specials } from "./specials.js";
 import { spells } from "./spells.js";
 
-export const goblin1 = {
-  name: "Weird Goblin",
-  description: "A strange goblin with a nasty bite and a penchant for poison.",
+export const goblin = {
+  name: "Goblin",
+  description: "A small, green goblin with a nasty bite and a penchant for poison.",
   identified: true,
   conditions: [],
   stats: {
@@ -25,8 +25,8 @@ export const goblin1 = {
       PHY: { base: 0, current: 0, bon: 0 },
     },
   },
-  specials: [specials.bite],
-  spellbook: [spells.fart, spells.fireball],
+  specials: [specials.powerstrike],
+  spellbook: [],
   items: [items.healingpotion, items.healingpotion, items.bomb],
   equipped: [equipment.goblindagger, equipment.goblindshield, equipment.toxicgoblinhelmet],
 };
