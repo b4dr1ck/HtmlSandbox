@@ -24,7 +24,7 @@ export default {
         close: ["close", "lock", "fasten", "latch"],
         take: ["take", "grab", "collect", "get"],
         drop: ["drop", "discard"],
-        inventory: ["inventory", "items", "bag", "backpack", "pack"],
+        inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
       },
       player: {
         inventory: [],
@@ -44,6 +44,7 @@ export default {
               description: "The torch is flickering and casting eerie shadows on the walls.",
               scenery: true,
               canTake: false,
+              command: {},
             },
             stone: {
               name: "stone",
@@ -51,12 +52,14 @@ export default {
               scenery: false,
               sceneryDesc: "A <strong>stone</strong> lies on the ground.",
               canTake: true,
+              command: {},
             },
             wall: {
               name: "wall",
               description: "The walls are made of rough stone and are damp to the touch.",
               scenery: true,
               canTake: false,
+              command: {},
             },
             door: {
               name: "door",
@@ -65,13 +68,14 @@ export default {
               locked: false,
               scenery: true,
               canTake: false,
+              command: {},
             },
           },
         },
         room: {
-          name: "Room",
+          name: "Dark Room",
           description:
-            "You are in a small dimly lit room with stone walls and a wooden table in the center." +
+            "You are in a small dimly lit room with stone walls and a wooden table in the center.<br>" +
             "On the table, there is a mysterious book. Behind you, in the south, is a door.<br>",
           exit: {
             south: { target: "hallway", handicap: "door" },
@@ -82,18 +86,29 @@ export default {
               description: "You see an old dusty book with a red cover that shows a pentagram",
               scenery: true,
               canTake: false,
+              command: {
+                /*take: () => {
+                  this.rooms.room.objects.book.canTake = true;
+                  this.rooms.room.objects.book.scenery = false;
+                  this.rooms.room.objects.book.sceneryDesc = "A <strong>book</strong> lies on the table.";
+                  return "Now you can take the book.";
+                },*/
+                take: ()=> { return "It seems to be magically bound to the table." },
+              },
             },
             table: {
               name: "table",
               description: "The table is made of oak and has a few scratches on it.",
               scenery: true,
               canTake: false,
+              command: {},
             },
             wall: {
               name: "wall",
               description: "You see a rough stone wall with moss growing in the cracks.",
               scenery: true,
               canTake: false,
+              command: {},
             },
             ball: {
               name: "ball",
@@ -101,6 +116,7 @@ export default {
               scenery: false,
               sceneryDesc: "A <strong>ball</strong> lies lonesome on the floor.",
               canTake: true,
+              command: {},
             },
             door: {
               name: "door",
@@ -109,6 +125,7 @@ export default {
               locked: false,
               scenery: true,
               canTake: false,
+              command: {},
             },
           },
         },
@@ -196,11 +213,15 @@ export default {
         return;
       }
       // Check if the parameter is a valid object in the room
-
       const noun = this.findObjectName(param.join(" ").toLowerCase());
       if (!noun) {
         this.output += `<br>You can't see '${param[0]}' to ${verb}.<br>`;
         return;
+      }
+
+      // special behavior if a command.verb is set
+      if (noun && this.rooms[this.whereAmI].objects[noun].command[verb]) {
+        this.output += `<br>${this.rooms[this.whereAmI].objects[noun].command[verb]()}`;
       }
 
       // if item can be taken put it in the inventory
@@ -228,6 +249,11 @@ export default {
       if (itemIndex === -1) {
         this.output += `<br>You don't have '${itemName}' in your inventory.<br>`;
         return;
+      }
+
+      // special behavior if a command.verb is set
+      if (itemName && this.player.inventory[itemIndex].command[verb]) {
+        this.output += `<br>${this.rooms[this.whereAmI].objects[itemName].command[verb]()}`;
       }
 
       // Add the item back to the room and remove it from the inventory
@@ -261,6 +287,11 @@ export default {
       if (!noun) {
         this.output += `<br>You can't ${verb} '${param[0]}'.<br>`;
         return;
+      }
+
+      // special behavior if a command.verb is set
+      if (noun && this.rooms[this.whereAmI].objects[noun].command[verb]) {
+        this.output += `<br>${this.rooms[this.whereAmI].objects[noun].command[verb]()}`;
       }
 
       // Check if the object can be opened
@@ -353,9 +384,14 @@ export default {
 
       // If the noun is an object in the room, describe it
       const foundObject = this.findObjectName(noun);
+
       if (foundObject) {
-        // check the room
+        // check the room for the object
         if (this.rooms[this.whereAmI].objects[foundObject]) {
+          // special behavior if a command.verb is set
+          if (this.rooms[this.whereAmI].objects[foundObject].command[verb]) {
+            this.output += `<br>${this.rooms[this.whereAmI].objects[noun].command[verb]()}`;
+          }
           const lookOutput = this.rooms[this.whereAmI].objects[foundObject].description;
           this.output += `<br>${lookOutput}<br>`;
           // check your inventory
