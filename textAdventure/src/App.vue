@@ -1,15 +1,16 @@
 <script>
+import { rooms } from "./rooms";
+
 export default {
   name: "App",
   data() {
     return {
       whereAmI: "room",
       whereWasI: "",
-      lastDoor: "",
       command: "",
       output: "",
       objectAliases: {
-        torch: ["torch", "torches"],
+        torch: ["torch", "light", "lantern"],
         wall: ["wall", "walls", "stone wall"],
         door: ["door", "entrance", "exit"],
         book: ["book"],
@@ -23,146 +24,17 @@ export default {
         go: ["go", "walk", "move", "travel", "head"],
         open: ["open", "unlock", "unfasten", "unlatch"],
         close: ["close", "lock", "fasten", "latch"],
-        take: ["take", "grab", "collect", "get"],
-        drop: ["drop", "discard"],
+        take: ["take", "grab", "collect", "get", "remove", "pick up"],
+        drop: ["drop", "discard", "put down"],
         inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
       },
       player: {
         inventory: [],
       },
-      rooms: {
-        westPath: {
-          name: "Dead End",
-          description:
-            "You are at a dead end. The path is blocked by a large rock.<br>" +
-            "There is no way to go further west.<br>" +
-            "You can go back east to the hallway.<br>",
-          exit: {
-            east: { target: "hallway" },
-          },
-          objects: {
-            wall: {
-              name: "wall",
-              description: "The walls are cracked and look like they could collapse at any moment.",
-              scenery: true,
-              canTake: false,
-              command: {},
-            },
-            rock: {
-              name: "rock",
-              description: "A large boulder blocks your waye. It looks heavy and immovable.",
-              scenery: true,
-              canTake: false,
-              command: {},
-            },
-          },
-        },
-        hallway: {
-          name: "Hallway",
-          description:
-            "You are in a long dark hallway with flickering torches on the walls.<br>" +
-            "A door in the north leads you back to the room with the book.<br>" +
-            "Another small and dark path leads to the west.<br>",
-          exit: {
-            north: { target: "room", handicap: "door" },
-            west: { target: "westPath" },
-          },
-          objects: {
-            torch: {
-              name: "torch",
-              description: "The torch is flickering and casting eerie shadows on the walls.",
-              scenery: true,
-              canTake: false,
-              command: {},
-            },
-            stone: {
-              name: "stone",
-              description: "A small stone. It looks like it could be useful.",
-              scenery: false,
-              sceneryDesc: "A <strong>stone</strong> lies on the ground.",
-              canTake: true,
-              command: {},
-            },
-            wall: {
-              name: "wall",
-              description: "The walls are made of rough stone and are damp to the touch.",
-              scenery: true,
-              canTake: false,
-              command: {},
-            },
-            door: {
-              name: "door",
-              description: "The door is heavy and creaks as you push it open.",
-              open: false,
-              locked: false,
-              scenery: true,
-              canTake: false,
-              command: {},
-            },
-          },
-        },
-        room: {
-          name: "Dark Room",
-          description:
-            "You are in a small dimly lit room with stone walls and a wooden table in the center.<br>" +
-            "On the table, there is a mysterious book. Behind you, in the south, is a door.<br>",
-          exit: {
-            south: { target: "hallway", handicap: "door" },
-          },
-          objects: {
-            book: {
-              name: "book",
-              description: "You see an old dusty book with a red cover that shows a pentagram",
-              scenery: true,
-              canTake: false,
-              command: {
-                /*take: () => {
-                  this.rooms.room.objects.book.canTake = true;
-                  this.rooms.room.objects.book.scenery = false;
-                  this.rooms.room.objects.book.sceneryDesc = "A <strong>book</strong> lies on the table.";
-                  return "Now you can take the book.";
-                },*/
-                take: () => {
-                  return "It seems to be magically bound to the table.";
-                },
-              },
-            },
-            table: {
-              name: "table",
-              description: "The table is made of oak and has a few scratches on it.",
-              scenery: true,
-              canTake: false,
-              command: {},
-            },
-            wall: {
-              name: "wall",
-              description: "You see a rough stone wall with moss growing in the cracks.",
-              scenery: true,
-              canTake: false,
-              command: {},
-            },
-            ball: {
-              name: "ball",
-              description: "A small rubber ball.",
-              scenery: false,
-              sceneryDesc: "A <strong>ball</strong> lies lonesome on the floor.",
-              canTake: true,
-              command: {},
-            },
-            door: {
-              name: "door",
-              description: "The door is made of heavy oak and has a rusty iron handle.",
-              open: false,
-              locked: false,
-              scenery: true,
-              canTake: false,
-              command: {},
-            },
-          },
-        },
-      },
+      rooms: rooms,
     };
   },
+
   computed: {
     roomDesc() {
       let roomDescText = this.rooms[this.whereAmI].description;
@@ -179,26 +51,35 @@ export default {
       return this.command.trim() === "";
     },
   },
+
   methods: {
     parseCommand(_event) {
       this.output += `> ${this.command}<br>`;
-
+      const prepositions = /( at | for | to | on )/;
+      const verbAdd = /(up|down)/
       const splitCmd = this.command
         .replaceAll(" the ", " ")
         .replaceAll(/\s+/g, " ")
-        .replace(/( at | for | to | on )/, " ")
+        .replace(prepositions, " ")
         .split(" ");
-      const verb = splitCmd[0].toLowerCase();
-      const param = splitCmd.slice(1).map((x) => x.toLowerCase());
 
-      let verbAlias = this.checkAliases(this.verbAliases, verb);
+      let verb = splitCmd[0].toLowerCase();
+      let param = splitCmd.slice(1).map((x) => x.toLowerCase());
 
+      // special handling for verbs that can have additional parameters
+      if (param[0] && param[0].match(verbAdd)) {
+        verb = `${verb} ${param[0]}`;
+        param = param.slice(1);
+      }
+
+      // special handling for directional shortcut-verbs
       if (verb.match(/^(n|north|e|east|s|south|w|west)$/gi)) {
         this.go("", verb);
         return;
       }
 
       // Check if the verb is valid
+      let verbAlias = this.checkAliases(this.verbAliases, verb);
       if (!verbAlias) {
         this.output += `<br>I can not <strong>${verb}</strong>.<br>`;
         return;
@@ -404,7 +285,9 @@ export default {
           this.rooms[this.whereAmI].objects[exits[direction].handicap].open = true;
         }
 
-        this.output += `<br>You go <strong>${direction}</strong> to the <strong>${this.rooms[this.whereAmI].name}</strong>.<br>`;
+        this.output += `<br>You go <strong>${direction}</strong> to the <strong>${
+          this.rooms[this.whereAmI].name
+        }</strong>.<br>`;
       } else {
         this.output += `<br>You can't go <strong>${direction}</strong> from here.<br>`;
       }
