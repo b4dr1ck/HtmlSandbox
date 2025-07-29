@@ -35,6 +35,15 @@ export default {
     };
   },
 
+  mounted() {
+    // Add a global keypress event listener
+    window.addEventListener("keydown", this.handleKeyPress);
+  },
+  beforeUnmount() {
+    // Remove the global keypress event listener to avoid memory leaks
+    window.removeEventListener("keydown", this.handleKeyPress);
+  },
+  
   computed: {
     roomDesc() {
       let roomDescText = this.rooms[this.whereAmI].description;
@@ -44,15 +53,25 @@ export default {
           roomDescText += `${this.rooms[this.whereAmI].objects[obj].sceneryDesc}<br>`;
         }
       }
-
       return roomDescText;
     },
     buttonDisabled() {
       return this.command.trim() === "";
     },
+    reversedOutput() {
+      // Reverse the output for display
+      return this.output.split("<br>").reverse().join("<br>");
+    },
   },
 
   methods: {
+    handleKeyPress(event) {
+      if (!this.command) return;
+
+      if (event.key === "Enter") {
+        this.parseCommand(event);
+      }
+    },
     parseCommand(_event) {
       this.output += `> ${this.command}<br>`;
       const prepositions = /( at | for | to | on )/;
@@ -65,6 +84,7 @@ export default {
 
       let verb = splitCmd[0].toLowerCase();
       let param = splitCmd.slice(1).map((x) => x.toLowerCase());
+      this.command = "";
 
       // special handling for verbs that can have additional parameters
       if (param[0] && param[0].match(verbAdd)) {
@@ -341,8 +361,11 @@ export default {
     <p v-html="roomDesc"></p>
     <input v-model="command" type="text" />
     <button :disabled="buttonDisabled" @click="parseCommand($event)">Parse</button>
-    <p v-html="output"></p>
+    <p v-html="reversedOutput"></p>
   </div>
 </template>
 
-<style></style>
+<style>
+
+
+</style>

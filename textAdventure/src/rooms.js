@@ -18,7 +18,7 @@ export const rooms = {
       },
       rock: {
         name: "rock",
-        description: "A large boulder blocks your waye. It looks heavy and immovable.",
+        description: "A large boulder blocks your way. It looks heavy and immovable.",
         scenery: true,
         canTake: false,
         command: {},
