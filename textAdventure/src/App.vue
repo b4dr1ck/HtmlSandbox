@@ -15,7 +15,7 @@ export default {
         book: ["book"],
         table: ["tabel", "desk", "wooden table"],
         ball: ["ball", "rubber ball"],
-        stone: ["stone","flint", "small stone"],
+        stone: ["stone", "flint", "small stone"],
         rock: ["large rock", "boulder", "rock"],
       },
       verbAliases: {
@@ -200,7 +200,7 @@ export default {
 
       // Check if the verb is valid
       if (!verbAlias) {
-        this.output += `<br>I can not '${verb}'.<br>`;
+        this.output += `<br>I can not <strong>${verb}</strong>.<br>`;
         return;
       }
 
@@ -239,14 +239,14 @@ export default {
     },
     take(verb, param) {
       // If no parameter is given, do nothing
-      if (param.length === 0) {
-        this.output += `<br>What do you want to ${verb}?<br>`;
+      if (param.length === 0 || param[0] === "") {
+        this.output += `<br>What do you want to <strong>${verb}</strong>?<br>`;
         return;
       }
       // Check if the parameter is a valid object in the room
       const noun = this.findObjectName(param.join(" ").toLowerCase());
       if (!noun) {
-        this.output += `<br>You can't see '${param[0]}' to ${verb}.<br>`;
+        this.output += `<br>You can't see <strong>${param[0]}</strong> to <strong>${verb}</strong>.<br>`;
         return;
       }
 
@@ -257,28 +257,30 @@ export default {
 
       // if item can be taken put it in the inventory
       if (this.rooms[this.whereAmI].objects[noun].canTake) {
-        this.output += `<br>You ${verb} the ${noun}.<br>`;
+        this.output += `<br>You <strong>${verb}</strong> the <strong>${noun}</strong>.<br>`;
         this.player.inventory.push(this.rooms[this.whereAmI].objects[noun]);
         // Remove the object from the room
         delete this.rooms[this.whereAmI].objects[noun];
       } else {
-        this.output += `<br>You can't ${verb} the ${noun}.<br>`;
+        this.output += `<br>You can't <strong>${verb}</strong> the <strong>${noun}</strong>.<br>`;
         return;
       }
     },
     drop(verb, param) {
       // If no parameter is given, do nothing
-      if (param.length === 0) {
-        this.output += `<br>What do you want to ${verb}?<br>`;
+      if (param.length === 0 || param[0] === "") {
+        this.output += `<br>What do you want to <strong>${verb}</strong>?<br>`;
         return;
       }
 
       // Check if the parameter is a valid item in the inventory
-      const itemName = this.findObjectName(param.join(" ").toLowerCase());
+      const itemName = this.findObjectName(param.join(" ").toLowerCase())
+        ? this.findObjectName(param.join(" ").toLowerCase())
+        : param.join(" ").toLowerCase();
       const itemIndex = this.findItemIndex(itemName);
 
-      if (itemIndex === -1) {
-        this.output += `<br>You don't have '${itemName}' in your inventory.<br>`;
+      if (!itemName || itemIndex === -1) {
+        this.output += `<br>You don't have <strong>${itemName}</strong> in your inventory.<br>`;
         return;
       }
 
@@ -290,33 +292,33 @@ export default {
       // Add the item back to the room and remove it from the inventory
       const item = this.player.inventory[itemIndex];
       this.rooms[this.whereAmI].objects[item.name] = item;
-      this.output += `<br>You ${verb} the ${item.name}.<br>`;
+      this.output += `<br>You <strong>${verb}</strong> the <strong>${item.name}</strong><br>`;
       this.player.inventory.splice(itemIndex, 1);
     },
     inventory() {
       // If the player has no items in their inventory, inform them
       if (this.player.inventory.length === 0) {
-        this.output += "<br>Your inventory is empty.<br>";
+        this.output += "<br>Your <strong>inventory</strong> is empty.<br>";
         return;
       }
 
       // List all items in the player's inventory
-      this.output += "<br>Your inventory contains:<br>";
+      this.output += "<br>Your <strong>inventory</strong> contains:<br>";
       this.player.inventory.forEach((item) => {
         this.output += `<strong>- ${item.name}</strong><br>`;
       });
     },
     open(verb, param) {
       // If no parameter is given, do nothing
-      if (param.length === 0) {
-        this.output += `<br>What do you want to ${verb}?<br>`;
+      if (param.length === 0 || param[0] === "") {
+        this.output += `<br>What do you want to <strong>${verb}</strong>?<br>`;
         return;
       }
 
       // Check if the parameter is a valid object in the room
       const noun = this.findObjectName(param.join(" ").toLowerCase());
       if (!noun) {
-        this.output += `<br>You can't ${verb} '${param[0]}'.<br>`;
+        this.output += `<br>You can't <strong>${verb}</strong> <strong>${param[0]}</strong>.<br>`;
         return;
       }
 
@@ -328,13 +330,13 @@ export default {
       // Check if the object can be opened
       const object = this.rooms[this.whereAmI].objects[noun];
       if (!object.hasOwnProperty("open")) {
-        this.output += `<br>You can't ${verb} the ${noun}.<br>`;
+        this.output += `<br>You can't <strong>${verb}</strong> the <strong>${noun}</strong>.<br>`;
         return;
       }
 
       // If the object is locked, inform the player and return
       if (object.locked) {
-        this.output += `<br>The ${noun} is locked. You need a key to open it.<br>`;
+        this.output += `<br>The <strong>${noun}</strong> is locked. You need a key to open it.<br>`;
         return;
       }
 
@@ -342,36 +344,36 @@ export default {
       if (!object.open) {
         if (verb === "open") {
           object.open = true;
-          this.output += `<br>You ${verb} the ${noun}.<br>`;
+          this.output += `<br>You <strong>${verb}</strong> the <strong>${noun}</strong>.<br>`;
           return;
         } else {
-          this.output += `<br>The ${noun} is already closed.<br>`;
+          this.output += `<br>The <strong>${noun}</strong> is already closed.<br>`;
           return;
         }
       } else {
         if (verb === "open") {
-          this.output += `<br>The ${noun} is already open.<br>`;
+          this.output += `<br>The <strong>${noun}</strong> is already open.<br>`;
           return;
         } else {
           object.open = false;
-          this.output += `<br>You ${verb} the ${noun}.<br>`;
+          this.output += `<br>You <strong>${verb}</strong> the <strong>${noun}</strong>.<br>`;
         }
         return;
       }
     },
     close(verb, param) {
       // If no parameter is given, do nothing
-      if (param.length === 0) {
-        this.output += "<br>What do you want to close?<br>";
+      if (param.length === 0 || param[0] === "") {
+        this.output += `<br>What do you want to <strong>${verb}</strong>?<br>`;
         return;
       }
 
       this.open(verb, param); // Reuse the open method to close
     },
-    go(_verb, param) {
+    go(verb, param) {
       // If no parameter is given, do nothing
-      if (param.length === 0) {
-        this.output += "<br>Where do you want to go?<br>";
+      if (param.length === 0 || param[0] === "") {
+        this.output += `<br>Where do you want to <strong>${verb}</strong>?<br>`;
         return;
       }
 
@@ -387,7 +389,7 @@ export default {
       if (exits && exits[direction]) {
         if (this.rooms[this.whereAmI].objects[exits[direction].handicap]) {
           if (!this.rooms[this.whereAmI].objects[exits[direction].handicap].open) {
-            this.output += `<br>The ${exits[direction].handicap} is closed.<br>`;
+            this.output += `<br>The <strong>${exits[direction].handicap}</strong> is closed.<br>`;
             return;
           }
         }
@@ -402,9 +404,9 @@ export default {
           this.rooms[this.whereAmI].objects[exits[direction].handicap].open = true;
         }
 
-        this.output += `<br>You go ${direction} to the <strong>${this.rooms[this.whereAmI].name}</strong>.<br>`;
+        this.output += `<br>You go <strong>${direction}</strong> to the <strong>${this.rooms[this.whereAmI].name}</strong>.<br>`;
       } else {
-        this.output += `<br>You can't go ${direction} from here.<br>`;
+        this.output += `<br>You can't go <strong>${direction}</strong> from here.<br>`;
       }
     },
     look(verb, param) {
@@ -436,10 +438,10 @@ export default {
           // check your inventory
         } else if (this.findItem(foundObject)) {
           const lookOutput = this.findItem(foundObject).description;
-          this.output += `<br>You open your inventory and look at the ${foundObject}...`;
+          this.output += `<br>You open your <strong>inventory</strong> and look at the <strong>${foundObject}</strong>...`;
           this.output += `<br>${lookOutput}<br>`;
         } else {
-          this.output += `<br>You can't see '${noun}' here.<br>`;
+          this.output += `<br>You can't see <strong>${noun}</strong> here.<br>`;
         }
       } else {
         //.. otherwise, say a generic message
