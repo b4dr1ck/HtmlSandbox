@@ -10,12 +10,12 @@ export default {
       output: "",
       objectAliases: {
         torch: ["torch", "torches"],
-        wall: ["wall", "walls","stone wall"],
+        wall: ["wall", "walls", "stone wall"],
         door: ["door", "entrance", "exit"],
         book: ["book"],
         table: ["tabel", "desk", "wooden table"],
         ball: ["ball", "rubber ball"],
-        stone: ["stone", "rock","small stone"],
+        stone: ["stone", "rock", "small stone"],
       },
       verbAliases: {
         look: ["look", "see", "view", "examine", "inspect"],
@@ -41,26 +41,26 @@ export default {
           objects: {
             torch: {
               name: "torch",
-              commands: { look: "The torch is flickering and casting eerie shadows on the walls." },
+              description: "The torch is flickering and casting eerie shadows on the walls.",
               scenery: true,
               canTake: false,
             },
             stone: {
               name: "stone",
-              commands: { look: "A small stone. It looks like it could be useful." },
+              description: "A small stone. It looks like it could be useful.",
               scenery: false,
               sceneryDesc: "A <strong>stone</strong> lies on the ground.",
               canTake: true,
             },
             wall: {
               name: "wall",
-              commands: { look: "The walls are made of rough stone and are damp to the touch." },
+              description: "The walls are made of rough stone and are damp to the touch.",
               scenery: true,
               canTake: false,
             },
             door: {
               name: "door",
-              commands: { look: "The door is heavy and creaks as you push it open." },
+              description: "The door is heavy and creaks as you push it open.",
               open: false,
               locked: false,
               scenery: true,
@@ -79,34 +79,32 @@ export default {
           objects: {
             book: {
               name: "book",
-              commands: { look: "You see an old dusty book with a red cover that shows a pentagram" },
+              description: "You see an old dusty book with a red cover that shows a pentagram",
               scenery: true,
               canTake: false,
             },
             table: {
               name: "table",
-              commands: { look: "The table is made of oak and has a few scratches on it." },
+              description: "The table is made of oak and has a few scratches on it.",
               scenery: true,
               canTake: false,
             },
             wall: {
               name: "wall",
-              commands: { look: "You see a rough stone wall with moss growing in the cracks." },
+              description: "You see a rough stone wall with moss growing in the cracks.",
               scenery: true,
               canTake: false,
             },
             ball: {
               name: "ball",
-              commands: {
-                look: "A small rubber ball.",
-              },
+              description: "A small rubber ball.",
               scenery: false,
-              sceneryDesc: "A <strong>ball</strong> lies on the floor.",
+              sceneryDesc: "A <strong>ball</strong> lies lonesome on the floor.",
               canTake: true,
             },
             door: {
               name: "door",
-              commands: { look: "The door is made of heavy oak and has a rusty iron handle." },
+              description: "The door is made of heavy oak and has a rusty iron handle.",
               open: false,
               locked: false,
               scenery: true,
@@ -129,6 +127,9 @@ export default {
 
       return roomDescText;
     },
+    buttonDisabled() {
+      return this.command.trim() === "";
+    },
   },
   methods: {
     parseCommand(_event) {
@@ -143,6 +144,11 @@ export default {
       const param = splitCmd.slice(1).map((x) => x.toLowerCase());
 
       let verbAlias = this.checkAliases(this.verbAliases, verb);
+
+      if (verb.match(/^(n|north|e|east|s|south|w|west)$/gi)) {
+        this.go("", verb);
+        return;
+      }
 
       // Check if the verb is valid
       if (!verbAlias) {
@@ -165,7 +171,7 @@ export default {
       return this.player.inventory.find((item) => item.name === noun) || false;
     },
     findItemIndex(noun) {
-      return this.player.inventory.findIndex((item) => item.name === noun) 
+      return this.player.inventory.findIndex((item) => item.name === noun);
     },
     findObjectName(noun) {
       // Check for object aliases
@@ -350,11 +356,11 @@ export default {
       if (foundObject) {
         // check the room
         if (this.rooms[this.whereAmI].objects[foundObject]) {
-          const lookOutput = this.rooms[this.whereAmI].objects[foundObject].commands[verb];
+          const lookOutput = this.rooms[this.whereAmI].objects[foundObject].description;
           this.output += `<br>${lookOutput}<br>`;
-        // check your inventory
+          // check your inventory
         } else if (this.findItem(foundObject)) {
-          const lookOutput = this.findItem(foundObject).commands[verb];
+          const lookOutput = this.findItem(foundObject).description;
           this.output += `<br>You open your inventory and look at the ${foundObject}...`;
           this.output += `<br>${lookOutput}<br>`;
         } else {
@@ -374,7 +380,7 @@ export default {
     <h3>{{ rooms[whereAmI].name }}</h3>
     <p v-html="roomDesc"></p>
     <input v-model="command" type="text" />
-    <button @click="parseCommand($event)">Parse</button>
+    <button :disabled="buttonDisabled" @click="parseCommand($event)">Parse</button>
     <p v-html="output"></p>
   </div>
 </template>
