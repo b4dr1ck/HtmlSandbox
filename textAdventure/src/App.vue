@@ -4,7 +4,7 @@ export default {
   data() {
     return {
       whereAmI: "room",
-      lastRoom: "room",
+      whereWasI: "",
       lastDoor: "",
       command: "",
       output: "",
@@ -15,7 +15,8 @@ export default {
         book: ["book"],
         table: ["tabel", "desk", "wooden table"],
         ball: ["ball", "rubber ball"],
-        stone: ["stone", "rock", "small stone"],
+        stone: ["stone","flint", "small stone"],
+        rock: ["large rock", "boulder", "rock"],
       },
       verbAliases: {
         look: ["look", "see", "view", "examine", "inspect"],
@@ -30,13 +31,41 @@ export default {
         inventory: [],
       },
       rooms: {
+        westPath: {
+          name: "Dead End",
+          description:
+            "You are at a dead end. The path is blocked by a large rock.<br>" +
+            "There is no way to go further west.<br>" +
+            "You can go back east to the hallway.<br>",
+          exit: {
+            east: { target: "hallway" },
+          },
+          objects: {
+            wall: {
+              name: "wall",
+              description: "The walls are cracked and look like they could collapse at any moment.",
+              scenery: true,
+              canTake: false,
+              command: {},
+            },
+            rock: {
+              name: "rock",
+              description: "A large boulder blocks your waye. It looks heavy and immovable.",
+              scenery: true,
+              canTake: false,
+              command: {},
+            },
+          },
+        },
         hallway: {
           name: "Hallway",
           description:
-            "You are in a long dark hallway with flickering torches on the walls. " +
-            "A door in the north leads you back to the room with the book.<br>",
+            "You are in a long dark hallway with flickering torches on the walls.<br>" +
+            "A door in the north leads you back to the room with the book.<br>" +
+            "Another small and dark path leads to the west.<br>",
           exit: {
             north: { target: "room", handicap: "door" },
+            west: { target: "westPath" },
           },
           objects: {
             torch: {
@@ -93,7 +122,9 @@ export default {
                   this.rooms.room.objects.book.sceneryDesc = "A <strong>book</strong> lies on the table.";
                   return "Now you can take the book.";
                 },*/
-                take: ()=> { return "It seems to be magically bound to the table." },
+                take: () => {
+                  return "It seems to be magically bound to the table.";
+                },
               },
             },
             table: {
@@ -354,16 +385,24 @@ export default {
       const exits = this.rooms[this.whereAmI].exit;
 
       if (exits && exits[direction]) {
-        if (!this.rooms[this.whereAmI].objects[exits[direction].handicap].open) {
-          this.output += `<br>The ${exits[direction].handicap} is closed.<br>`;
-          return;
+        if (this.rooms[this.whereAmI].objects[exits[direction].handicap]) {
+          if (!this.rooms[this.whereAmI].objects[exits[direction].handicap].open) {
+            this.output += `<br>The ${exits[direction].handicap} is closed.<br>`;
+            return;
+          }
+        }
+        // set whereAmI to the new room
+        this.whereAmI = exits[direction].target;
+
+        // Ensure the door is open after going through it
+        if (
+          Object.keys(this.rooms[this.whereAmI].objects).length > 0 &&
+          this.rooms[this.whereAmI].objects[exits[direction].handicap]
+        ) {
+          this.rooms[this.whereAmI].objects[exits[direction].handicap].open = true;
         }
 
-        this.lastDoor = exits[direction].handicap;
-        this.lastRoom = this.whereAmI;
-        this.whereAmI = exits[direction].target;
-        this.rooms[this.whereAmI].objects[this.lastDoor].open = true;
-        this.output += `<br>You go ${direction} to the ${this.rooms[this.whereAmI].name}.<br>`;
+        this.output += `<br>You go ${direction} to the <strong>${this.rooms[this.whereAmI].name}</strong>.<br>`;
       } else {
         this.output += `<br>You can't go ${direction} from here.<br>`;
       }
