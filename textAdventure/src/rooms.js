@@ -1,6 +1,7 @@
 export const rooms = {
   westPath: {
     name: "Dead End",
+    alias: ["dead end", "west path", "blocked path"],
     description:
       "You are at a dead end. The path is blocked by a large rock.<br>" +
       "There is no way to go further west.<br>" +
@@ -29,6 +30,7 @@ export const rooms = {
   },
   hallway: {
     name: "Hallway",
+    alias: ["hallway", "dark hallway", "long hallway"],
     description:
       "You are in a long dark hallway with flickering torches on the walls.<br>" +
       "A door in the north leads you back to the room with the book.<br>" +
@@ -84,7 +86,7 @@ export const rooms = {
     alias: ["room", "dark room", "small room", "dimly lit room"],
     description:
       "You are in a small dimly lit room with stone walls and a wooden table in the center.<br>" +
-      "On the table, there is a mysterious book. Behind you, in the south, is a door.<br>",
+      "On the table, there is a mysterious book. <br>Behind you, in the south, is a door.<br>",
     exit: {
       south: { target: "hallway", handicap: "door" },
     },

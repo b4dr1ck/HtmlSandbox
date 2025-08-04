@@ -10,6 +10,16 @@ export default {
       command: "",
       commandObject: {},
       output: "",
+      directionAliases: {
+        north: ["north", "n", "up"],
+        south: ["south", "s", "down"],
+        east: ["east", "e", "right"],
+        west: ["west", "w", "left"],
+        northeast: ["northeast", "ne"],
+        northwest: ["northwest", "nw"],
+        southeast: ["southeast", "se"],
+        southwest: ["southwest", "sw"],
+      },
       verbAliases: {
         look: ["look", "see", "view", "examine", "inspect"],
         go: ["go", "walk", "move", "travel", "head"],
@@ -41,11 +51,12 @@ export default {
   computed: {
     roomDesc() {
       let roomDescText = this.rooms[this.whereAmI].description;
+      const objects = this.rooms[this.whereAmI].objects;
 
       // describe objects in the room if the scenery flag is set
-      for (const obj in this.rooms[this.whereAmI].objects) {
-        if (!this.rooms[this.whereAmI].objects[obj].scenery) {
-          roomDescText += `${this.rooms[this.whereAmI].objects[obj].sceneryDesc}<br>`;
+      for (const obj in objects) {
+        if (!objects[obj].scenery) {
+          roomDescText += `${objects[obj].sceneryDesc}<br>`;
         }
       }
       return roomDescText;
@@ -65,11 +76,13 @@ export default {
     },
     parseCommand(_event) {
       // replace all aliases by the verbs and nouns in the cmd-string
-      const replaceAliases = (cmd, alias) => {
+      const replaceAliases = (cmd, aliases) => {
         let replacedCmd = cmd;
-        for (const key in alias) {
-          alias[key].forEach((value) => {
-            replacedCmd = replacedCmd.replaceAll(value, key);
+        for (const alias in aliases) {
+          aliases[alias].forEach((value) => {
+            const regex = new RegExp(`\\b${value}\\b`, "g");
+            replacedCmd = replacedCmd.replaceAll(regex, alias);
+
           });
         }
         return replacedCmd;
@@ -87,10 +100,17 @@ export default {
         for (const obj in objects) {
           objectsAliases[objects[obj].name] = objects[obj].alias;
         }
+
+        // check the directionAliases
+        for (const direction in this.directionAliases) {
+          objectsAliases[direction] = this.directionAliases[direction];
+        }
+
         // check the player inventory
         this.player.inventory.forEach((item) => {
           objectsAliases[item.name] = item.alias;
         });
+
         return objectsAliases;
       };
 
@@ -131,14 +151,39 @@ export default {
         return;
       }
 
-      console.log(`${this.commandObject.verb} ${this.commandObject.nouns} ${this.commandObject.prepos}`);
+      // debug
+      console.log(
+        `${this.commandObject.verb}(${this.commandObject.nouns.concat(this.commandObject.prepos).join(",")})`
+      );
+      console.log(this.commandObject);
+
+      // execute the command
       this[this.commandObject.verb](this.commandObject.nouns, this.commandObject.prepos);
     },
+    getExit(direction) {
+      // get the exit of the choosen direction
+      if (!this.rooms[this.whereAmI].exit || !this.rooms[this.whereAmI].exit[direction]) {
+        return null;
+      }
+      return this.rooms[this.whereAmI].exit[direction].target;
+    },
     getDescription(object) {
+      // in the inventory
+      const desc = this.player.inventory.find((item) => {
+        if (item.name === object) {
+          return item.description;
+        }
+      });
+      if (desc) {
+        return `(inventory) ${desc.description}`;
+      }
+
+      // the room itself
       if (object === this.whereAmI) {
         return this.rooms[this.whereAmI].description;
       }
 
+      // object in the room
       return this.rooms[this.whereAmI].objects[object].description;
     },
     look(nouns, _preposition) {
@@ -150,6 +195,21 @@ export default {
       } else if (nouns.length > 1) {
         this.output += "<br>What do you like to look at?<br>";
         return;
+      }
+    },
+    go(noun, _preposition) {
+      if (noun.length === 0 || noun.length > 1) {
+        this.output += `<br>Where do you want to go?<br>`;
+        return;
+      }
+
+      const destination = this.getExit(noun[0]);
+      if (this.rooms[destination]) {
+        this.whereWasI = this.whereAmI;
+        this.whereAmI = destination;
+        this.output += `<br>You go to <strong>${this.rooms[destination].name}</strong><br>`;
+      } else {
+        this.output += `<br>You can't go there!<br>`;
       }
     },
   },
@@ -166,6 +226,4 @@ export default {
   </div>
 </template>
 
-<style>
-
-</style>
+<style></style>
