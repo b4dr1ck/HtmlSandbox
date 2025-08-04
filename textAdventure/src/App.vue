@@ -6,7 +6,6 @@ export default {
   data() {
     return {
       whereAmI: "room",
-      whereWasI: "",
       command: "",
       commandObject: {},
       output: "",
@@ -82,7 +81,6 @@ export default {
           aliases[alias].forEach((value) => {
             const regex = new RegExp(`\\b${value}\\b`, "g");
             replacedCmd = replacedCmd.replaceAll(regex, alias);
-
           });
         }
         return replacedCmd;
@@ -153,19 +151,19 @@ export default {
 
       // debug
       console.log(
-        `${this.commandObject.verb}(${this.commandObject.nouns.concat(this.commandObject.prepos).join(",")})`
+        `${this.commandObject.verb[0]}(${this.commandObject.nouns.concat(this.commandObject.prepos).join(",")})`
       );
       console.log(this.commandObject);
 
       // execute the command
-      this[this.commandObject.verb](this.commandObject.nouns, this.commandObject.prepos);
+      this[this.commandObject.verb[0]](this.commandObject.verb[0], this.commandObject.nouns, this.commandObject.prepos);
     },
     getExit(direction) {
       // get the exit of the choosen direction
       if (!this.rooms[this.whereAmI].exit || !this.rooms[this.whereAmI].exit[direction]) {
         return null;
       }
-      return this.rooms[this.whereAmI].exit[direction].target;
+      return this.rooms[this.whereAmI].exit[direction];
     },
     getDescription(object) {
       // in the inventory
@@ -184,32 +182,77 @@ export default {
       }
 
       // object in the room
-      return this.rooms[this.whereAmI].objects[object].description;
+      if (this.rooms[this.whereAmI].objects[object]) {
+        return this.rooms[this.whereAmI].objects[object].description;
+      }
+      return null;
     },
-    look(nouns, _preposition) {
+    look(_verb, nouns, _preposition) {
       if (nouns.length === 0) {
         this.output += `<br>You see nothing special<br>`;
         return;
-      } else if (nouns.length === 1) {
+      } else if (nouns.length === 1 && this.getDescription(nouns[0])) {
         this.output += `<br>${this.getDescription(nouns[0])}<br>`;
       } else if (nouns.length > 1) {
         this.output += "<br>What do you like to look at?<br>";
         return;
+      } else {
+        this.output += `<br>You see nothing special<br>`;
       }
     },
-    go(noun, _preposition) {
+    go(_verb, noun, _preposition) {
       if (noun.length === 0 || noun.length > 1) {
         this.output += `<br>Where do you want to go?<br>`;
         return;
       }
 
-      const destination = this.getExit(noun[0]);
+      const exit = this.getExit(noun[0]);
+      const destination = exit ? exit.target : null;
+
       if (this.rooms[destination]) {
-        this.whereWasI = this.whereAmI;
+        const handicap = this.rooms[this.whereAmI].objects[exit.handicap];
+        if (handicap && !handicap.open) {
+          this.output += `<br>You can't go on. The <strong>${handicap.name}</strong> is blocking your way!<br>`;
+          return;
+        }
         this.whereAmI = destination;
+        if (handicap) {
+          this.rooms[this.whereAmI].objects[handicap.name].open = true; // open the handicap if it was blocking the way
+        }
         this.output += `<br>You go to <strong>${this.rooms[destination].name}</strong><br>`;
       } else {
         this.output += `<br>You can't go there!<br>`;
+      }
+    },
+    close(verb, nouns, _preposition) {
+      this.open(verb, nouns, _preposition);
+    },
+    open(verb, nouns, _preposition) {
+      if (nouns.length === 0 || nouns.length > 1) {
+        this.output += `<br>What do you want to ${verb}?<br>`;
+        return;
+      }
+
+      const object = this.rooms[this.whereAmI].objects[nouns[0]];
+      if (object && "open" in object) {
+        if (!object.locked) {
+          if (object.open && verb === "open") {
+            this.output += `<br>The <strong>${nouns[0]}</strong> is already open!<br>`;
+            return;
+          } else if (!object.open && verb === "close") {
+            this.output += `<br>The <strong>${nouns[0]}</strong> is already closed!<br>`;
+            return;
+          } else {
+            object.open = !object.open; // toggle open state
+          }
+
+          this.output += `<br>You ${verb} the <strong>${nouns[0]}</strong><br>`;
+        } else {
+          this.output += `<br>The <strong>${nouns[0]}</strong> is locked!<br>`;
+        }
+      } else {
+        this.output += `<br>You can't ${verb} that!<br>`;
+        return;
       }
     },
   },
