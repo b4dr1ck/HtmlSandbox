@@ -11,6 +11,7 @@ export const rooms = {
     objects: {
       wall: {
         name: "wall",
+        alias: ["wall", "walls", "crack", "cracks"],
         description: "The walls are cracked and look like they could collapse at any moment.",
         scenery: true,
         canTake: false,
@@ -18,6 +19,7 @@ export const rooms = {
       },
       rock: {
         name: "rock",
+        alias: ["rock", "boulder", "stone"],
         description: "A large boulder blocks your way. It looks heavy and immovable.",
         scenery: true,
         canTake: false,
@@ -38,6 +40,7 @@ export const rooms = {
     objects: {
       torch: {
         name: "torch",
+        alias: ["torch", "torches"],
         description: "The torch is flickering and casting eerie shadows on the walls.",
         scenery: true,
         canTake: false,
@@ -49,6 +52,7 @@ export const rooms = {
       },
       stone: {
         name: "stone",
+        alias: ["stone", "small stone", "pebble"],
         description: "A small stone. It looks like it could be useful.",
         scenery: false,
         sceneryDesc: "A <strong>stone</strong> lies on the ground.",
@@ -57,6 +61,7 @@ export const rooms = {
       },
       wall: {
         name: "wall",
+        alias: ["wall", "walls"],
         description: "The walls are made of rough stone and are damp to the touch.",
         scenery: true,
         canTake: false,
@@ -64,6 +69,7 @@ export const rooms = {
       },
       door: {
         name: "door",
+        alias: ["door", "doors"],
         description: "The door is heavy and creaks as you push it open.",
         open: false,
         locked: false,
@@ -75,6 +81,7 @@ export const rooms = {
   },
   room: {
     name: "Dark Room",
+    alias: ["room", "dark room", "small room", "dimly lit room"],
     description:
       "You are in a small dimly lit room with stone walls and a wooden table in the center.<br>" +
       "On the table, there is a mysterious book. Behind you, in the south, is a door.<br>",
@@ -84,6 +91,7 @@ export const rooms = {
     objects: {
       book: {
         name: "book",
+        alias: ["book", "red book", "old book", "grimoire", "pentagram"],
         description: "You see an old dusty book with a red cover that shows a pentagram",
         scenery: true,
         canTake: false,
@@ -101,6 +109,7 @@ export const rooms = {
       },
       table: {
         name: "table",
+        alias: ["table", "wooden table", "desk"],
         description: "The table is made of oak and has a few scratches on it.",
         scenery: true,
         canTake: false,
@@ -108,6 +117,7 @@ export const rooms = {
       },
       wall: {
         name: "wall",
+        alias: ["wall", "walls", "stone wall"],
         description: "You see a rough stone wall with moss growing in the cracks.",
         scenery: true,
         canTake: false,
@@ -115,7 +125,8 @@ export const rooms = {
       },
       ball: {
         name: "ball",
-        description: "A small rubber ball.",
+        alias: ["ball", "rubber ball", "small ball", "blue ball"],
+        description: "A blue small rubber ball.",
         scenery: false,
         sceneryDesc: "A <strong>ball</strong> lies lonesome on the floor.",
         canTake: true,
@@ -123,6 +134,7 @@ export const rooms = {
       },
       door: {
         name: "door",
+        alias: ["door", "doors", "wooden door"],
         description: "The door is made of heavy oak and has a rusty iron handle.",
         open: false,
         locked: false,
