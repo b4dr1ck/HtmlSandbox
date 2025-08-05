@@ -5,7 +5,7 @@ export default {
   name: "App",
   data() {
     return {
-      whereAmI: "room",
+      whereAmI: "hallway",
       command: "",
       commandObject: {},
       output: "",
@@ -29,7 +29,7 @@ export default {
         inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
         put: ["put", "place", "set", "store", "deposit"],
       },
-      validPrepositions: ["in", "on", "at", "to", "with", "from", "about", "for"],
+      validPrepositions: ["in", "inside", "on", "at", "to", "with", "from", "about", "for"],
       player: {
         inventory: [],
       },
@@ -97,6 +97,12 @@ export default {
         const objects = this.rooms[this.whereAmI].objects;
         for (const obj in objects) {
           objectsAliases[objects[obj].name] = objects[obj].alias;
+          if (objects[obj].container) {
+            // if the object is a container, add its storage items as aliases
+            objects[obj].container.storage.forEach((item) => {
+              objectsAliases[item.name] = item.alias;
+            });
+          }
         }
 
         // check the directionAliases
@@ -140,7 +146,7 @@ export default {
       if (foundNoun2) this.commandObject.nouns.push(`${foundNoun2}`);
 
       // the prepositions on the third position
-      const foundPrepo = this.validPrepositions.find((prep) => prep === cmd[cmdSplitted[2]]);
+      const foundPrepo = this.validPrepositions.find((prep) => prep === cmdSplitted[2]);
       if (foundPrepo) this.commandObject.prepos.push(`${foundPrepo}`);
 
       // if verb is unknown
@@ -180,13 +186,24 @@ export default {
       }
 
       // object in the room
-      if (this.rooms[this.whereAmI].objects[object]) {
-        return this.rooms[this.whereAmI].objects[object].description;
+      const objectInRoom = this.rooms[this.whereAmI].objects[object];
+      if (objectInRoom) {
+        let desc = objectInRoom.description;
+        if (objectInRoom.container && objectInRoom.container.storage.length > 0 && objectInRoom.open) {
+          desc += `<br>It contains:<br><strong> ${objectInRoom.container.storage
+            .map((item) => item.name)
+            .join("<br>")}</strong>`;
+        }
+        return desc;
       }
       return null;
     },
     checkNounsLength(verb, nouns) {
-      if (nouns.length === 0 || nouns.length > 1) {
+      let maxNouns = 1;
+      if (verb === "put") {
+        maxNouns = 2;
+      }
+      if (nouns.length === 0 || nouns.length > maxNouns) {
         if (verb === "go") {
           this.output += `<br>Where do you want to go?<br>`;
         } else {
@@ -206,10 +223,62 @@ export default {
         });
       }
     },
+    put(verb, nouns, preposition) {
+      if (!this.checkNounsLength(verb, nouns)) return;
+      if (nouns.length === 2) {
+        const itemIndex = this.player.inventory.findIndex((item) => item.name === nouns[0]);
+        const objectDest = this.rooms[this.whereAmI].objects[nouns[1]];
+
+        if (!objectDest.container) {
+          this.output += `<br>The <strong>${nouns[1]}</strong> is not a container!<br>`;
+          return;
+        }
+        if (itemIndex === -1) {
+          this.output += `<br>You don't have the <strong>${nouns[0]}</strong> in your inventory!<br>`;
+          return;
+        }
+
+        if (!objectDest.open) {
+          this.output += `<br>You can't put something in the <strong>${nouns[1]}</strong> because it is closed!<br>`;
+          return;
+        }
+
+        if (!objectDest.container.validPrepositions.includes(preposition[0])) {
+          this.output += `<br>You can't put the <strong>${nouns[0]}</strong> ${preposition} the <strong>${nouns[1]}</strong>!<br>`;
+          return;
+        }
+
+        const objectSrc = this.player.inventory[itemIndex];
+
+        if (!objectSrc) {
+          this.output += `<br>You don't have the <strong>${nouns[0]}</strong> in your inventory!<br>`;
+          return;
+        }
+
+        this.player.inventory.splice(itemIndex, 1);
+        objectDest.container.storage.push(objectSrc);
+
+        this.output += `<br>You put the <strong>${nouns[0]}</strong> ${preposition} the <strong>${nouns[1]}</strong><br>`;
+      } else {
+        this.output += `<br>What do you want to put where?<br>`;
+      }
+    },
     take(verb, nouns, _preposition) {
       if (!this.checkNounsLength(verb, nouns)) return;
 
-      const object = this.rooms[this.whereAmI].objects[nouns[0]];
+      const objects = this.rooms[this.whereAmI].objects;
+      let object = objects[nouns[0]];
+      let containerName = "";
+
+      // if object is not found in the room, check in containers
+      if (!object) {
+        for (const obj in objects) {
+          if (objects[obj].container && objects[obj].container.storage.length > 0 && objects[obj].open) {
+            object = objects[obj].container.storage.find((item) => item.name === nouns[0]);
+            containerName = objects[obj].name;
+          }
+        }
+      }
       if (object) {
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb]()}`;
@@ -217,10 +286,20 @@ export default {
 
         if (object.canTake) {
           this.player.inventory.push(object);
-          delete this.rooms[this.whereAmI].objects[nouns[0]];
-          this.output += `<br>You take the <strong>${nouns[0]}</strong><br>`;
+          if (containerName) {
+            // delete from container
+            const index = objects[containerName].container.storage.findIndex((item) => item.name === object.name);
+            if (index !== -1) {
+              objects[containerName].container.storage.splice(index, 1);
+              this.output += `<br>You take the <strong>${object.name}</strong> from the  <strong${containerName}</strong<br>`;
+            }
+          } else {
+            // delete from inventory
+            delete this.rooms[this.whereAmI].objects[object.name];
+            this.output += `<br>You take the <strong>${object.name}</strong><br>`;
+          }
         } else {
-          this.output += `<br>You can't take the <strong>${nouns[0]}</strong>!<br>`;
+          this.output += `<br>You can't take the <strong>${object.name}</strong>!<br>`;
         }
       } else {
         this.output += `<br>You can't take that!<br>`;

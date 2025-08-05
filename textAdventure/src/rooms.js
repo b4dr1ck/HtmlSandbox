@@ -37,6 +37,7 @@ export const rooms = {
     alias: ["hallway", "dark hallway", "long hallway"],
     description:
       "You are in a long dark hallway with flickering torches on the walls.<br>" +
+      "On the wall on the east is a little chest.<br>" +
       "A door in the north leads you back to the room with the book.<br>" +
       "Another small and dark path leads to the west.<br>",
     exit: {
@@ -44,6 +45,20 @@ export const rooms = {
       west: { target: "westPath" },
     },
     objects: {
+      chest: {
+        name: "chest",
+        alias: ["chest", "small chest", "wooden chest"],
+        description: "A small wooden chest with a rusty lock.",
+        scenery: true,
+        canTake: false,
+        open: false,
+        container: {
+          storage:[],
+          validPrepositions: ["in", "inside"],
+        },
+        command: {
+        },
+      },
       torch: {
         name: "torch",
         alias: ["torch", "torches"],
