@@ -20,12 +20,12 @@ export default {
         southwest: ["southwest", "sw"],
       },
       verbAliases: {
-        look: ["look", "see", "view", "examine", "inspect"],
+        look: ["look", "see", "view", "examine", "inspect", "look at"],
         go: ["go", "walk", "move", "travel", "head"],
         open: ["open", "unlock", "unfasten", "unlatch"],
         close: ["close", "lock", "fasten", "latch"],
         take: ["take", "grab", "collect", "get", "remove", "pick up"],
-        drop: ["drop", "discard"],
+        drop: ["drop", "discard", "put down"],
         inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
         put: ["put", "place", "set", "store", "deposit"],
       },
@@ -113,7 +113,7 @@ export default {
       };
 
       this.output += `<br>> ${this.command}<br>`;
-      let cmd = this.command.trim().toLowerCase();
+      let cmd = this.command.trim().toLowerCase().replaceAll(/\s+/g, " ").replaceAll(" the ", " ");
       this.command = "";
       const objectsAliases = getObjectsAliases();
 
@@ -121,27 +121,27 @@ export default {
       cmd = replaceAliases(cmd, objectsAliases);
 
       // split the command into nouns, prepositions and verbs
-      const cmdSplitted = cmd.replaceAll(/\s+/g, " ").replaceAll(" the ", " ").split(" ");
+      const cmdSplitted = cmd.split(" ");
       this.commandObject = {
         verb: [],
         nouns: [],
         prepos: [],
       };
+
       // check if the command is valid by parsing each part of the command
-      cmdSplitted.forEach((cmd) => {
-        const foundNoun = Object.keys(objectsAliases).find((noun) => noun === cmd);
-        const foundPrepo = this.validPrepositions.find((prep) => prep === cmd);
-        const foundVerb = Object.keys(this.verbAliases).find((verb) => verb === cmd);
-        if (foundNoun) {
-          this.commandObject.nouns.push(`${foundNoun}`);
-        }
-        if (foundPrepo) {
-          this.commandObject.prepos.push(`${foundPrepo}`);
-        }
-        if (foundVerb) {
-          this.commandObject.verb.push(`${foundVerb}`);
-        }
-      });
+      // the verb on the first position
+      const foundVerb = Object.keys(this.verbAliases).find((verb) => verb === cmdSplitted[0]);
+      if (foundVerb) this.commandObject.verb.push(`${foundVerb}`);
+
+      // the nouns on the second and fourth position
+      const foundNoun = Object.keys(objectsAliases).find((noun) => noun === cmdSplitted[1]);
+      const foundNoun2 = Object.keys(objectsAliases).find((noun) => noun === cmdSplitted[3]);
+      if (foundNoun) this.commandObject.nouns.push(`${foundNoun}`);
+      if (foundNoun2) this.commandObject.nouns.push(`${foundNoun2}`);
+
+      // the prepositions on the third position
+      const foundPrepo = this.validPrepositions.find((prep) => prep === cmd[cmdSplitted[2]]);
+      if (foundPrepo) this.commandObject.prepos.push(`${foundPrepo}`);
 
       // if verb is unknown
       if (this.commandObject.verb.length === 0 || this.commandObject.verb.length > 1) {
@@ -151,12 +151,12 @@ export default {
 
       // debug
       console.log(
-        `${this.commandObject.verb[0]}(${this.commandObject.nouns.concat(this.commandObject.prepos).join(",")})`
+        `${this.commandObject.verb}(${this.commandObject.nouns.concat(this.commandObject.prepos).join(",")})`
       );
       console.log(this.commandObject);
 
       // execute the command
-      this[this.commandObject.verb[0]](this.commandObject.verb[0], this.commandObject.nouns, this.commandObject.prepos);
+      this[this.commandObject.verb](this.commandObject.verb[0], this.commandObject.nouns, this.commandObject.prepos);
     },
     getExit(direction) {
       // get the exit of the choosen direction
@@ -172,9 +172,7 @@ export default {
           return item.description;
         }
       });
-      if (desc) {
-        return `(inventory) ${desc.description}`;
-      }
+      if (desc) return `(inventory) ${desc.description}`;
 
       // the room itself
       if (object === this.whereAmI) {
@@ -186,6 +184,60 @@ export default {
         return this.rooms[this.whereAmI].objects[object].description;
       }
       return null;
+    },
+    checkNounsLength(verb, nouns) {
+      if (nouns.length === 0 || nouns.length > 1) {
+        if (verb === "go") {
+          this.output += `<br>Where do you want to go?<br>`;
+        } else {
+          this.output += `<br>What do you want to ${verb}?<br>`;
+        }
+        return false;
+      }
+      return true;
+    },
+    inventory() {
+      if (this.player.inventory.length === 0) {
+        this.output += `<br>You don't carry anything with you<br>`;
+      } else {
+        this.output += `<br>Your inventory:<br>`;
+        this.player.inventory.forEach((item) => {
+          this.output += `* <strong>${item.name}</strong><br>`;
+        });
+      }
+    },
+    take(verb, nouns, _preposition) {
+      if (!this.checkNounsLength(verb, nouns)) return;
+
+      const object = this.rooms[this.whereAmI].objects[nouns[0]];
+      if (object) {
+        if (object.command[verb]) {
+          this.output += `<br>${object.command[verb]()}`;
+        }
+
+        if (object.canTake) {
+          this.player.inventory.push(object);
+          delete this.rooms[this.whereAmI].objects[nouns[0]];
+          this.output += `<br>You take the <strong>${nouns[0]}</strong><br>`;
+        } else {
+          this.output += `<br>You can't take the <strong>${nouns[0]}</strong>!<br>`;
+        }
+      } else {
+        this.output += `<br>You can't take that!<br>`;
+      }
+    },
+    drop(verb, nouns, _preposition) {
+      if (!this.checkNounsLength(verb, nouns)) return;
+
+      const itemIndex = this.player.inventory.findIndex((item) => item.name === nouns[0]);
+      if (itemIndex !== -1) {
+        const item = this.player.inventory[itemIndex];
+        this.rooms[this.whereAmI].objects[item.name] = item; // add the item back to the room
+        this.player.inventory.splice(itemIndex, 1); // remove from inventory
+        this.output += `<br>You drop the <strong>${nouns[0]}</strong> to the ground.<br>`;
+      } else {
+        this.output += `<br>You don't have that in your inventory!<br>`;
+      }
     },
     look(_verb, nouns, _preposition) {
       if (nouns.length === 0) {
@@ -200,13 +252,10 @@ export default {
         this.output += `<br>You see nothing special<br>`;
       }
     },
-    go(_verb, noun, _preposition) {
-      if (noun.length === 0 || noun.length > 1) {
-        this.output += `<br>Where do you want to go?<br>`;
-        return;
-      }
+    go(verb, nouns, _preposition) {
+      if (!this.checkNounsLength(verb, nouns)) return;
 
-      const exit = this.getExit(noun[0]);
+      const exit = this.getExit(nouns[0]);
       const destination = exit ? exit.target : null;
 
       if (this.rooms[destination]) {
@@ -217,7 +266,7 @@ export default {
         }
         this.whereAmI = destination;
         if (handicap) {
-          this.rooms[this.whereAmI].objects[handicap.name].open = true; // open the handicap if it was blocking the way
+          this.rooms[this.whereAmI].objects[handicap.name].open = true; // open the handicap after going through
         }
         this.output += `<br>You go to <strong>${this.rooms[destination].name}</strong><br>`;
       } else {
@@ -228,10 +277,7 @@ export default {
       this.open(verb, nouns, _preposition);
     },
     open(verb, nouns, _preposition) {
-      if (nouns.length === 0 || nouns.length > 1) {
-        this.output += `<br>What do you want to ${verb}?<br>`;
-        return;
-      }
+      if (!this.checkNounsLength(verb, nouns)) return;
 
       const object = this.rooms[this.whereAmI].objects[nouns[0]];
       if (object && "open" in object) {

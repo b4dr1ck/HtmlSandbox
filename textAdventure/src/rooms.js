@@ -20,11 +20,15 @@ export const rooms = {
       },
       rock: {
         name: "rock",
-        alias: ["rock", "boulder", "stone"],
+        alias: ["rock", "boulder", "large rock"],
         description: "A large boulder blocks your way. It looks heavy and immovable.",
         scenery: true,
         canTake: false,
-        command: {},
+        command: {
+          take: () => {
+            return "You try to take the rock, but it's too heavy to move.";
+          },
+        },
       },
     },
   },
@@ -63,7 +67,7 @@ export const rooms = {
       },
       wall: {
         name: "wall",
-        alias: ["wall", "walls"],
+        alias: ["wall", "walls", "stone wall"],
         description: "The walls are made of rough stone and are damp to the touch.",
         scenery: true,
         canTake: false,
@@ -98,12 +102,6 @@ export const rooms = {
         scenery: true,
         canTake: false,
         command: {
-          /*take: () => {
-            this.rooms.room.objects.book.canTake = true;
-            this.rooms.room.objects.book.scenery = false;
-            this.rooms.room.objects.book.sceneryDesc = "A <strong>book</strong> lies on the table.";
-            return "Now you can take the book.";
-          },*/
           take: () => {
             return "It seems to be magically bound to the table.";
           },
@@ -130,7 +128,7 @@ export const rooms = {
         alias: ["ball", "rubber ball", "small ball", "blue ball"],
         description: "A blue small rubber ball.",
         scenery: false,
-        sceneryDesc: "A <strong>ball</strong> lies lonesome on the floor.",
+        sceneryDesc: "A <strong>rubber ball</strong> lies lonesome on the floor.",
         canTake: true,
         command: {},
       },
