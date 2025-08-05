@@ -53,11 +53,10 @@ export const rooms = {
         canTake: false,
         open: false,
         container: {
-          storage:[],
+          storage: [],
           validPrepositions: ["in", "inside"],
         },
-        command: {
-        },
+        command: {},
       },
       torch: {
         name: "torch",
@@ -110,24 +109,29 @@ export const rooms = {
       south: { target: "hallway", handicap: "door" },
     },
     objects: {
-      book: {
-        name: "book",
-        alias: ["book", "red book", "old book", "grimoire", "pentagram"],
-        description: "You see an old dusty book with a red cover that shows a pentagram",
-        scenery: true,
-        canTake: false,
-        command: {
-          take: () => {
-            return "It seems to be magically bound to the table.";
-          },
-        },
-      },
       table: {
         name: "table",
         alias: ["table", "wooden table", "desk"],
         description: "The table is made of oak and has a few scratches on it.",
         scenery: true,
         canTake: false,
+        container: {
+          storage: [
+            {
+              name: "book",
+              alias: ["book", "red book", "old book", "grimoire", "pentagram"],
+              description: "You see an old dusty book with a red cover that shows a pentagram",
+              scenery: true,
+              canTake: false,
+              command: {
+                take: () => {
+                  return "It seems to be magically bound to the table.";
+                },
+              },
+            },
+          ],
+          validPrepositions: ["on"],
+        },
         command: {},
       },
       wall: {
