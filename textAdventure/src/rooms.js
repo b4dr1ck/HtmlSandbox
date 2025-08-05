@@ -10,6 +10,15 @@ export const rooms = {
       east: { target: "hallway" },
     },
     objects: {
+      key: {
+        name: "chest key",
+        alias: ["key", "rusty key", "iron key", "chest key"],
+        description: "A rusty iron key that looks like it could fit a small chest.",
+        scenery: false,
+        sceneryDesc: "A <strong>rusty key</strong> lies on the ground.",
+        canTake: true,
+        command: {},
+      },
       wall: {
         name: "wall",
         alias: ["wall", "walls", "crack", "cracks"],
@@ -52,9 +61,10 @@ export const rooms = {
         scenery: true,
         canTake: false,
         open: false,
+        locked: "key",
         container: {
-          storage: [],
-          validPrepositions: ["in", "inside"],
+          storage: {},
+          validPrepositions: ["in", "inside", "into"],
         },
         command: {},
       },
@@ -89,8 +99,8 @@ export const rooms = {
       },
       door: {
         name: "door",
-        alias: ["door", "doors"],
-        description: "The door is heavy and creaks as you push it open.",
+        alias: ["door", "doors", "wooden door"],
+        description: "The door is made of heavy oak and has a rusty iron handle.",
         open: false,
         locked: false,
         scenery: true,
@@ -116,8 +126,8 @@ export const rooms = {
         scenery: true,
         canTake: false,
         container: {
-          storage: [
-            {
+          storage: {
+            book: {
               name: "book",
               alias: ["book", "red book", "old book", "grimoire", "pentagram"],
               description: "You see an old dusty book with a red cover that shows a pentagram",
@@ -129,8 +139,8 @@ export const rooms = {
                 },
               },
             },
-          ],
-          validPrepositions: ["on"],
+          },
+          validPrepositions: ["on", "onto"],
         },
         command: {},
       },

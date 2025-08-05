@@ -5,7 +5,7 @@ export default {
   name: "App",
   data() {
     return {
-      whereAmI: "room",
+      whereAmI: "hallway",
       command: "",
       commandObject: {},
       output: "",
@@ -29,9 +29,9 @@ export default {
         inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
         put: ["put", "place", "set", "store", "deposit"],
       },
-      validPrepositions: ["in", "inside", "on", "at", "to", "with", "from", "about", "for"],
+      validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for"],
       player: {
-        inventory: [],
+        inventory: {},
       },
       rooms: rooms,
     };
@@ -103,12 +103,12 @@ export default {
         // check the room's objects
         const objects = this.rooms[this.whereAmI].objects;
         for (const obj in objects) {
-          objectsAliases[objects[obj].name] = objects[obj].alias;
+          objectsAliases[obj] = objects[obj].alias;
           if (objects[obj].container) {
             // if the object is a container, add its storage items as aliases
-            objects[obj].container.storage.forEach((item) => {
-              objectsAliases[item.name] = item.alias;
-            });
+            for (const item in objects[obj].container.storage) {
+              objectsAliases[item] = objects[obj].container.storage[item].alias;
+            }
           }
         }
 
@@ -118,20 +118,24 @@ export default {
         }
 
         // check the player inventory
-        this.player.inventory.forEach((item) => {
-          objectsAliases[item.name] = item.alias;
-        });
+        for (const item in this.player.inventory) {
+          objectsAliases[item] = this.player.inventory[item].alias;
+        }
 
+        console.log(objectsAliases)
         return objectsAliases;
       };
 
       this.output += `<br>> ${this.command}<br>`;
       let cmd = this.command.trim().toLowerCase().replaceAll(/\s+/g, " ").replaceAll(" the ", " ");
+      console.log(cmd)
       this.command = "";
       const objectsAliases = getObjectsAliases();
 
       cmd = replaceAliases(cmd, this.verbAliases);
       cmd = replaceAliases(cmd, objectsAliases);
+      console.log(cmd)
+
 
       // split the command into nouns, prepositions and verbs
       const cmdSplitted = cmd.split(" ");
@@ -180,13 +184,11 @@ export default {
     },
     getDescription(object) {
       // in the inventory
-      const desc = this.player.inventory.find((item) => {
-        if (item.name === object) {
-          return item.description;
+      for (const item in this.player.inventory) {
+        if (item === object) {
+          return `(inventory) ${this.player.inventory[item].description}`;
         }
-      });
-      if (desc) return `(inventory) ${desc.description}`;
-
+      }
       // the room itself
       if (object === this.whereAmI) {
         return this.rooms[this.whereAmI].description;
@@ -198,29 +200,27 @@ export default {
       if (objectInRoom) {
         let desc = objectInRoom.description;
         // is a container
-        if (objectInRoom.container && objectInRoom.container.storage.length > 0) {
+        if (objectInRoom.container && Object.keys(objectInRoom.container.storage).length > 0) {
           if ("open" in objectInRoom) {
             if (objectInRoom.open) {
-              desc += `<br>${
-                objectInRoom.container.validPrepositions[0]
-              } it youn find:<br><strong>* ${objectInRoom.container.storage
-                .map((item) => item.name)
-                .join("<br>* ")}</strong>`;
+              desc += `<br>${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
+              for (const item in objectInRoom.container.storage) {
+                desc += `<br><strong>* ${objectInRoom.container.storage[item].name}</strong>`;
+              }
             }
           } else {
-            desc += `<br>${
-              objectInRoom.container.validPrepositions[0]
-            } it you find:<br><strong>* ${objectInRoom.container.storage
-              .map((item) => item.name)
-              .join("<br>* ")}</strong>`;
+            desc += `<br>${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
+            for (const item in objectInRoom.container.storage) {
+              desc += `<br><strong>* ${objectInRoom.container.storage[item].name}</strong>`;
+            }
           }
         }
         return desc;
       }
 
       for (const obj in objects) {
-        if (objects[obj].container && objects[obj].container.storage.length > 0) {
-          const item = objects[obj].container.storage.find((item) => item.name === object);
+        if (objects[obj].container && Object.keys(objects[obj].container.storage).length > 0) {
+          const item = objects[obj].container.storage[object];
           if (item) {
             return `(${objects[obj].container.validPrepositions[0]} ${objects[obj].name}) ${item.description}`;
           }
@@ -231,7 +231,7 @@ export default {
     },
     checkNounsLength(verb, nouns) {
       let maxNouns = 1;
-      if (verb === "put") {
+      if (verb === "put" || verb === "open") {
         maxNouns = 2;
       }
       if (nouns.length === 0 || nouns.length > maxNouns) {
@@ -245,38 +245,36 @@ export default {
       return true;
     },
     inventory() {
-      if (this.player.inventory.length === 0) {
+      if (Object.keys(this.player.inventory).length === 0) {
         this.output += `<br>You don't carry anything with you<br>`;
       } else {
         this.output += `<br>Your inventory:<br>`;
-        this.player.inventory.forEach((item) => {
-          this.output += `* <strong>${item.name}</strong><br>`;
-        });
+        for (const item in this.player.inventory) {
+          this.output += `* <strong>${this.player.inventory[item].name}</strong><br>`;
+        }
       }
     },
     put(verb, nouns, preposition) {
       if (!this.checkNounsLength(verb, nouns)) return;
       if (nouns.length === 2) {
-        const itemIndex = this.player.inventory.findIndex((item) => item.name === nouns[0]);
+        const objectSrc = this.player.inventory[nouns[0]];
         const objectDest = this.rooms[this.whereAmI].objects[nouns[1]];
-        const objectSrc = this.player.inventory[itemIndex];
 
         if (!objectDest.container) {
           this.output += `<br>The <strong>${objectDest.name}</strong> is not a container!<br>`;
           return;
         }
-        if (itemIndex === -1) {
-          this.output += `<br>You don't have the <strong>${nouns[0]}</strong> in your inventory!<br>`;
-          return;
-        }
 
         if ("open" in objectDest && !objectDest.open) {
-          this.output += `<br>You can't put something ${preposition} the <strong>${objectDest.name}</strong> because it is closed!<br>`;
+          this.output += `<br>You can't put something in the <strong>${objectDest.name}</strong> because it is closed!<br>`;
           return;
         }
 
         if (!objectDest.container.validPrepositions.includes(preposition[0])) {
-          this.output += `<br>You can't put the <strong>${objectSrc.name}</strong> ${preposition} the <strong>${objectDest.name}</strong>!<br>`;
+          this.output += `<br>You can't do this!<br>`;
+          this.output += `<small>Valid prepositions for the${
+            objectDest.name
+          } are:${objectDest.container.validPrepositions.join(", ")}</small><br>`;
           return;
         }
 
@@ -285,8 +283,8 @@ export default {
           return;
         }
 
-        this.player.inventory.splice(itemIndex, 1);
-        objectDest.container.storage.push(objectSrc);
+        delete this.player.inventory[nouns[0]];
+        objectDest.container.storage[nouns[0]] = objectSrc;
 
         this.output += `<br>You put the <strong>${objectSrc.name}</strong> ${preposition} the <strong>${objectDest.name}</strong><br>`;
       } else {
@@ -303,13 +301,13 @@ export default {
       // if object is not found in the room, check in containers
       if (!object) {
         for (const obj in objects) {
-          if (objects[obj].container && objects[obj].container.storage.length > 0) {
+          if (objects[obj].container && Object.keys(objects[obj].container.storage).length > 0) {
             if ("open" in objects[obj]) {
               if (objects[obj].open) {
-                object = objects[obj].container.storage.find((item) => item.name === nouns[0]);
+                object = objects[obj].container.storage[nouns[0]];
               }
             } else {
-              object = objects[obj].container.storage.find((item) => item.name === nouns[0]);
+              object = objects[obj].container.storage[nouns[0]];
             }
             containerName = objects[obj].name;
           }
@@ -319,19 +317,18 @@ export default {
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb]()}`;
         }
-        console.log(containerName)
         if (object.canTake) {
-          this.player.inventory.push(object);
+          this.player.inventory[nouns[0]] = object;
           if (containerName) {
             // delete from container
-            const index = objects[containerName].container.storage.findIndex((item) => item.name === object.name);
-            if (index !== -1) {
-              objects[containerName].container.storage.splice(index, 1);
+            const item = objects[containerName].container.storage[nouns[0]];
+            if (item) {
+              delete objects[containerName].container.storage[nouns[0]];
               this.output += `<br>You take the <strong>${object.name}</strong> from the <strong>${containerName}</strong><br>`;
             }
           } else {
             // delete from inventory
-            delete this.rooms[this.whereAmI].objects[object.name];
+            delete this.rooms[this.whereAmI].objects[nouns[0]];
             this.output += `<br>You take the <strong>${object.name}</strong><br>`;
           }
         } else {
@@ -344,11 +341,10 @@ export default {
     drop(verb, nouns, _preposition) {
       if (!this.checkNounsLength(verb, nouns)) return;
 
-      const itemIndex = this.player.inventory.findIndex((item) => item.name === nouns[0]);
-      if (itemIndex !== -1) {
-        const item = this.player.inventory[itemIndex];
-        this.rooms[this.whereAmI].objects[item.name] = item; // add the item back to the room
-        this.player.inventory.splice(itemIndex, 1); // remove from inventory
+      const item = this.player.inventory[nouns[0]];
+      if (item) {
+        this.rooms[this.whereAmI].objects[nouns[0]] = item; // add the item back to the room
+        delete this.player.inventory[nouns[0]]; // remove from inventory
         this.output += `<br>You drop the <strong>${nouns[0]}</strong> to the ground.<br>`;
       } else {
         this.output += `<br>You don't have that in your inventory!<br>`;
@@ -391,10 +387,31 @@ export default {
     close(verb, nouns, _preposition) {
       this.open(verb, nouns, _preposition);
     },
-    open(verb, nouns, _preposition) {
+    open(verb, nouns, preposition) {
       if (!this.checkNounsLength(verb, nouns)) return;
 
       const object = this.rooms[this.whereAmI].objects[nouns[0]];
+
+      if (nouns.length === 2) {
+        if (preposition != "with") {
+          this.output += `<br>I don't understand ${preposition}<br>`;
+          return;
+        }
+        if (object.locked) {
+          const item = this.player.inventory[nouns[1]];
+          if (!item) {
+            this.output += `<br>You don't have the <strong>${nouns[1]}</strong> in your inventory!<br>`;
+            return;
+          }
+          if (nouns[1] === object.locked) {
+            object.locked = false;
+            this.output += `<br>You unlock the <strong>${nouns[0]}</strong> with the <strong>${nouns[1]}</strong><br>`;
+          } else {
+            this.output += `<br>The ${nouns[1]} doesn't fit!<br>`;
+          }
+        }
+      }
+
       if (object && "open" in object) {
         if (!object.locked) {
           if (object.open && verb === "open") {
