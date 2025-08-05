@@ -113,7 +113,7 @@ export const rooms = {
     name: "Dark Room",
     alias: ["room", "dark room", "small room", "dimly lit room"],
     description:
-      "You are in a small dimly lit room with stone walls and a wooden table in the center.<br>" +
+      "You are in a small dimly lit room with, stone walls and a wooden table in the center.<br>" +
       "On the table, there is a mysterious book. <br>Behind you, in the south, is a door.<br>",
     exit: {
       south: { target: "hallway", handicap: "door" },
@@ -130,7 +130,8 @@ export const rooms = {
             book: {
               name: "book",
               alias: ["book", "red book", "old book", "grimoire", "pentagram"],
-              description: "You see an old dusty book with a red cover that shows a pentagram",
+              description:
+                "You see an old dusty book with a red cover that shows a pentagram.<br>Inside the book, there are strange symbols and drawings.",
               scenery: true,
               canTake: false,
               command: {

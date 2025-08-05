@@ -5,7 +5,7 @@ export default {
   name: "App",
   data() {
     return {
-      whereAmI: "hallway",
+      whereAmI: "room",
       command: "",
       commandObject: {},
       output: "",
@@ -40,6 +40,13 @@ export default {
   mounted() {
     // Add a global keypress event listener
     window.addEventListener("keydown", this.handleKeyPress);
+    // Focus the input field when the component is mounted
+    this.$nextTick(() => {
+      const input = this.$refs.input;
+      if (input) {
+        input.focus();
+      }
+    });
   },
 
   beforeUnmount() {
@@ -122,20 +129,19 @@ export default {
           objectsAliases[item] = this.player.inventory[item].alias;
         }
 
-        console.log(objectsAliases)
+        console.log(objectsAliases);
         return objectsAliases;
       };
 
       this.output += `<br>> ${this.command}<br>`;
       let cmd = this.command.trim().toLowerCase().replaceAll(/\s+/g, " ").replaceAll(" the ", " ");
-      console.log(cmd)
+      console.log(cmd);
       this.command = "";
       const objectsAliases = getObjectsAliases();
 
       cmd = replaceAliases(cmd, this.verbAliases);
       cmd = replaceAliases(cmd, objectsAliases);
-      console.log(cmd)
-
+      console.log(cmd);
 
       // split the command into nouns, prepositions and verbs
       const cmdSplitted = cmd.split(" ");
@@ -314,6 +320,7 @@ export default {
         }
       }
       if (object) {
+        // special behavior if command-verb exist in object
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb]()}`;
         }
@@ -352,7 +359,7 @@ export default {
     },
     look(_verb, nouns, _preposition) {
       if (nouns.length === 0) {
-        this.output += `<br>You can't see this<br>`;
+        this.output += `<br>You see nothing special<br>`;
         return;
       } else if (nouns.length === 1 && this.getDescription(nouns[0])) {
         this.output += `<br>${this.getDescription(nouns[0])}<br>`;
@@ -441,15 +448,37 @@ export default {
   <div id="wrapper">
     <h3>{{ rooms[whereAmI].name }}</h3>
     <p v-html="roomDesc"></p>
-    <input v-model="command" type="text" />
-    <button :disabled="buttonDisabled" @click="parseCommand($event)">Parse</button>
+    <input ref="input" v-model="command" type="text" placeholder="type in here..." />
     <p id="output" ref="output" v-html="output"></p>
   </div>
 </template>
 
-<style scoped>
+<style>
+body {
+  background-color: black;
+}
+#wrapper {
+  font-size: 18px;
+  font-family: monospace;
+  width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  color: white;
+  background-color: rgb(44, 44, 44);
+}
 #output {
   height: 500px;
   overflow-y: auto;
+}
+
+input {
+  font-size: 18px;
+  font-family: monospace;
+  border: none;
+  background-color: rgb(44, 44, 44);
+  color: rgb(214, 214, 214);
+  outline: none;
 }
 </style>
