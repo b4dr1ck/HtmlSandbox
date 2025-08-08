@@ -3,10 +3,19 @@ export default {
   name: "App",
   data() {
     return {
-      whereAmI: "westPath",
+      whereAmI: "deadEnd",
       command: "",
       commandObject: {},
       output: "",
+      cmdNotFoundMemes: [
+        "What do you want to do?",
+        "I don't understand that command.",
+        "Please try something else.",
+        "I don't know what you mean.",
+        "Can you rephrase that?",
+        "That doesn't make sense to me.",
+        "I'm not sure how to respond to that.",
+      ],
       directionAliases: {
         north: ["north", "n", "up"],
         south: ["south", "s", "down"],
@@ -16,6 +25,9 @@ export default {
         northwest: ["northwest", "nw"],
         southeast: ["southeast", "se"],
         southwest: ["southwest", "sw"],
+      },
+      specialsAliases: {
+        hand: ["hand", "hands", "your hand", "your hands"],
       },
       verbAliases: {
         look: ["look", "see", "view", "examine", "inspect", "look at"],
@@ -27,13 +39,16 @@ export default {
         inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
         put: ["put", "place", "set", "store", "deposit", "give"],
         consume: ["consume", "eat", "drink"],
+        attack: ["attack", "destroy", "bash", "strike"],
+        fuck: ["shit", "ass", "cunt", "bitch", "damn"],
+        read: ["read"],
       },
       validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for"],
       player: {
         inventory: {},
       },
       rooms: {
-        westPath: {
+        deadEnd: {
           name: "Dead End",
           alias: ["dead end", "west path", "blocked path"],
           description:
@@ -44,6 +59,18 @@ export default {
             east: { target: "hallway" },
           },
           objects: {
+            paper: {
+              name: "paper",
+              alias: ["paper", "small", "note", "piece", "sheet", "writing"],
+              description: "a small piece of paper with some words on it",
+              scenery: false,
+              sceneryDesc: "A <strong>small piece of paper</strong> lies on the ground.",
+              canTake: true,
+              canRead: "Whoever read this has a small wiener.",
+              canBeAttacked: ["hand"],
+              condition: "",
+              command: {},
+            },
             key: {
               name: "chest key",
               alias: ["key", "rusty key", "iron key", "chest key"],
@@ -85,7 +112,7 @@ export default {
             "Another small and dark path leads to the west.<br>",
           exit: {
             north: { target: "room", handicap: "door" },
-            west: { target: "westPath" },
+            west: { target: "deadEnd" },
           },
           objects: {
             chest: {
@@ -302,6 +329,7 @@ export default {
       const getObjectAliases = () => {
         const objectAliases = {};
         for (const room in this.rooms) {
+          objectAliases[room] = this.rooms[room].alias;
           const objects = this.rooms[room].objects;
           for (const obj in objects) {
             if (objects[obj].alias) {
@@ -320,6 +348,7 @@ export default {
           }
         }
         const mergedObjectAliases = {
+          ...this.specialsAliases,
           ...objectAliases,
           ...this.directionAliases,
         };
@@ -359,7 +388,8 @@ export default {
 
       // if verb is unknown
       if (this.commandObject.verb.length === 0 || this.commandObject.verb.length > 1) {
-        this.output += `<br>What do you want to do?<br>`;
+        const randomIndex = Math.floor(Math.random() * this.cmdNotFoundMemes.length);
+        this.output += `<br>"${this.cmdNotFoundMemes[randomIndex]}"<br>`;
         return;
       }
 
@@ -373,16 +403,24 @@ export default {
       this[this.commandObject.verb](this.commandObject.verb[0], this.commandObject.nouns, this.commandObject.prepos);
     },
     getExit(direction) {
+      const room = this.rooms[this.whereAmI];
       // get the exit of the choosen direction
-      if (!this.rooms[this.whereAmI].exit || !this.rooms[this.whereAmI].exit[direction]) {
-        return null;
+      if (!room.exit || !room.exit[direction]) {
+        // check if direction is a room
+        for (const dir in room.exit) {
+          if (room.exit[dir].target === direction) {
+            return room.exit[dir];
+          }
+        }
       }
-      return this.rooms[this.whereAmI].exit[direction];
+      return room.exit[direction];
     },
     getDescription(object) {
+      let condition = "";
       // in the inventory
       if (this.player.inventory[object]) {
-        return `(inventory) ${this.player.inventory[object].description}`;
+        condition = this.player.inventory[object].condition ? `(${this.player.inventory[object].condition})` : "";
+        return `(inventory)${condition} ${this.player.inventory[object].description}`;
       }
 
       // the room itself
@@ -393,21 +431,28 @@ export default {
       // object in the room
       const objects = this.rooms[this.whereAmI].objects;
       const objectInRoom = objects[object];
+      condition = objectInRoom.condition ? `(${objectInRoom.condition})` : "";
       if (objectInRoom) {
-        let desc = objectInRoom.description;
+        if (objectInRoom.hidden) {
+          return null; // object is hidden
+        }
+        let desc = `${condition} ${objectInRoom.description}`;
         // is a container
         if (objectInRoom.container && Object.keys(objectInRoom.container.storage).length > 0) {
           if ("open" in objectInRoom) {
             if (objectInRoom.open) {
               desc += `<br>${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
               for (const item in objectInRoom.container.storage) {
-                desc += `<br><strong>* ${objectInRoom.container.storage[item].name}</strong>`;
+                condition = objectInRoom.container.storage[item].condition ? `(${objectInRoom.container.storage[item].condition})` : "";
+                desc += `<br><strong>* ${condition} ${objectInRoom.container.storage[item].name}</strong>`;
               }
             }
           } else {
+            // if the object is a container but not openable always show the content
             desc += `<br>${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
             for (const item in objectInRoom.container.storage) {
-              desc += `<br><strong>* ${objectInRoom.container.storage[item].name}</strong>`;
+              condition = objectInRoom.container.storage[item].condition ? `(${objectInRoom.container.storage[item].condition})` : "";
+              desc += `<br><strong>* ${condition} ${objectInRoom.container.storage[item].name}</strong>`;
             }
           }
         }
@@ -417,8 +462,9 @@ export default {
       for (const obj in objects) {
         if (objects[obj].container && Object.keys(objects[obj].container.storage).length > 0) {
           const item = objects[obj].container.storage[object];
+          condition = item.condition ? `(${item.condition})` : "";
           if (item) {
-            return `(${objects[obj].container.validPrepositions[0]} ${objects[obj].name}) ${item.description}`;
+            return `(${objects[obj].container.validPrepositions[0]} ${objects[obj].name})${condition} ${item.description}`;
           }
         }
       }
@@ -427,7 +473,7 @@ export default {
     },
     checkNounsLength(verb, nouns) {
       let maxNouns = 1;
-      if (verb === "put" || verb === "open") {
+      if (verb === "put" || verb === "open" || verb === "attack") {
         maxNouns = 2;
       }
       if (nouns.length === 0 || nouns.length > maxNouns) {
@@ -441,14 +487,90 @@ export default {
       return true;
     },
     inventory() {
+      let condition = "";
       if (Object.keys(this.player.inventory).length === 0) {
         this.output += `<br>You don't carry anything with you<br>`;
       } else {
         this.output += `<br>Your inventory:<br>`;
         for (const item in this.player.inventory) {
-          this.output += `* <strong>${this.player.inventory[item].name}</strong><br>`;
+          if (this.player.inventory[item].condition) {
+            condition = `(${this.player.inventory[item].condition}) `;
+          }
+          this.output += `* <strong>${condition}${this.player.inventory[item].name}</strong><br>`;
         }
       }
+    },
+    read(verb, nouns, _preposition) {
+      const object1 = nouns[0];
+      if (!this.checkNounsLength(verb, nouns)) return;
+
+      let item = this.player.inventory[object1] || this.rooms[this.whereAmI].objects[object1];
+      if (!item) {
+        // check container storage
+        for (const obj in this.rooms[this.whereAmI].objects) {
+          if (
+            this.rooms[this.whereAmI].objects[obj].container &&
+            Object.keys(this.rooms[this.whereAmI].objects[obj].container.storage).length > 0
+          ) {
+            if (this.rooms[this.whereAmI].objects[obj].container.storage[object1]) {
+              item = this.rooms[this.whereAmI].objects[obj].container.storage[object1];
+              break;
+            }
+          }
+        }
+      }
+
+      if (item && item.canRead) {
+        this.output += `<br>You read the <strong>${item.name}</strong>:<br><i>"${item.canRead}</i>"<br>`;
+      } else if (item) {
+        this.output += `<br>You can't read the <strong>${item.name}</strong>!<br>`;
+      } else {
+        this.output += `<br>You can't do that!<br>`;
+      }
+    },
+    attack(verb, nouns, preposition) {
+      const object1 = nouns[0];
+      const object2 = nouns[1];
+
+      if (!this.checkNounsLength(verb, nouns)) return;
+      if (nouns.length === 2) {
+        const objectSrc = this.player.inventory[object2];
+        const objectDest = this.rooms[this.whereAmI].objects[object1];
+
+        if (preposition != "with") {
+          this.output += `<br>I can't do this<br>`;
+          return;
+        }
+
+        if (!objectSrc && object2 !== "hand") {
+          this.output += `<br>You don't have the <strong>${object2}</strong> in your inventory!<br>`;
+          return;
+        }
+
+        if (objectDest.canBeAttacked) {
+          // attaack with your hand
+          if (object2 === "hand") {
+            this.output += `<br>You attack the <strong>${objectDest.name}</strong> with your bare <strong>${object2}</strong>`;
+            this.output += `<br>You break it!<br>`;
+            objectDest.condition = "broken";
+            return;
+          }
+          // attack with an item that can be used to attack
+          if (objectDest.canBeAttacked.includes(object2)) {
+            this.output += `<br>You attack the <strong>${objectDest.name}</strong> with the <strong>${objectSrc.name}</strong>`;
+            this.output += `<br>You break it!<br>`;
+            objectDest.condition = "broken";
+          }
+        } else {
+          this.output += `<br>You can't attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
+        }
+      } else {
+        this.output += `<br>What do you want to attack with what?<br>`;
+        return;
+      }
+    },
+    fuck() {
+      this.output += '<br>"Such language in a high-class establishment like this!"</br>';
     },
     consume(verb, nouns, _preposition) {
       const object1 = nouns[0];
@@ -699,6 +821,7 @@ input {
   font-size: 18px;
   font-family: monospace;
   border: none;
+  width: 90%;
   background-color: rgb(44, 44, 44);
   color: rgb(214, 214, 214);
   outline: none;
