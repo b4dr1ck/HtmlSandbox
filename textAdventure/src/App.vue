@@ -3,7 +3,7 @@ export default {
   name: "App",
   data() {
     return {
-      whereAmI: "deadEnd",
+      whereAmI: "room",
       command: "",
       commandObject: {},
       output: "",
@@ -220,6 +220,7 @@ export default {
                       "You see an old dusty book with a red cover that shows a pentagram.<br>Inside the book, there are strange symbols and drawings.",
                     scenery: true,
                     canTake: false,
+                    canRead: "..dsadas...dsa343fasf..dadasdsa...",
                     command: {
                       take: () => {
                         return "It seems to be magically bound to the table.";
@@ -431,8 +432,8 @@ export default {
       // object in the room
       const objects = this.rooms[this.whereAmI].objects;
       const objectInRoom = objects[object];
-      condition = objectInRoom.condition ? `(${objectInRoom.condition})` : "";
       if (objectInRoom) {
+        condition = objectInRoom.condition ? `(${objectInRoom.condition})` : "";
         if (objectInRoom.hidden) {
           return null; // object is hidden
         }
@@ -443,7 +444,9 @@ export default {
             if (objectInRoom.open) {
               desc += `<br>${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
               for (const item in objectInRoom.container.storage) {
-                condition = objectInRoom.container.storage[item].condition ? `(${objectInRoom.container.storage[item].condition})` : "";
+                condition = objectInRoom.container.storage[item].condition
+                  ? `(${objectInRoom.container.storage[item].condition})`
+                  : "";
                 desc += `<br><strong>* ${condition} ${objectInRoom.container.storage[item].name}</strong>`;
               }
             }
@@ -451,7 +454,9 @@ export default {
             // if the object is a container but not openable always show the content
             desc += `<br>${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
             for (const item in objectInRoom.container.storage) {
-              condition = objectInRoom.container.storage[item].condition ? `(${objectInRoom.container.storage[item].condition})` : "";
+              condition = objectInRoom.container.storage[item].condition
+                ? `(${objectInRoom.container.storage[item].condition})`
+                : "";
               desc += `<br><strong>* ${condition} ${objectInRoom.container.storage[item].name}</strong>`;
             }
           }
@@ -801,6 +806,9 @@ export default {
 body {
   background-color: black;
 }
+h3 {
+  color: rgb(255, 194, 175);
+}
 #wrapper {
   font-size: 18px;
   font-family: monospace;
@@ -816,7 +824,9 @@ body {
   height: 500px;
   overflow-y: auto;
 }
-
+strong {
+  color: rgb(191, 255, 175);
+}
 input {
   font-size: 18px;
   font-family: monospace;
