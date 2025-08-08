@@ -3,7 +3,8 @@ export default {
   name: "App",
   data() {
     return {
-      whereAmI: "attic",
+      whereAmI: "room",
+      whereWasI: "",
       command: "",
       commandObject: {},
       output: "",
@@ -17,14 +18,18 @@ export default {
         "I'm not sure how to respond to that.",
       ],
       directionAliases: {
-        north: ["north", "n", "up"],
-        south: ["south", "s", "down"],
-        east: ["east", "e", "right"],
-        west: ["west", "w", "left"],
+        north: ["north", "n"],
+        south: ["south", "s"],
+        east: ["east", "e"],
+        west: ["west", "w"],
         northeast: ["northeast", "ne"],
         northwest: ["northwest", "nw"],
         southeast: ["southeast", "se"],
         southwest: ["southwest", "sw"],
+        up: ["up", "above", "ascend", "u"],
+        down: ["down", "below", "descend", "d"],
+        in: ["in", "inside", "into"],
+        out: ["out", "outside", "exit"],
       },
       specialsAliases: {
         hand: ["hand", "hands", "your hand", "your hands"],
@@ -39,7 +44,7 @@ export default {
         inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
         put: ["put", "place", "set", "store", "deposit", "give"],
         consume: ["consume", "eat", "drink"],
-        attack: ["attack", "destroy", "bash", "strike"],
+        attack: ["attack", "destroy", "bash", "strike", "kill", "hit", "smash"],
         fuck: ["shit", "ass", "cunt", "bitch", "damn"],
         read: ["read"],
       },
@@ -110,6 +115,7 @@ export default {
             "There is a hatch in the north that leads you back to the hallway<br>",
           exit: {
             north: { target: "hallway", handicap: "hatch" },
+            down: { target: "hallway", handicap: "hatch" },
           },
           objects: {
             hatch: {
@@ -186,8 +192,10 @@ export default {
             "In front of you in the southern end of the hallway is a ladder that leads up to a hatch.<br>",
           exit: {
             north: { target: "room", handicap: "door" },
+            in: { target: "room", handicap: "door" },
             west: { target: "deadEnd" },
             south: { target: "attic", handicap: "hatch" },
+            up: { target: "attic", handicap: "hatch" },
           },
           objects: {
             chest: {
@@ -296,6 +304,7 @@ export default {
             "On the table, there is a mysterious book. <br>Behind you, in the south, is a door.<br>",
           exit: {
             south: { target: "hallway", handicap: "door" },
+            out: { target: "hallway", handicap: "door" },
           },
           objects: {
             table: {
@@ -480,6 +489,15 @@ export default {
       const foundPrepo = this.validPrepositions.find((prep) => prep === cmdSplitted[2]);
       if (foundPrepo) this.commandObject.prepos.push(`${foundPrepo}`);
 
+      // if the verb is a direction alias, change the verb to "go" and set the direction as noun
+      for (const direction in this.directionAliases) {
+        if (this.directionAliases[direction].includes(cmdSplitted[0])) {
+          this.commandObject.verb[0] = "go"; // change verb to go
+          this.commandObject.nouns = [direction]; // set the direction as noun
+          this.commandObject.prepos = []; // clear prepositions
+          break;
+        }
+      }
       // if verb is unknown
       if (this.commandObject.verb.length === 0 || this.commandObject.verb.length > 1) {
         const randomIndex = Math.floor(Math.random() * this.cmdNotFoundMemes.length);
@@ -819,6 +837,7 @@ export default {
           this.output += `<br>You can't go on. The <strong>${handicap.name}</strong> is blocking your way!<br>`;
           return;
         }
+        this.whereWasI = this.whereAmI;
         this.whereAmI = destination;
         if (handicap) {
           this.rooms[this.whereAmI].objects[handicap.name].open = true; // open the handicap after going through
