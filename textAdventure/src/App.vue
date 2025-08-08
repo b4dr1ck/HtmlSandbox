@@ -3,7 +3,7 @@ export default {
   name: "App",
   data() {
     return {
-      whereAmI: "room",
+      whereAmI: "attic",
       command: "",
       commandObject: {},
       output: "",
@@ -102,6 +102,79 @@ export default {
             },
           },
         },
+        attic: {
+          name: "Attic",
+          alias: ["attic", "loft", "roof space"],
+          description:
+            "You are in a dusty dark attic with wooden beams.<br>" +
+            "There is a hatch in the north that leads you back to the hallway<br>",
+          exit: {
+            north: { target: "hallway", handicap: "hatch" },
+          },
+          objects: {
+            hatch: {
+              name: "hatch",
+              alias: ["hatch", "wooden hatch", "trapdoor"],
+              description: "A wooden hatch that leads down to the hallway.",
+              open: false,
+              locked: false,
+              scenery: true,
+              canTake: false,
+              command: {},
+            },
+            goldcoin: {
+              name: "gold coin",
+              alias: ["gold coin", "coin", "golden coin"],
+              description: "A shiny gold coin. It looks valuable.",
+              scenery: false,
+              hidden: true,
+              sceneryDesc: "A <strong>gold coin</strong> lies on the dusty floor.",
+              canTake: true,
+              command: {},
+            },
+            rat: {
+              name: "rat",
+              alias: ["rat", "big rat", "fat rat"],
+              description: "A big fat rat scurries around the attic.",
+              scenery: false,
+              sceneryDesc: "A <strong>big fat rat</strong> scurries around the attic. Something shiny is in its mouth.",
+              canTake: false,
+              canBeAttacked: ["stone", "ball"],
+              command: {
+                attack: () => {
+                  delete this.rooms.attic.objects.rat; // remove rat from the room
+                  this.rooms.attic.objects.goldcoin.hidden = false; // reveal gold coin
+
+                  return "The rat escapes into a hole in the wall. Something shiny falls out of its mouth and rolls across the floor.";
+                },
+              },
+            },
+            cobwebs: {
+              name: "cobwebs",
+              alias: ["cobwebs", "spider webs", "dusty cobwebs", "webs"],
+              description: "Dusty cobwebs hang from the beams.",
+              scenery: false,
+              sceneryDesc: "Dusty <strong>cobwebs</strong> hang everywhere from the beams.",
+              canTake: false,
+              canBeAttacked: ["hand"],
+
+              command: {
+                attack: () => {
+                  delete this.rooms.attic.objects.cobwebs; // remove cobwebs from the room
+                  return "You swipe the cobwebs away, clearing the space.";
+                },
+              },
+            },
+            dust: {
+              name: "dust",
+              alias: ["dust", "dusty floor", "dusty ground"],
+              description: "The floor is covered in a thick layer of dust.",
+              scenery: true,
+              canTake: false,
+              command: {},
+            },
+          },
+        },
         hallway: {
           name: "Hallway",
           alias: ["hallway", "dark hallway", "long hallway"],
@@ -109,10 +182,12 @@ export default {
             "You are in a long dark hallway with flickering torches on the walls.<br>" +
             "On the wall on the east is a little chest.<br>" +
             "A door in the north leads you back to the room with the book.<br>" +
-            "Another small and dark path leads to the west.<br>",
+            "Another small and dark path leads to the west.<br>" +
+            "In front of you in the southern end of the hallway is a ladder that leads up to a hatch.<br>",
           exit: {
             north: { target: "room", handicap: "door" },
             west: { target: "deadEnd" },
+            south: { target: "attic", handicap: "hatch" },
           },
           objects: {
             chest: {
@@ -189,6 +264,24 @@ export default {
               description: "The door is made of heavy oak and has a rusty iron handle.",
               open: false,
               locked: false,
+              scenery: true,
+              canTake: false,
+              command: {},
+            },
+            hatch: {
+              name: "hatch",
+              alias: ["hatch", "wooden hatch", "trapdoor"],
+              description: "A wooden hatch that leads down to the hallway.",
+              open: false,
+              locked: false,
+              scenery: true,
+              canTake: false,
+              command: {},
+            },
+            ladder: {
+              name: "ladder",
+              alias: ["ladder", "wooden ladder", "old ladder"],
+              description: "A rickety old wooden ladder that leads down to the hallway.",
               scenery: true,
               canTake: false,
               command: {},
@@ -289,7 +382,7 @@ export default {
 
       // describe objects in the room if the scenery flag is set
       for (const obj in objects) {
-        if (!objects[obj].scenery) {
+        if (!objects[obj].scenery && !objects[obj].hidden) {
           roomDescText += `${objects[obj].sceneryDesc}<br>`;
         }
       }
@@ -552,19 +645,16 @@ export default {
           return;
         }
 
-        if (objectDest.canBeAttacked) {
-          // attaack with your hand
-          if (object2 === "hand") {
-            this.output += `<br>You attack the <strong>${objectDest.name}</strong> with your bare <strong>${object2}</strong>`;
-            this.output += `<br>You break it!<br>`;
-            objectDest.condition = "broken";
-            return;
-          }
-          // attack with an item that can be used to attack
-          if (objectDest.canBeAttacked.includes(object2)) {
-            this.output += `<br>You attack the <strong>${objectDest.name}</strong> with the <strong>${objectSrc.name}</strong>`;
-            this.output += `<br>You break it!<br>`;
-            objectDest.condition = "broken";
+        if (!objectDest.canBeAttacked) {
+          this.output += `<br>You can't attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
+          return;
+        }
+
+        if (objectDest.canBeAttacked.includes(object2)) {
+          this.output += `<br>You attack the <strong>${objectDest.name}</strong> with the <strong>${object2}</strong>`;
+          objectDest.condition = "broken";
+          if (objectDest.command[verb]) {
+            this.output += `<br>${objectDest.command[verb]()}`;
           }
         } else {
           this.output += `<br>You can't attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
