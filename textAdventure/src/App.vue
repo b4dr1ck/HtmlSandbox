@@ -35,7 +35,7 @@ export default {
         hand: ["hand", "hands", "your hand", "your hands"],
       },
       verbAliases: {
-        look: ["look", "see", "view", "examine", "inspect", "look at"],
+        look: ["look", "see", "view", "examine", "inspect", "look at", "show"],
         go: ["go", "walk", "move", "travel", "head"],
         open: ["open", "unlock", "unfasten", "unlatch"],
         close: ["close", "lock", "fasten", "latch"],
@@ -454,6 +454,7 @@ export default {
           ...this.specialsAliases,
           ...objectAliases,
           ...this.directionAliases,
+          ...{ inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"] },
         };
         return mergedObjectAliases;
       };
@@ -498,6 +499,7 @@ export default {
           break;
         }
       }
+
       // if verb is unknown
       if (this.commandObject.verb.length === 0 || this.commandObject.verb.length > 1) {
         const randomIndex = Math.floor(Math.random() * this.cmdNotFoundMemes.length);
@@ -812,6 +814,12 @@ export default {
     },
     look(_verb, nouns, _preposition) {
       const object1 = nouns[0];
+
+      if (object1 === "inventory") {
+        this.inventory();
+        return;
+      }
+
       if (nouns.length === 0) {
         this.output += `<br>You see nothing special<br>`;
         return;
