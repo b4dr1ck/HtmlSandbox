@@ -722,6 +722,12 @@ export default {
       const objectDest = this.rooms[this.whereAmI].objects[object2];
 
       if (!this.checkNounsLength(verb, nouns)) return;
+
+      if (!objectSrc) {
+        this.output += `<br>You don't have the <strong>${object1}</strong> in your inventory!<br>`;
+        return;
+      }
+
       if (nouns.length === 2) {
         if (!objectDest.container) {
           this.output += `<br>The <strong>${objectDest.name}</strong> is not a container!<br>`;
@@ -740,22 +746,12 @@ export default {
           } are: ${objectDest.container.validPrepositions.join(", ")}</small><br>`;
           return;
         }
-
-        if (!objectSrc) {
-          this.output += `<br>You don't have the <strong>${objectSrc.name}</strong> in your inventory!<br>`;
-          return;
-        }
-
         delete this.player.inventory[object1];
         objectDest.container.storage[object1] = objectSrc;
 
         this.output += `<br>You ${verb} the <strong>${objectSrc.name}</strong> ${preposition} the <strong>${objectDest.name}</strong><br>`;
       } else {
         if (verb === "throw") {
-          if (!objectSrc) {
-            this.output += `<br>You don't have the <strong>${object1}</strong> in your inventory!<br>`;
-            return;
-          }
           this.output += `<br>You throw the <strong>${objectSrc.name}</strong> to the floor<br>`;
           delete this.player.inventory[object1];
           this.rooms[this.whereAmI].objects[object1] = objectSrc;
