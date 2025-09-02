@@ -36,6 +36,7 @@ export default {
       },
       verbAliases: {
         look: ["look", "see", "view", "examine", "inspect", "look at", "show"],
+        climb: ["climb", "crawl","climb on","crawl on", "climb up", "crawl up"],
         go: ["go", "walk", "move", "travel", "head"],
         open: ["open", "unlock", "unfasten", "unlatch"],
         close: ["close", "lock", "fasten", "latch"],
@@ -48,7 +49,7 @@ export default {
         fuck: ["shit", "ass", "cunt", "bitch", "damn"],
         read: ["read"],
       },
-      validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for"],
+      validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for","up"],
       player: {
         inventory: {},
       },
@@ -196,6 +197,7 @@ export default {
             west: { target: "deadEnd" },
             south: { target: "attic", handicap: "hatch" },
             up: { target: "attic", handicap: "hatch" },
+            ladder: { target: "attic", handicap: "hatch" },
           },
           objects: {
             chest: {
@@ -288,8 +290,9 @@ export default {
             },
             ladder: {
               name: "ladder",
+              canClimb: true,
               alias: ["ladder", "wooden ladder", "old ladder"],
-              description: "A rickety old wooden ladder that leads down to the hallway.",
+              description: "A rickety old wooden ladder that leads up to a hatch.",
               scenery: true,
               canTake: false,
               command: {},
@@ -832,6 +835,14 @@ export default {
         this.output += `<br>You see nothing special<br>`;
       }
     },
+    climb(_verb, nouns, _preposition) {
+      const object1 = nouns[0];
+      if (this.rooms[this.whereAmI].objects[object1]?.canClimb) {
+        this.go("go", nouns, _preposition);
+      } else {
+        this.output += `<br>You can't climb that!<br>`;
+      }
+    },
     go(verb, nouns, _preposition) {
       const object1 = nouns[0];
       if (!this.checkNounsLength(verb, nouns)) return;
@@ -850,7 +861,7 @@ export default {
         if (handicap) {
           this.rooms[this.whereAmI].objects[handicap.name].open = true; // open the handicap after going through
         }
-        this.output += `<br>You go to <strong>${this.rooms[destination].name}</strong><br>`;
+        this.output += `<br>You go to the <strong>${this.rooms[destination].name}</strong><br>`;
       } else {
         this.output += `<br>You can't go there!<br>`;
       }
