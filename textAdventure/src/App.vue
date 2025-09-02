@@ -36,7 +36,7 @@ export default {
       },
       verbAliases: {
         look: ["look", "see", "view", "examine", "inspect", "look at", "show"],
-        climb: ["climb", "crawl","climb on","crawl on", "climb up", "crawl up"],
+        climb: ["climb", "crawl", "climb on", "crawl on", "climb up", "crawl up"],
         go: ["go", "walk", "move", "travel", "head"],
         open: ["open", "unlock", "unfasten", "unlatch"],
         close: ["close", "lock", "fasten", "latch"],
@@ -44,12 +44,13 @@ export default {
         drop: ["drop", "discard", "put down"],
         inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
         put: ["put", "place", "set", "store", "deposit", "give"],
+        throw: ["throw", "toss", "hurl", "chuck"],
         consume: ["consume", "eat", "drink"],
         attack: ["attack", "destroy", "bash", "strike", "kill", "hit", "smash"],
         fuck: ["shit", "ass", "cunt", "bitch", "damn"],
         read: ["read"],
       },
-      validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for","up"],
+      validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"],
       player: {
         inventory: {},
       },
@@ -594,7 +595,7 @@ export default {
     },
     checkNounsLength(verb, nouns) {
       let maxNouns = 1;
-      if (verb === "put" || verb === "open" || verb === "attack") {
+      if (verb === "put" || verb === "open" || verb === "attack" || verb === "throw") {
         maxNouns = 2;
       }
       if (nouns.length === 0 || nouns.length > maxNouns) {
@@ -711,22 +712,24 @@ export default {
         this.output += `<br>You don't have that in your inventory!<br>`;
       }
     },
+    throw(verb, nouns, preposition) {
+      this.put(verb, nouns, preposition);
+    },
     put(verb, nouns, preposition) {
       const object1 = nouns[0];
       const object2 = nouns[1];
+      const objectSrc = this.player.inventory[object1];
+      const objectDest = this.rooms[this.whereAmI].objects[object2];
 
       if (!this.checkNounsLength(verb, nouns)) return;
       if (nouns.length === 2) {
-        const objectSrc = this.player.inventory[object1];
-        const objectDest = this.rooms[this.whereAmI].objects[object2];
-
         if (!objectDest.container) {
           this.output += `<br>The <strong>${objectDest.name}</strong> is not a container!<br>`;
           return;
         }
 
         if ("open" in objectDest && !objectDest.open) {
-          this.output += `<br>You can't put something in the <strong>${objectDest.name}</strong> because it is closed!<br>`;
+          this.output += `<br>You can't ${verb} something in the <strong>${objectDest.name}</strong> because it is closed!<br>`;
           return;
         }
 
@@ -746,9 +749,17 @@ export default {
         delete this.player.inventory[object1];
         objectDest.container.storage[object1] = objectSrc;
 
-        this.output += `<br>You put the <strong>${objectSrc.name}</strong> ${preposition} the <strong>${objectDest.name}</strong><br>`;
+        this.output += `<br>You ${verb} the <strong>${objectSrc.name}</strong> ${preposition} the <strong>${objectDest.name}</strong><br>`;
       } else {
-        this.output += `<br>What do you want to put where?<br>`;
+        if (verb === "throw") {
+          if (!objectSrc) {
+            this.output += `<br>You don't have the <strong>${object1}</strong> in your inventory!<br>`;
+            return;
+          }
+          this.output += `<br>You throw the <strong>${objectSrc.name}</strong> to the floor<br>`;
+          delete this.player.inventory[object1];
+          this.rooms[this.whereAmI].objects[object1] = objectSrc;
+        } else this.output += `<br>What do you want to ${verb} where?<br>`;
       }
     },
     take(verb, nouns, _preposition) {
@@ -956,7 +967,7 @@ strong {
   color: rgb(191, 255, 175);
 }
 i {
-  color:#aaa;
+  color: #aaa;
 }
 input {
   font-size: 18px;
