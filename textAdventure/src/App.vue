@@ -462,7 +462,7 @@ export default {
         return mergedObjectAliases;
       };
 
-      this.output += `<br>> ${this.command}<br>`;
+      this.output += `<br><i>> ${this.command}</i><br>`;
       let cmd = this.command.trim().toLowerCase().replaceAll(/\s+/g, " ").replaceAll(" the ", " ");
       this.command = "";
       const objectsAliases = getObjectAliases();
@@ -732,9 +732,9 @@ export default {
 
         if (!objectDest.container.validPrepositions.includes(preposition[0])) {
           this.output += `<br>You can't do this!<br>`;
-          this.output += `<small>Valid prepositions for the${
+          this.output += `<small>Valid prepositions for the ${
             objectDest.name
-          } are:${objectDest.container.validPrepositions.join(", ")}</small><br>`;
+          } are: ${objectDest.container.validPrepositions.join(", ")}</small><br>`;
           return;
         }
 
@@ -954,6 +954,9 @@ h3 {
 }
 strong {
   color: rgb(191, 255, 175);
+}
+i {
+  color:#aaa;
 }
 input {
   font-size: 18px;
