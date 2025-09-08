@@ -103,9 +103,13 @@ export const rooms =  {
         scenery: false,
         sceneryDesc: "A <strong>big fat rat</strong> scurries around the attic. Something shiny is in its mouth.",
         canTake: false,
-        canBeAttacked: ["stone", "ball"],
+        canBeAttacked: ["stone", "ball","hand"],
         command: {
-          attack: () => {
+          attack: (object) => {
+            if (object === "hand") {
+              return "Ouch! The rat bites you. Maybe you should use something else to attack it.";
+
+            }
             delete rooms.attic.objects.rat; // remove rat from the room
             rooms.attic.objects.goldcoin.hidden = false; // reveal gold coin
 

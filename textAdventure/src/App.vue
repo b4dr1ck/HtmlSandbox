@@ -7,6 +7,7 @@ export default {
   name: "App",
   data() {
     return {
+      updateCounter:0,
       whereAmI: "room",
       whereWasI: "",
       command: "",
@@ -79,6 +80,7 @@ export default {
 
   computed: {
     roomDesc() {
+      const counter = this.updateCounter;
       let roomDescText = this.rooms[this.whereAmI].description;
       const objects = this.rooms[this.whereAmI].objects;
 
@@ -367,7 +369,8 @@ export default {
           this.output += `<br>You attack the <strong>${objectDest.name}</strong> with the <strong>${object2}</strong>`;
           objectDest.condition = "broken";
           if (objectDest.command[verb]) {
-            this.output += `<br>${objectDest.command[verb]()}`;
+            this.output += `<br>${objectDest.command[verb](object2)}`;
+            this.updateCounter++;
           }
         } else {
           this.output += `<br>You can't attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
@@ -387,7 +390,8 @@ export default {
       const item = this.player.inventory[object1];
 
       if (item.command[verb]) {
-        this.output += `<br>${item.command[verb]()}`;
+        this.output += `<br>${item.command[verb](object1)}`;
+        this.updateCounter++;
       }
 
       if (item) {
@@ -474,7 +478,8 @@ export default {
       if (object) {
         // special behavior if command-verb exist in object
         if (object.command[verb]) {
-          this.output += `<br>${object.command[verb]()}`;
+          this.output += `<br>${object.command[verb](object)}`;
+          this.updateCounter++;
         }
         if (object.canTake) {
           this.player.inventory[object1] = object;
