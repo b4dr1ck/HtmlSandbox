@@ -336,8 +336,8 @@ export default {
       if (object && (object.canPull || object.canPush)) {
         this.output += `<br>You ${verb} the <strong>${object.name}</strong><br>`;
 
-        if (this.rooms[this.whereAmI].objects[object1].command[verb]) {
-          this.output += `<br>${this.rooms[this.whereAmI].objects[object1].command[verb](object)}`;
+        if (object.command[verb]) {
+          this.output += `<br>${object.command[verb](object)}`;
           this.updateCounter++;
         }
       } else {
@@ -353,6 +353,10 @@ export default {
       if (object && object.isActive) {
         this.output += `<br>You deactivate the <strong>${object.name}</strong><br>`;
         object.isActive = false;
+        if (object.command[verb]) {
+          this.output += `<br>${object.command[verb](object)}`;
+          this.updateCounter++;
+        }
       } else if (object && !object.isActive) {
         this.output += `<br>The ${object.name} is already deactivated!<br>`;
       } else {
@@ -368,6 +372,10 @@ export default {
       if (object && !object.isActive) {
         this.output += `<br>You activate the <strong>${object.name}</strong><br>`;
         object.isActive = true;
+        if (object.command[verb]) {
+          this.output += `<br>${object.command[verb](object)}`;
+          this.updateCounter++;
+        }
       } else if (object && object.isActive) {
         this.output += `<br>The ${object.name} is already activated!<br>`;
       } else {

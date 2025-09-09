@@ -331,7 +331,11 @@ export const rooms = {
         scenery: true,
         canTake: false,
         isActive: false,
-        command: {},
+        command: {
+          activate: ()=> {
+            return "Nothing happens. Maybe it's broken?!";
+          }
+        },
       },
       ball: {
         name: "ball",
