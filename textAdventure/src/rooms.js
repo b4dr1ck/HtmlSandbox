@@ -164,7 +164,7 @@ export const rooms = {
     alias: ["hallway", "dark hallway", "long hallway"],
     description:
       "You are in a long dark hallway with flickering torches on the walls.<br>" +
-      "On the wall on the east is a little chest.<br>" +
+      "On the wall in the east is a little chest. Above the chest you see a window.<br>" +
       "A door in the north leads you back to the room with the book.<br>" +
       "Another small and dark path leads to the west.<br>" +
       "In front of you in the southern end of the hallway is a ladder that leads up to a hatch.<br>",
@@ -216,6 +216,37 @@ export const rooms = {
         },
         command: {},
       },
+      window: {
+        name: "window",
+        alias: ["window", "small window", "glass window", "wooden window"],
+        description: "A small window that lets in a little light. Outside you can see a dark and big forest.",
+        scenery: true,
+        canTake: false,
+        command: {
+          look: () => {
+            rooms.hallway.objects.nest.hidden = false;
+            return "On a closer look you see a small bird nest on the window sill.";
+          },
+        },
+      },
+      nest: {
+        name: "nest",
+        alias: ["nest", "bird nest", "small nest"],
+        description: "A small bird nest with a few twigs and feathers lies on the window sill.",
+        scenery: false,
+        sceneryDesc: "A <strong>bird nest</strong> lies on the window sill.",
+        hidden: true,
+        canTake: false,
+        container: {
+          storage: {},
+          validPrepositions: ["in", "inside", "into"],
+        },
+        command: {
+          take: () => {
+            return "It would break if you take it.";
+          },
+        },
+      },
       torch: {
         name: "torch",
         alias: ["torch", "torches"],
@@ -241,7 +272,25 @@ export const rooms = {
         scenery: false,
         sceneryDesc: "A <strong>stone</strong> lies on the ground.",
         canTake: true,
-        command: {},
+        canBeCombined: ["ball"],
+        command: {
+          combine: (object) => {
+            delete player.inventory.stone; // remove stone from inventory
+            delete player.inventory[object]; // remove the used object from inventory
+
+            player.inventory["stoneball"] = {
+              name: "stoneball",
+              alias: ["stoneball", "ball", "stone"],
+              description: "A stone ball made by combining a stone and a ball. Stupid and useless.",
+              scenery: false,
+              sceneryDesc: "A <strong>stoneball</strong> lies on the ground.",
+              canTake: true,
+              command: {},
+            };
+
+            return "You've created a new items";
+          },
+        },
       },
       wall: {
         name: "wall",
@@ -350,6 +399,7 @@ export const rooms = {
         sceneryDesc: "A <strong>rubber ball</strong> lies lonesome on the floor.",
         canTake: true,
         canConsume: true,
+        canBeCombined: ["stone"],
         command: {
           consume: () => {
             return "You nearly choke on the ball. Maybe you should not eat that.";

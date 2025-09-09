@@ -61,6 +61,7 @@ export default {
         scream: ["shout", "yell"],
         read: ["read"],
         help: ["help", "help me"],
+        combine: ["combine", "craft"],
         diagnose: ["diagnose", "condition", "health", "state"],
       },
       validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"],
@@ -305,7 +306,7 @@ export default {
     },
     checkNounsLength(verb, nouns) {
       let maxNouns = 1;
-      if (verb === "put" || verb === "open" || verb === "attack" || verb === "throw") {
+      if (verb === "put" || verb === "open" || verb === "attack" || verb === "throw" || verb === "combine") {
         maxNouns = 2;
       }
       if (nouns.length === 0 || nouns.length > maxNouns) {
@@ -501,6 +502,37 @@ export default {
         this.output += `<br>You don't have that in your inventory!<br>`;
       }
     },
+    combine(verb, nouns, preposition) {
+      const object1 = nouns[0];
+      const object2 = nouns[1];
+      const objectSrc = this.player.inventory[object1];
+      const objectDest = this.player.inventory[object2];
+
+      if (!this.checkNounsLength(verb, nouns)) return;
+
+      if (!objectSrc && !objectDest) {
+        this.output += `<br>You don't have the items in your inventory!<br>`;
+        return;
+      }
+
+      if (nouns.length === 2) {
+        if (objectSrc.canBeCombined) {
+          if (objectSrc.canBeCombined.includes(objectDest.name)) {
+            this.output += `<br>You combine the <strong>${objectSrc.name}</strong> with the <strong>${objectDest.name}</strong><br>`;
+            if (objectSrc.command[verb]) {
+              this.output += `<br>${objectSrc.command[verb](object2)}`;
+              this.updateDesc++;
+            }
+          } else {
+            this.output += `<br>You can't combine the <strong>${object1}</strong> with the <strong>${object2}</strong>!<br>`;
+          }
+        } else {
+          this.output += `<br>You can't combine the <strong>${object1}</strong> with anything!<br>`;
+        }
+      } else {
+        this.output += `<br>What do you want to ${verb} with what?<br>`;
+      }
+    },
     throw(verb, nouns, preposition) {
       this.put(verb, nouns, preposition);
     },
@@ -625,6 +657,11 @@ export default {
         return;
       } else if (nouns.length === 1 && this.getDescription(object1)) {
         this.output += `<br>${this.getDescription(object1)}<br>`;
+        const objectInRoom = this.rooms[this.whereAmI].objects[object1];
+        if (objectInRoom && objectInRoom.command.look) {
+          this.output += `<br>${objectInRoom.command.look(objectInRoom)}`;
+          this.updateDesc++;
+        }
       } else if (nouns.length > 1) {
         this.output += "<br>What do you like to look at?<br>";
         return;
