@@ -7,7 +7,7 @@ export default {
   name: "App",
   data() {
     return {
-      updateCounter: 0,
+      updateDesc: 0,
       whereAmI: "room",
       whereWasI: "",
       command: "",
@@ -57,6 +57,7 @@ export default {
         consume: ["consume", "eat", "drink"],
         attack: ["attack", "destroy", "bash", "strike", "kill", "hit", "smash"],
         fuck: ["shit", "ass", "cunt", "bitch", "damn"],
+        scream: ["shout", "yell"],
         read: ["read"],
         help: ["help", "help me"],
       },
@@ -85,7 +86,7 @@ export default {
 
   computed: {
     roomDesc() {
-      const counter = this.updateCounter; // enforce the reactivity (when you use the command-key in room-objects)
+      const counter = this.updateDesc; // enforce the reactivity (when you use the command-key in room-objects)
       let roomDescText = this.rooms[this.whereAmI].description;
       const objects = this.rooms[this.whereAmI].objects;
 
@@ -338,7 +339,7 @@ export default {
 
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb](object)}`;
-          this.updateCounter++;
+          this.updateDesc++;
         }
       } else {
         this.output += `<br>You can't ${verb} that!<br>`;
@@ -355,7 +356,7 @@ export default {
         object.isActive = false;
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb](object)}`;
-          this.updateCounter++;
+          this.updateDesc++;
         }
       } else if (object && !object.isActive) {
         this.output += `<br>The ${object.name} is already deactivated!<br>`;
@@ -374,7 +375,7 @@ export default {
         object.isActive = true;
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb](object)}`;
-          this.updateCounter++;
+          this.updateDesc++;
         }
       } else if (object && object.isActive) {
         this.output += `<br>The ${object.name} is already activated!<br>`;
@@ -439,7 +440,7 @@ export default {
           objectDest.condition = "broken";
           if (objectDest.command[verb]) {
             this.output += `<br>${objectDest.command[verb](object2)}`;
-            this.updateCounter++;
+            this.updateDesc++;
           }
         } else {
           this.output += `<br>You can't attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
@@ -450,10 +451,21 @@ export default {
       }
     },
     fuck() {
-      this.output += '<br>"Such language in a high-class establishment like this!"</br>';
+      this.output += '<br>"Such language in a high-class establishment like this!"<br>';
+    },
+    scream() {
+      this.output += '<br>"Waaaaaaaaahhh!"<br>';
+
+      for (const obj in this.rooms[this.whereAmI].objects) {
+        const objInRoom = this.rooms[this.whereAmI].objects[obj];
+        if (objInRoom.command.scream) {
+          this.output += objInRoom.command.scream();
+          this.updateDesc++;
+        }
+      }
     },
     help() {
-      this.output += '<br>"Try some commands, like: <i>look, take, go, etc.</i>"</br>';
+      this.output += '<br>"Try some commands, like: <i>look, take, go, etc.</i>"<br>';
     },
     consume(verb, nouns, _preposition) {
       const object1 = nouns[0];
@@ -468,7 +480,7 @@ export default {
 
           if (item.command[verb]) {
             this.output += `<br>${item.command[verb](object1)}`;
-            this.updateCounter++;
+            this.updateDesc++;
           }
         } else {
           this.output += `<br>You can't consume the <strong>${item.name}</strong>!<br>`;
@@ -551,7 +563,7 @@ export default {
         // special behavior if command-verb exist in object
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb](object)}`;
-          this.updateCounter++;
+          this.updateDesc++;
         }
         if (object.canTake) {
           this.player.inventory[object1] = object;

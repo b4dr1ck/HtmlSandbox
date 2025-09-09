@@ -115,6 +115,12 @@ export const rooms = {
         canTake: false,
         canBeAttacked: ["stone", "ball", "hand"],
         command: {
+          scream: () => {
+            delete rooms.attic.objects.rat; // remove rat from the room
+            rooms.attic.objects.goldcoin.hidden = false; // reveal gold coin
+
+            return "As you scream the rat escapes into a hole in the wall. Something shiny falls out of its mouth and rolls across the floor.";
+          },
           attack: (object) => {
             if (object === "hand") {
               return "Ouch! The rat bites you. Maybe you should use something else to attack it.";
