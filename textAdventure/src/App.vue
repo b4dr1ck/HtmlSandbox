@@ -51,11 +51,14 @@ export default {
         drop: ["drop", "discard", "put down"],
         inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
         put: ["put", "place", "set", "store", "deposit", "give"],
+        activate: ["turn on", "switch on"],
+        deactivate: ["turn off", "switch off"],
         throw: ["throw", "toss", "hurl", "chuck"],
         consume: ["consume", "eat", "drink"],
         attack: ["attack", "destroy", "bash", "strike", "kill", "hit", "smash"],
         fuck: ["shit", "ass", "cunt", "bitch", "damn"],
         read: ["read"],
+        help: ["help", "help me"],
       },
       validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"],
       player: player,
@@ -244,10 +247,16 @@ export default {
       const objectInRoom = objects[object];
       if (objectInRoom) {
         condition = objectInRoom.condition ? `(${objectInRoom.condition})` : "";
+        // object is hidden
         if (objectInRoom.hidden) {
-          return null; // object is hidden
+          return null;
         }
         let desc = `${condition} ${objectInRoom.description}`;
+        // object is a switch
+        if ("isActive" in objectInRoom) {
+          const onOrOff = objectInRoom.isActive ? "on" : "off";
+          desc += ` (${onOrOff})`;
+        }
         // is a container
         if (objectInRoom.container && Object.keys(objectInRoom.container.storage).length > 0) {
           if ("open" in objectInRoom) {
@@ -326,13 +335,43 @@ export default {
 
       if (object && (object.canPull || object.canPush)) {
         this.output += `<br>You ${verb} the <strong>${object.name}</strong><br>`;
-        
+
         if (this.rooms[this.whereAmI].objects[object1].command[verb]) {
           this.output += `<br>${this.rooms[this.whereAmI].objects[object1].command[verb](object)}`;
           this.updateCounter++;
         }
       } else {
         this.output += `<br>You can't ${verb} that!<br>`;
+      }
+    },
+    deactivate(verb, nouns, _preposition) {
+      const object1 = nouns[0];
+      const object = this.rooms[this.whereAmI].objects[object1];
+
+      if (!this.checkNounsLength(verb, nouns)) return;
+
+      if (object && object.isActive) {
+        this.output += `<br>You deactivate the <strong>${object.name}</strong><br>`;
+        object.isActive = false;
+      } else if (object && !object.isActive) {
+        this.output += `<br>The ${object.name} is already deactivated!<br>`;
+      } else {
+        this.output += `<br>You can't deactivate that!<br>`;
+      }
+    },
+    activate(verb, nouns, _preposition) {
+      const object1 = nouns[0];
+      const object = this.rooms[this.whereAmI].objects[object1];
+
+      if (!this.checkNounsLength(verb, nouns)) return;
+
+      if (object && !object.isActive) {
+        this.output += `<br>You activate the <strong>${object.name}</strong><br>`;
+        object.isActive = true;
+      } else if (object && object.isActive) {
+        this.output += `<br>The ${object.name} is already activated!<br>`;
+      } else {
+        this.output += `<br>You can't activate that!<br>`;
       }
     },
     read(verb, nouns, _preposition) {
@@ -404,6 +443,9 @@ export default {
     },
     fuck() {
       this.output += '<br>"Such language in a high-class establishment like this!"</br>';
+    },
+    help() {
+      this.output += '<br>"Help yourself!"</br>';
     },
     consume(verb, nouns, _preposition) {
       const object1 = nouns[0];

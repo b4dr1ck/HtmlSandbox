@@ -280,7 +280,9 @@ export const rooms = {
     alias: ["room", "dark room", "small room", "dimly lit room"],
     description:
       "You are in a small dimly lit room with, stone walls and a wooden table in the center.<br>" +
-      "On the table, there is a mysterious book. <br>Behind you, in the south, is a door.<br>",
+      "On the western wall is a little old looking switch that seems to control the light.<br>" +
+      "On the table, there is a mysterious book<br>" +
+      "Behind you, in the south, is a door.<br>",
     exit: {
       south: { target: "hallway", handicap: "door" },
       out: { target: "hallway", handicap: "door" },
@@ -319,6 +321,15 @@ export const rooms = {
         description: "You see a rough stone wall with moss growing in the cracks.",
         scenery: true,
         canTake: false,
+        command: {},
+      },
+      switch: {
+        name: "switch",
+        alias: ["switch", "light switch", "old switch"],
+        description: "An old rusty switch on the wall. It looks like it hasn't been used in a long time.",
+        scenery: true,
+        canTake: false,
+        isActive: false,
         command: {},
       },
       ball: {
