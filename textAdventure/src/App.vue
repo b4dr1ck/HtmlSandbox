@@ -510,12 +510,11 @@ export default {
 
       if (!this.checkNounsLength(verb, nouns)) return;
 
-      if (!objectSrc && !objectDest) {
-        this.output += `<br>You don't have the items in your inventory!<br>`;
-        return;
-      }
-
       if (nouns.length === 2) {
+        if (!objectSrc || !objectDest) {
+          this.output += `<br>You don't have all items in your inventory!<br>`;
+          return;
+        }
         if (objectSrc.canBeCombined) {
           if (objectSrc.canBeCombined.includes(objectDest.name)) {
             this.output += `<br>You combine the <strong>${objectSrc.name}</strong> with the <strong>${objectDest.name}</strong><br>`;
