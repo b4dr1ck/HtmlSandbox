@@ -1,5 +1,19 @@
 import { player } from "./player.js";
 
+// items you've created by combining other items
+const newItems = {
+  stoneball: {
+    name: "stoneball",
+    alias: ["stoneball", "ball", "stone", "stone ball"],
+    description: "A 'stoneball' made by combining a stone and a ball. Stupid and useless.",
+    scenery: false,
+    sceneryDesc: "A <strong>stoneball</strong> lies on the ground.",
+    canTake: true,
+    command: {},
+  },
+};
+
+// all rooms in the game
 export const rooms = {
   deadEnd: {
     name: "Dead End",
@@ -278,15 +292,7 @@ export const rooms = {
             delete player.inventory.stone; // remove stone from inventory
             delete player.inventory[object]; // remove the used object from inventory
 
-            player.inventory["stoneball"] = {
-              name: "stoneball",
-              alias: ["stoneball", "ball", "stone"],
-              description: "A stone ball made by combining a stone and a ball. Stupid and useless.",
-              scenery: false,
-              sceneryDesc: "A <strong>stoneball</strong> lies on the ground.",
-              canTake: true,
-              command: {},
-            };
+            player.inventory["stoneball"] = { ...newItems.stoneball };
 
             return "You've created a new items";
           },
@@ -403,6 +409,14 @@ export const rooms = {
         command: {
           consume: () => {
             return "You nearly choke on the ball. Maybe you should not eat that.";
+          },
+          combine: (object) => {
+            delete player.inventory.ball; // remove stone from inventory
+            delete player.inventory[object]; // remove the used object from inventory
+
+            player.inventory["stoneball"] = { ...newItems.stoneball };
+
+            return "You've created a new items";
           },
         },
       },
