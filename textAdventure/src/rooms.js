@@ -1,6 +1,6 @@
 import { player } from "./player.js";
 
-export const rooms =  {
+export const rooms = {
   deadEnd: {
     name: "Dead End",
     alias: ["dead end", "west path", "blocked path"],
@@ -10,8 +10,18 @@ export const rooms =  {
       "You can go back east to the hallway.<br>",
     exit: {
       east: { target: "hallway" },
+      north: { target: "" },
     },
     objects: {
+      secretPath: {
+        name: "secret path",
+        alias: ["secret path", "hidden path", "narrow path", "small path", "path", "secret"],
+        description: "A narrow hidden path on the wall in the north that seems to lead somewhere into the dark",
+        hidden: true,
+        scenery: false,
+        sceneryDesc: "There's a <strong>secret path</strong> on the northern wall",
+        command: {},
+      },
       paper: {
         name: "paper",
         alias: ["paper", "small", "note", "piece", "sheet", "writing"],
@@ -103,12 +113,11 @@ export const rooms =  {
         scenery: false,
         sceneryDesc: "A <strong>big fat rat</strong> scurries around the attic. Something shiny is in its mouth.",
         canTake: false,
-        canBeAttacked: ["stone", "ball","hand"],
+        canBeAttacked: ["stone", "ball", "hand"],
         command: {
           attack: (object) => {
             if (object === "hand") {
               return "Ouch! The rat bites you. Maybe you should use something else to attack it.";
-
             }
             delete rooms.attic.objects.rat; // remove rat from the room
             rooms.attic.objects.goldcoin.hidden = false; // reveal gold coin
@@ -206,7 +215,13 @@ export const rooms =  {
         description: "The torch is flickering and casting eerie shadows on the walls.",
         scenery: true,
         canTake: false,
+        canPull: true,
         command: {
+          pull: () => {
+            rooms.deadEnd.objects.secretPath.hidden = false;
+
+            return "A strange noise echoes through the hallway. It feels like something has opened";
+          },
           take: () => {
             return "It's fixed to the wall.";
           },
@@ -242,7 +257,7 @@ export const rooms =  {
       hatch: {
         name: "hatch",
         alias: ["hatch", "wooden hatch", "trapdoor"],
-        description: "A wooden hatch that leads down to the hallway.",
+        description: "A wooden hatch that leads up to the attic.",
         open: false,
         locked: false,
         scenery: true,
@@ -324,7 +339,7 @@ export const rooms =  {
         scenery: true,
         canTake: false,
         command: {},
-      }
-    }
-  }
-}
+      },
+    },
+  },
+};

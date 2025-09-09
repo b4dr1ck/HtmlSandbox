@@ -7,7 +7,7 @@ export default {
   name: "App",
   data() {
     return {
-      updateCounter:0,
+      updateCounter: 0,
       whereAmI: "room",
       whereWasI: "",
       command: "",
@@ -40,6 +40,8 @@ export default {
         hand: ["hand", "hands", "your hand", "your hands"],
       },
       verbAliases: {
+        pull: ["pull", "pull on"],
+        push: ["push", "press", "press on", "push on"],
         look: ["look", "see", "view", "examine", "inspect", "look at", "show"],
         climb: ["climb", "crawl", "climb on", "crawl on", "climb up", "crawl up"],
         go: ["go", "walk", "move", "travel", "head"],
@@ -80,7 +82,7 @@ export default {
 
   computed: {
     roomDesc() {
-      const counter = this.updateCounter;
+      const counter = this.updateCounter; // enforce the reactivity (when you use the command-key in room-objects)
       let roomDescText = this.rooms[this.whereAmI].description;
       const objects = this.rooms[this.whereAmI].objects;
 
@@ -311,6 +313,26 @@ export default {
           }
           this.output += `* <strong>${condition}${this.player.inventory[item].name}</strong><br>`;
         }
+      }
+    },
+    push(verb, nouns, _preposition) {
+      this.pull(verb, nouns, _preposition);
+    },
+    pull(verb, nouns, _preposition) {
+      const object1 = nouns[0];
+      const object = this.rooms[this.whereAmI].objects[object1];
+
+      if (!this.checkNounsLength(verb, nouns)) return;
+
+      if (object && (object.canPull || object.canPush)) {
+        this.output += `<br>You ${verb} the <strong>${object.name}</strong><br>`;
+        
+        if (this.rooms[this.whereAmI].objects[object1].command[verb]) {
+          this.output += `<br>${this.rooms[this.whereAmI].objects[object1].command[verb](object)}`;
+          this.updateCounter++;
+        }
+      } else {
+        this.output += `<br>You can't ${verb} that!<br>`;
       }
     },
     read(verb, nouns, _preposition) {
