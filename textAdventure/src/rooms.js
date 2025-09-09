@@ -137,6 +137,7 @@ export const rooms = {
           },
           attack: (object) => {
             if (object === "hand") {
+              player.condition = "dead";
               return "Ouch! The rat bites you. Maybe you should use something else to attack it.";
             }
             delete rooms.attic.objects.rat; // remove rat from the room
@@ -408,7 +409,8 @@ export const rooms = {
         canBeCombined: ["stone"],
         command: {
           consume: () => {
-            return "You nearly choke on the ball. Maybe you should not eat that.";
+            player.condition = "dead";
+            return "You choke on the ball. Maybe you should not have eaten that.";
           },
           combine: (object) => {
             delete player.inventory.ball; // remove stone from inventory

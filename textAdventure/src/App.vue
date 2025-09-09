@@ -1,12 +1,12 @@
 <script>
 import { rooms } from "./rooms.js";
 import { player } from "./player.js";
-import { reactive } from "vue";
 
 export default {
   name: "App",
   data() {
     return {
+      inputDisabled: false,
       updateDesc: 0,
       whereAmI: "room",
       whereWasI: "",
@@ -45,7 +45,7 @@ export default {
         push: ["push", "press", "press on", "push on"],
         look: ["look", "see", "view", "examine", "inspect", "look at", "show"],
         climb: ["climb", "crawl", "climb on", "crawl on", "climb up", "crawl up"],
-        go: ["go", "walk", "move", "travel", "head"],
+        go: ["go", "go to", "walk", "walk to", "move", "move to", "travel", "travel to", "head", "head to"],
         open: ["open", "unlock", "unfasten", "unlatch"],
         close: ["close", "lock", "fasten", "latch"],
         take: ["take", "grab", "collect", "get", "remove", "pick up"],
@@ -66,7 +66,7 @@ export default {
       },
       validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"],
       player: player,
-      rooms: reactive(rooms),
+      rooms: rooms,
     };
   },
 
@@ -101,12 +101,24 @@ export default {
       }
       return roomDescText;
     },
-    buttonDisabled() {
-      return this.command.trim() === "";
+  },
+
+  watch: {
+    player: {
+      handler(newVal) {
+        if (newVal.condition === "dead") {
+          this.playerDies();
+        }
+      },
+      deep: true,
     },
   },
 
   methods: {
+    playerDies() {
+      this.output += `<br><span style='color:red;'>You are dead. Game over</span>.<br>`;
+      this.inputDisabled = true;
+    },
     handleKeyPress(event) {
       if (!this.command) return;
 
@@ -348,6 +360,7 @@ export default {
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb](object)}`;
           this.updateDesc++;
+          this.player.counter++;
         }
       } else {
         this.output += `<br>You can't ${verb} that!<br>`;
@@ -365,6 +378,7 @@ export default {
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb](object)}`;
           this.updateDesc++;
+          this.player.counter++;
         }
       } else if (object && !object.isActive) {
         this.output += `<br>The ${object.name} is already deactivated!<br>`;
@@ -384,6 +398,7 @@ export default {
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb](object)}`;
           this.updateDesc++;
+          this.player.counter++;
         }
       } else if (object && object.isActive) {
         this.output += `<br>The ${object.name} is already activated!<br>`;
@@ -449,6 +464,7 @@ export default {
           if (objectDest.command[verb]) {
             this.output += `<br>${objectDest.command[verb](object2)}`;
             this.updateDesc++;
+            this.player.counter++;
           }
         } else {
           this.output += `<br>You try to attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
@@ -471,6 +487,7 @@ export default {
         if (objInRoom.command.scream) {
           this.output += objInRoom.command.scream();
           this.updateDesc++;
+          this.player.counter++;
           return;
         }
       }
@@ -494,6 +511,7 @@ export default {
           if (item.command[verb]) {
             this.output += `<br>${item.command[verb](object1)}`;
             this.updateDesc++;
+            this.player.counter++;
           }
         } else {
           this.output += `<br>You can't consume the <strong>${item.name}</strong>!<br>`;
@@ -521,6 +539,7 @@ export default {
             if (objectSrc.command[verb]) {
               this.output += `<br>${objectSrc.command[verb](object2)}`;
               this.updateDesc++;
+              this.player.counter++;
             }
           } else {
             this.output += `<br>You can't combine the <strong>${object1}</strong> with the <strong>${object2}</strong>!<br>`;
@@ -607,6 +626,7 @@ export default {
         if (object.command[verb]) {
           this.output += `<br>${object.command[verb](object)}`;
           this.updateDesc++;
+          this.player.counter++;
         }
         if (object.canTake) {
           this.player.inventory[object1] = object;
@@ -660,6 +680,7 @@ export default {
         if (objectInRoom && objectInRoom.command.look) {
           this.output += `<br>${objectInRoom.command.look(objectInRoom)}`;
           this.updateDesc++;
+          this.player.counter++;
         }
       } else if (nouns.length > 1) {
         this.output += "<br>What do you like to look at?<br>";
@@ -758,7 +779,7 @@ export default {
   <div id="wrapper">
     <h3>{{ rooms[whereAmI].name }}</h3>
     <p v-html="roomDesc"></p>
-    <input ref="input" v-model="command" type="text" placeholder="type in here..." />
+    <input :disabled="inputDisabled" ref="input" v-model="command" type="text" placeholder="type in here..." />
     <p id="output" ref="output" v-html="output"></p>
   </div>
 </template>
