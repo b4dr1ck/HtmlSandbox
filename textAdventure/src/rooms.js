@@ -344,7 +344,12 @@ export const rooms = {
         scenery: false,
         sceneryDesc: "A <strong>rubber ball</strong> lies lonesome on the floor.",
         canTake: true,
-        command: {},
+        canConsume: true,
+        command: {
+          consume: () => {
+            return "You nearly choke on the ball. Maybe you should not eat that.";
+          },
+        },
       },
       door: {
         name: "door",

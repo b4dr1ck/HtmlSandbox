@@ -453,7 +453,7 @@ export default {
       this.output += '<br>"Such language in a high-class establishment like this!"</br>';
     },
     help() {
-      this.output += '<br>"Help yourself!"</br>';
+      this.output += '<br>"Try some commands, like: <i>look, take, go, etc.</i>"</br>';
     },
     consume(verb, nouns, _preposition) {
       const object1 = nouns[0];
@@ -461,15 +461,15 @@ export default {
 
       const item = this.player.inventory[object1];
 
-      if (item.command[verb]) {
-        this.output += `<br>${item.command[verb](object1)}`;
-        this.updateCounter++;
-      }
-
       if (item) {
         if (item.canConsume) {
           this.output += `<br>You consume the <strong>${item.name}</strong><br>`;
           delete this.player.inventory[object1]; // remove from inventory
+
+          if (item.command[verb]) {
+            this.output += `<br>${item.command[verb](object1)}`;
+            this.updateCounter++;
+          }
         } else {
           this.output += `<br>You can't consume the <strong>${item.name}</strong>!<br>`;
         }
