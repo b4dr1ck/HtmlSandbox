@@ -286,10 +286,9 @@ export const rooms = {
     name: "Dark Room",
     alias: ["room", "dark room", "small room", "dimly lit room"],
     description:
-      "You are in a small dimly lit room with, stone walls and a wooden table in the center.<br>" +
-      "On the western wall is a little old looking switch that seems to control the light.<br>" +
-      "On the table, there is a mysterious book<br>" +
-      "Behind you, in the south, is a door.<br>",
+      "You are in the center of a small dimly lit room.<br>Beside you is a table with a book on it.<br>" +
+      "The room has stone walls and on the the western wall is a little switch that seems to control the light.<br>" +
+      "Behind you, in the south, is the only door.<br>",
     exit: {
       south: { target: "hallway", handicap: "door" },
       out: { target: "hallway", handicap: "door" },
@@ -338,9 +337,9 @@ export const rooms = {
         canTake: false,
         isActive: false,
         command: {
-          activate: ()=> {
+          activate: () => {
             return "Nothing happens. Maybe it's broken?!";
-          }
+          },
         },
       },
       ball: {

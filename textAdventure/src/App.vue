@@ -13,6 +13,7 @@ export default {
       command: "",
       commandObject: {},
       output: "",
+      screams: ["Waaaaaaaaaaaah", "Aaaaaaaaargh", "Noooooooo", "Meeeeeeh", "Aaaaaaaah", "Eeeeeeeek", "Yoooooooo"],
       cmdNotFoundMemes: [
         "What do you want to do?",
         "I don't understand that command.",
@@ -60,6 +61,7 @@ export default {
         scream: ["shout", "yell"],
         read: ["read"],
         help: ["help", "help me"],
+        diagnose: ["diagnose", "condition", "health", "state"],
       },
       validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"],
       player: player,
@@ -258,6 +260,11 @@ export default {
           const onOrOff = objectInRoom.isActive ? "on" : "off";
           desc += ` (${onOrOff})`;
         }
+        // object can be opened
+        if ("open" in objectInRoom) {
+          const openOrClosed = objectInRoom.open ? "open" : "closed";
+          desc += ` (${openOrClosed})`;
+        }
         // is a container
         if (objectInRoom.container && Object.keys(objectInRoom.container.storage).length > 0) {
           if ("open" in objectInRoom) {
@@ -431,7 +438,7 @@ export default {
         }
 
         if (!objectDest.canBeAttacked) {
-          this.output += `<br>You can't attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
+          this.output += `<br>The <strong>${objectDest.name}</strong> can't be attacked!<br>`;
           return;
         }
 
@@ -443,7 +450,8 @@ export default {
             this.updateDesc++;
           }
         } else {
-          this.output += `<br>You can't attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
+          this.output += `<br>You try to attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
+          this.output += `<br>But it doesn't work!<br>`;
         }
       } else {
         this.output += `<br>What do you want to attack with what?<br>`;
@@ -453,16 +461,20 @@ export default {
     fuck() {
       this.output += '<br>"Such language in a high-class establishment like this!"<br>';
     },
+    diagnose() {
+      this.output += `<br> You are <strong>${this.player.condition}</strong> <br>`;
+    },
     scream() {
-      this.output += '<br>"Waaaaaaaaahhh!"<br>';
-
       for (const obj in this.rooms[this.whereAmI].objects) {
         const objInRoom = this.rooms[this.whereAmI].objects[obj];
         if (objInRoom.command.scream) {
           this.output += objInRoom.command.scream();
           this.updateDesc++;
+          return;
         }
       }
+      const randomIndex = Math.floor(Math.random() * this.screams.length);
+      this.output += `<br>"${this.screams[randomIndex]}"<br>`;
     },
     help() {
       this.output += '<br>"Try some commands, like: <i>look, take, go, etc.</i>"<br>';
@@ -725,7 +737,7 @@ h3 {
 #wrapper {
   font-size: 18px;
   font-family: monospace;
-  width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 20px;
   border: 1px solid #ccc;
