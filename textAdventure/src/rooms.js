@@ -19,7 +19,7 @@ export const rooms = {
         description: "A narrow hidden path on the wall in the north that seems to lead somewhere into the dark",
         hidden: true,
         scenery: false,
-        sceneryDesc: "There's a <strong>secret path</strong> on the northern wall",
+        sceneryDesc: "There's a <strong>secret path</strong> on the northern wall to see.",
         command: {},
       },
       paper: {
@@ -121,6 +121,7 @@ export const rooms = {
             }
             delete rooms.attic.objects.rat; // remove rat from the room
             rooms.attic.objects.goldcoin.hidden = false; // reveal gold coin
+            delete player.inventory[object]; // remove the used object from inventory
 
             return "The rat escapes into a hole in the wall. Something shiny falls out of its mouth and rolls across the floor.";
           },
@@ -220,7 +221,7 @@ export const rooms = {
           pull: () => {
             rooms.deadEnd.objects.secretPath.hidden = false;
 
-            return "A strange noise echoes through the hallway. It feels like something has opened";
+            return "A strange noise 'krrrrrrrr' echoes through the hallway. It feels like a stone wall has moved somewhere.";
           },
           take: () => {
             return "It's fixed to the wall.";
