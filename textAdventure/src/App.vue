@@ -1,5 +1,5 @@
 <script>
-import { rooms } from "./rooms.js";
+import { rooms, newItems } from "./rooms.js";
 import { player } from "./player.js";
 
 export default {
@@ -8,7 +8,7 @@ export default {
     return {
       inputDisabled: false,
       updateDesc: 0,
-      whereAmI: "attic",
+      whereAmI: "room",
       whereWasI: "",
       command: "",
       commandObject: {},
@@ -70,6 +70,7 @@ export default {
       validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"],
       player: player,
       rooms: rooms,
+      newItems: newItems,
     };
   },
 
@@ -92,9 +93,11 @@ export default {
 
   computed: {
     roomDesc() {
-      const counter = this.updateDesc; // enforce the reactivity (when you use the command-key in room-objects)
-      let roomDescText = this.rooms[this.whereAmI].description;
-      const objects = this.rooms[this.whereAmI].objects;
+      const counter = this.updateDesc; // enforce the reactivity
+      const room = this.rooms[this.whereAmI];
+      const objects = room.objects;
+
+      let roomDescText = room.description;
 
       // describe objects in the room if the scenery flag is set
       for (const obj in objects) {
@@ -148,6 +151,7 @@ export default {
         }
         return replacedCmd;
       };
+      // get all object aliases from rooms, inventory, objects, directions and specials
       const getObjectAliases = () => {
         const objectAliases = {};
         for (const room in this.rooms) {
@@ -181,6 +185,7 @@ export default {
       this.output += `<br><i>> ${this.command}</i><br>`;
       let cmd = this.command.trim().toLowerCase().replaceAll(/\s+/g, " ").replaceAll(" the ", " ");
       this.command = "";
+
       const objectsAliases = getObjectAliases();
 
       cmd = replaceAliases(cmd, this.verbAliases);
@@ -250,20 +255,24 @@ export default {
     },
     getDescription(object) {
       let condition = "";
+
+      const inventory = this.player.inventory;
+      const room = this.rooms[this.whereAmI];
+      const objects = room.objects;
+      const objectInRoom = objects[object];
+
       // in the inventory
-      if (this.player.inventory[object]) {
-        condition = this.player.inventory[object].condition ? `(${this.player.inventory[object].condition})` : "";
-        return `(inventory)${condition} ${this.player.inventory[object].description}`;
+      if (inventory[object]) {
+        condition = inventory[object].condition ? `(${inventory[object].condition})` : "";
+        return `(inventory) ${condition} ${inventory[object].description}`;
       }
 
       // the room itself
       if (object === this.whereAmI) {
-        return this.rooms[this.whereAmI].description;
+        return room.description;
       }
 
       // object in the room
-      const objects = this.rooms[this.whereAmI].objects;
-      const objectInRoom = objects[object];
       if (objectInRoom) {
         condition = objectInRoom.condition ? `(${objectInRoom.condition})` : "";
         // object is hidden
@@ -294,7 +303,7 @@ export default {
               }
             }
           } else {
-            // if the object is a container but not openable always show the content
+            // if the object is a container you can not open/close, always show it's content
             desc += `<br>${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
             for (const item in objectInRoom.container.storage) {
               condition = objectInRoom.container.storage[item].condition
@@ -306,20 +315,21 @@ export default {
         }
         return desc;
       }
-      // object in a container
+      // objects in a container
       for (const obj in objects) {
         if (objects[obj].container && Object.keys(objects[obj].container.storage).length > 0) {
           const item = objects[obj].container.storage[object];
           condition = item.condition ? `(${item.condition})` : "";
           if (item) {
-            return `(${objects[obj].container.validPrepositions[0]} ${objects[obj].name})${condition} ${item.description}`;
+            return `(${objects[obj].container.validPrepositions[0]} ${objects[obj].name}) ${condition} ${item.description}`;
           }
         }
       }
 
       return null;
     },
-    checkNounsLength(verb, nouns) {
+    // check the maximum amount of nouns for the given verb
+    checkNounsAmount(verb, nouns) {
       let maxNouns = 1;
       if (verb === "put" || verb === "open" || verb === "attack" || verb === "throw" || verb === "combine") {
         maxNouns = 2;
@@ -335,19 +345,20 @@ export default {
       return true;
     },
     inventory() {
+      const inventory = this.player.inventory;
       let condition = "";
-      if (Object.keys(this.player.inventory).length === 0) {
+      if (Object.keys(inventory).length === 0) {
         this.output += `<br>You don't carry anything with you<br>`;
       } else {
         this.output += `<br>Your inventory:<br>`;
-        for (const item in this.player.inventory) {
-          if (this.player.inventory[item].condition) {
-            condition = `(${this.player.inventory[item].condition}) `;
+        for (const item in inventory) {
+          if ("condition" in inventory[item]) {
+            condition = `(${inventory[item].condition}) `;
           }
-          if (this.player.inventory[item].equipped) {
+          if (inventory[item].equipped) {
             condition = `(equipped) ${condition}`;
           }
-          this.output += `* <strong>${condition}${this.player.inventory[item].name}</strong><br>`;
+          this.output += `* <strong>${condition}${inventory[item].name}</strong><br>`;
         }
       }
     },
@@ -356,15 +367,15 @@ export default {
     },
     pull(verb, nouns, _preposition) {
       const object1 = nouns[0];
-      const object = this.rooms[this.whereAmI].objects[object1];
+      const objectInRoom = this.rooms[this.whereAmI].objects[object1];
 
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
-      if (object && (object.canPull || object.canPush)) {
-        this.output += `<br>You ${verb} the <strong>${object.name}</strong><br>`;
+      if (objectInRoom && (objectInRoom.canPull || objectInRoom.canPush)) {
+        this.output += `<br>You ${verb} the <strong>${objectInRoom.name}</strong><br>`;
 
-        if (object.command[verb]) {
-          this.output += `<br>${object.command[verb](object)}`;
+        if (objectInRoom.command[verb]) {
+          this.output += `<br>${objectInRoom.command[verb]()}`;
           this.updateDesc++;
           this.player.update++;
         }
@@ -374,40 +385,40 @@ export default {
     },
     deactivate(verb, nouns, _preposition) {
       const object1 = nouns[0];
-      const object = this.rooms[this.whereAmI].objects[object1];
+      const objectInRoom = this.rooms[this.whereAmI].objects[object1];
 
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
-      if (object && object.isActive) {
-        this.output += `<br>You deactivate the <strong>${object.name}</strong><br>`;
-        object.isActive = false;
-        if (object.command[verb]) {
-          this.output += `<br>${object.command[verb](object)}`;
+      if (objectInRoom && objectInRoom.isActive) {
+        this.output += `<br>You deactivate the <strong>${objectInRoom.name}</strong><br>`;
+        objectInRoom.isActive = false;
+        if (objectInRoom.command[verb]) {
+          this.output += `<br>${objectInRoom.command[verb]()}`;
           this.updateDesc++;
           this.player.update++;
         }
-      } else if (object && !object.isActive) {
-        this.output += `<br>The ${object.name} is already deactivated!<br>`;
+      } else if (objectInRoom && !objectInRoom.isActive) {
+        this.output += `<br>The ${objectInRoom.name} is already deactivated!<br>`;
       } else {
         this.output += `<br>You can't deactivate that!<br>`;
       }
     },
     activate(verb, nouns, _preposition) {
       const object1 = nouns[0];
-      const object = this.rooms[this.whereAmI].objects[object1];
+      const objectInRoom = this.rooms[this.whereAmI].objects[object1];
 
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
-      if (object && !object.isActive) {
-        this.output += `<br>You activate the <strong>${object.name}</strong><br>`;
-        object.isActive = true;
-        if (object.command[verb]) {
-          this.output += `<br>${object.command[verb](object)}`;
+      if (objectInRoom && !objectInRoom.isActive) {
+        this.output += `<br>You activate the <strong>${objectInRoom.name}</strong><br>`;
+        objectInRoom.isActive = true;
+        if (objectInRoom.command[verb]) {
+          this.output += `<br>${objectInRoom.command[verb]()}`;
           this.updateDesc++;
           this.player.update++;
         }
-      } else if (object && object.isActive) {
-        this.output += `<br>The ${object.name} is already activated!<br>`;
+      } else if (objectInRoom && objectInRoom.isActive) {
+        this.output += `<br>The ${objectInRoom.name} is already activated!<br>`;
       } else {
         this.output += `<br>You can't activate that!<br>`;
       }
@@ -417,15 +428,24 @@ export default {
     },
     dress(verb, nouns, _preposition) {
       const object1 = nouns[0];
-      if (!this.checkNounsLength(verb, nouns)) return;
-
       const item = this.player.inventory[object1];
+
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
       if (item) {
         if (item.canWear) {
           if (verb === "undress") {
+            if (!item.equipped) {
+              this.output += `<br>You are not wearing the <strong>${item.name}</strong>!<br>`;
+              return;
+            }
             this.output += `<br>You put off the <strong>${item.name}</strong><br>`;
             item.equipped = false;
+            return;
+          }
+
+          if (item.equipped) {
+            this.output += `<br>You are already wearing the <strong>${item.name}</strong>!<br>`;
             return;
           }
           this.output += `<br>You put on the <strong>${item.name}</strong><br>`;
@@ -444,18 +464,16 @@ export default {
     },
     read(verb, nouns, _preposition) {
       const object1 = nouns[0];
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
       let item = this.player.inventory[object1] || this.rooms[this.whereAmI].objects[object1];
       if (!item) {
         // check container storage
         for (const obj in this.rooms[this.whereAmI].objects) {
-          if (
-            this.rooms[this.whereAmI].objects[obj].container &&
-            Object.keys(this.rooms[this.whereAmI].objects[obj].container.storage).length > 0
-          ) {
-            if (this.rooms[this.whereAmI].objects[obj].container.storage[object1]) {
-              item = this.rooms[this.whereAmI].objects[obj].container.storage[object1];
+          const object = this.rooms[this.whereAmI].objects[obj];
+          if (object.container && Object.keys(object.container.storage).length > 0) {
+            if (object.container.storage[object1]) {
+              item = object.container.storage[object1];
               break;
             }
           }
@@ -471,11 +489,19 @@ export default {
       }
     },
     attack(verb, nouns, preposition) {
+      console.log("attack", verb, nouns, preposition);
       const object1 = nouns[0];
-      const object2 = nouns[1];
+      let object2 = nouns[1];
 
-      if (!this.checkNounsLength(verb, nouns)) return;
-      if (nouns.length === 2) {
+      if (!this.checkNounsAmount(verb, nouns)) return;
+
+      // if no object2 is given, use hand as default
+      if (!object2) {
+        object2 = "hand";
+        preposition = "with";
+      }
+
+      if (object1 && object2) {
         const objectSrc = this.player.inventory[object2];
         const objectDest = this.rooms[this.whereAmI].objects[object1];
 
@@ -494,6 +520,7 @@ export default {
           return;
         }
 
+        // check if the object can be attacked with the given object
         if (objectDest.canBeAttacked.includes(object2)) {
           this.output += `<br>You attack the <strong>${objectDest.name}</strong> with the <strong>${object2}</strong>`;
           objectDest.condition = "broken";
@@ -517,23 +544,28 @@ export default {
     diagnose() {
       this.output += `<br> You are <strong>${this.player.condition}</strong> <br>`;
     },
-    smell(verb, nouns, _preposition) {
+    smell(_verb, nouns, _preposition) {
       const room = this.rooms[this.whereAmI];
+      const inventory = this.player.inventory;
+      const objects = room.objects;
+
+      // Check if the room has a smell description
       if (nouns.length === 0) {
         if ("smell" in room) {
           this.output += `<br>${room.smell}<br>`;
           return;
         }
       } else if (nouns.length === 1) {
+        // Check if the object has a smell description
         const object = nouns[0];
-        if (object in room.objects) {
-          if ("smell" in room.objects[object]) {
-            this.output += `<br>${room.objects[object].smell}<br>`;
+        if (object in objects) {
+          if ("smell" in objects[object]) {
+            this.output += `<br>${objects[object].smell}<br>`;
             return;
           }
-        } else if (object in this.player.inventory) {
-          if ("smell" in this.player.inventory[object]) {
-            this.output += `<br>${this.player.inventory[object].smell}<br>`;
+        } else if (object in inventory) {
+          if ("smell" in inventory[object]) {
+            this.output += `<br>${inventory[object].smell}<br>`;
             return;
           }
         }
@@ -541,6 +573,7 @@ export default {
       this.output += "<br>You can't smell anything special<br>";
     },
     scream() {
+      // check if any object in the room has a special scream command
       for (const obj in this.rooms[this.whereAmI].objects) {
         const objInRoom = this.rooms[this.whereAmI].objects[obj];
         if (objInRoom.command.scream) {
@@ -558,7 +591,7 @@ export default {
     },
     consume(verb, nouns, _preposition) {
       const object1 = nouns[0];
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
       const item = this.player.inventory[object1];
 
@@ -585,21 +618,21 @@ export default {
       const objectSrc = this.player.inventory[object1];
       const objectDest = this.player.inventory[object2];
 
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
       if (nouns.length === 2) {
         if (!objectSrc || !objectDest) {
-          this.output += `<br>You don't have all items in your inventory!<br>`;
+          this.output += `<br>You don't have all needed items in your inventory!<br>`;
           return;
         }
         if (objectSrc.canBeCombined) {
           if (objectSrc.canBeCombined.includes(objectDest.name)) {
-            this.output += `<br>You combine the <strong>${objectSrc.name}</strong> with the <strong>${objectDest.name}</strong><br>`;
-            if (objectSrc.command[verb]) {
-              this.output += `<br>${objectSrc.command[verb](object2)}`;
-              this.updateDesc++;
-              this.player.update++;
-            }
+            this.output += `<br>You combine the <strong>${objectSrc.name}</strong> with the <strong>${objectDest.name}</strong>`;
+            this.output += `<br>You create a <strong>${this.newItems[objectSrc.combinationResult].name}</strong>!<br>`;
+
+            delete this.player.inventory[object1];
+            delete this.player.inventory[object2];
+            this.player.inventory[objectSrc.combinationResult] = this.newItems[objectSrc.combinationResult];
           } else {
             this.output += `<br>You can't combine the <strong>${object1}</strong> with the <strong>${object2}</strong>!<br>`;
           }
@@ -611,6 +644,16 @@ export default {
       }
     },
     throw(verb, nouns, preposition) {
+      const object1 = nouns[0];
+      const object2 = nouns[1];
+      const objectInRoom = this.rooms[this.whereAmI].objects[object2];
+      // is object2 can be attacked, call the attack function
+      if (objectInRoom && objectInRoom.canBeAttacked && objectInRoom.canBeAttacked.includes(object1)) {
+        this.attack("attack", nouns.reverse(), "with");
+        return;
+      }
+
+      // otherwise call the put function
       this.put(verb, nouns, preposition);
     },
     put(verb, nouns, preposition) {
@@ -619,7 +662,7 @@ export default {
       const objectSrc = this.player.inventory[object1];
       const objectDest = this.rooms[this.whereAmI].objects[object2];
 
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
       if (!objectSrc) {
         this.output += `<br>You don't have the <strong>${object1}</strong> in your inventory!<br>`;
@@ -659,7 +702,7 @@ export default {
     take(verb, nouns, _preposition) {
       const object1 = nouns[0];
 
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
       const objects = this.rooms[this.whereAmI].objects;
       let object = objects[nouns[0]];
@@ -711,7 +754,7 @@ export default {
     drop(verb, nouns, _preposition) {
       const object1 = nouns[0];
 
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
       const item = this.player.inventory[object1];
       if (item) {
@@ -728,6 +771,7 @@ export default {
     },
     look(_verb, nouns, _preposition) {
       const object1 = nouns[0];
+      const objectInRoom = this.rooms[this.whereAmI].objects[object1];
 
       if (object1 === "inventory") {
         this.inventory();
@@ -739,7 +783,7 @@ export default {
         return;
       } else if (nouns.length === 1 && this.getDescription(object1)) {
         this.output += `<br>${this.getDescription(object1)}<br>`;
-        const objectInRoom = this.rooms[this.whereAmI].objects[object1];
+
         if (objectInRoom && objectInRoom.command.look) {
           this.output += `<br>${objectInRoom.command.look(objectInRoom)}`;
           this.updateDesc++;
@@ -754,7 +798,8 @@ export default {
     },
     climb(_verb, nouns, _preposition) {
       const object1 = nouns[0];
-      if (this.rooms[this.whereAmI].objects[object1]?.canClimb) {
+      const objectInRoom = this.rooms[this.whereAmI].objects[object1];
+      if (objectInRoom.canClimb) {
         this.go("go", nouns, _preposition);
       } else {
         this.output += `<br>You can't climb that!<br>`;
@@ -762,7 +807,7 @@ export default {
     },
     go(verb, nouns, _preposition) {
       const object1 = nouns[0];
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
       const exit = this.getExit(object1);
       const destination = exit ? exit.target : null;
@@ -789,23 +834,23 @@ export default {
     open(verb, nouns, preposition) {
       const object1 = nouns[0];
       const object2 = nouns[1];
-      if (!this.checkNounsLength(verb, nouns)) return;
+      if (!this.checkNounsAmount(verb, nouns)) return;
 
-      const object = this.rooms[this.whereAmI].objects[object1];
+      const objectInRoom = this.rooms[this.whereAmI].objects[object1];
 
       if (nouns.length === 2) {
         if (preposition != "with") {
           this.output += `<br>I can't do this<br>`;
           return;
         }
-        if (object.locked) {
+        if (objectInRoom.locked) {
           const item = this.player.inventory[object2];
           if (!item) {
             this.output += `<br>You don't have the <strong>${object2}</strong> in your inventory!<br>`;
             return;
           }
-          if (object2 === object.locked) {
-            object.locked = false;
+          if (object2 === objectInRoom.locked) {
+            objectInRoom.locked = false;
             this.output += `<br>You unlock the <strong>${object1}</strong> with the <strong>${object2}</strong><br>`;
           } else {
             this.output += `<br>The ${object2} doesn't fit!<br>`;
@@ -813,16 +858,16 @@ export default {
         }
       }
 
-      if (object && "open" in object) {
-        if (!object.locked) {
-          if (object.open && verb === "open") {
+      if (objectInRoom && "open" in objectInRoom) {
+        if (!objectInRoom.locked) {
+          if (objectInRoom.open && verb === "open") {
             this.output += `<br>The <strong>${object1}</strong> is already open!<br>`;
             return;
-          } else if (!object.open && verb === "close") {
+          } else if (!objectInRoom.open && verb === "close") {
             this.output += `<br>The <strong>${object1}</strong> is already closed!<br>`;
             return;
           } else {
-            object.open = !object.open; // toggle open state
+            objectInRoom.open = !objectInRoom.open; // toggle open state
           }
 
           this.output += `<br>You ${verb} the <strong>${object1}</strong><br>`;

@@ -1,7 +1,7 @@
 import { player } from "./player.js";
 
 // items you've created by combining other items
-const newItems = {
+export const newItems = {
   stoneball: {
     name: "stoneball",
     alias: ["stoneball", "ball", "stone", "stone ball"],
@@ -302,16 +302,8 @@ export const rooms = {
         sceneryDesc: "A <strong>stone</strong> lies on the ground.",
         canTake: true,
         canBeCombined: ["ball"],
-        command: {
-          combine: (object) => {
-            delete player.inventory.stone; // remove stone from inventory
-            delete player.inventory[object]; // remove the used object from inventory
-
-            player.inventory["stoneball"] = { ...newItems.stoneball };
-
-            return "You've created a new item: <strong>stoneball</strong>.";
-          },
-        },
+        combinationResult: "stoneball",
+        command: {},
       },
       wall: {
         name: "wall",
@@ -422,18 +414,11 @@ export const rooms = {
         canTake: true,
         canConsume: true,
         canBeCombined: ["stone"],
+        combinationResult: "stoneball",
         command: {
           consume: () => {
             player.condition = "dead";
             return "You choke on the ball. Maybe you should not have eaten that.";
-          },
-          combine: (object) => {
-            delete player.inventory.ball; // remove stone from inventory
-            delete player.inventory[object]; // remove the used object from inventory
-
-            player.inventory["stoneball"] = { ...newItems.stoneball };
-
-            return "You've created a new item: <strong>stoneball</strong>.";
           },
         },
       },
