@@ -81,6 +81,7 @@ export const rooms = {
   },
   attic: {
     name: "Attic",
+    smell: "It smells like old wood and dust and mold",
     alias: ["attic", "loft", "roof space"],
     description:
       "You are in a dusty dark attic with wooden beams.<br>" +
@@ -117,6 +118,18 @@ export const rooms = {
         scenery: false,
         hidden: true,
         sceneryDesc: "A <strong>gold coin</strong> lies on the dusty floor.",
+        canTake: true,
+        command: {},
+      },
+      clothes: {
+        name: "old clothes",
+        smell: "They smell moldy and old. You wrinkle your nose.",
+        alias: ["clothes", "old clothes", "tattered clothes", "rags"],
+        description: "The clothes are old, tattered and dirty. They look like they haven't been worn in years.",
+        scenery: false,
+        sceneryDesc: "Some <strong>old tattered clothes</strong> lie in a corner.",
+        canWear: true,
+        equipped: false,
         canTake: true,
         command: {},
       },
@@ -175,6 +188,7 @@ export const rooms = {
     },
   },
   hallway: {
+    smell: "It smells musty and damp and you smell the smoke of burning torches.",
     name: "Hallway",
     alias: ["hallway", "dark hallway", "long hallway"],
     description:
@@ -295,7 +309,7 @@ export const rooms = {
 
             player.inventory["stoneball"] = { ...newItems.stoneball };
 
-            return "You've created a new items";
+            return "You've created a new item: <strong>stoneball</strong>.";
           },
         },
       },
@@ -400,6 +414,7 @@ export const rooms = {
       },
       ball: {
         name: "ball",
+        smell: "It smells like rubber.",
         alias: ["ball", "rubber ball", "small ball", "blue ball"],
         description: "A blue small rubber ball.",
         scenery: false,
@@ -418,7 +433,7 @@ export const rooms = {
 
             player.inventory["stoneball"] = { ...newItems.stoneball };
 
-            return "You've created a new items";
+            return "You've created a new item: <strong>stoneball</strong>.";
           },
         },
       },
