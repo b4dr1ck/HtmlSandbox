@@ -344,6 +344,13 @@ export default {
       }
       return true;
     },
+    additionalCommand(object, verb, parameter) {
+      if (object.command[verb]) {
+        this.output += `<br>${object.command[verb](parameter)}`;
+        this.updateDesc++;
+        this.player.update++;
+      }
+    },
     inventory() {
       const inventory = this.player.inventory;
       let condition = "";
@@ -373,12 +380,7 @@ export default {
 
       if (objectInRoom && (objectInRoom.canPull || objectInRoom.canPush)) {
         this.output += `<br>You ${verb} the <strong>${objectInRoom.name}</strong><br>`;
-
-        if (objectInRoom.command[verb]) {
-          this.output += `<br>${objectInRoom.command[verb]()}`;
-          this.updateDesc++;
-          this.player.update++;
-        }
+        this.additionalCommand(objectInRoom, verb);
       } else {
         this.output += `<br>You can't ${verb} that!<br>`;
       }
@@ -392,11 +394,7 @@ export default {
       if (objectInRoom && objectInRoom.isActive) {
         this.output += `<br>You deactivate the <strong>${objectInRoom.name}</strong><br>`;
         objectInRoom.isActive = false;
-        if (objectInRoom.command[verb]) {
-          this.output += `<br>${objectInRoom.command[verb]()}`;
-          this.updateDesc++;
-          this.player.update++;
-        }
+        this.additionalCommand(objectInRoom, verb);
       } else if (objectInRoom && !objectInRoom.isActive) {
         this.output += `<br>The ${objectInRoom.name} is already deactivated!<br>`;
       } else {
@@ -412,11 +410,7 @@ export default {
       if (objectInRoom && !objectInRoom.isActive) {
         this.output += `<br>You activate the <strong>${objectInRoom.name}</strong><br>`;
         objectInRoom.isActive = true;
-        if (objectInRoom.command[verb]) {
-          this.output += `<br>${objectInRoom.command[verb]()}`;
-          this.updateDesc++;
-          this.player.update++;
-        }
+        this.additionalCommand(objectInRoom, verb);
       } else if (objectInRoom && objectInRoom.isActive) {
         this.output += `<br>The ${objectInRoom.name} is already activated!<br>`;
       } else {
@@ -450,11 +444,7 @@ export default {
           }
           this.output += `<br>You put on the <strong>${item.name}</strong><br>`;
           item.equipped = true;
-          if (item.command[verb]) {
-            this.output += `<br>${item.command[verb](object1)}`;
-            this.updateDesc++;
-            this.player.update++;
-          }
+          this.additionalCommand(item, verb);
         } else {
           this.output += `<br>You can't wear the <strong>${item.name}</strong>!<br>`;
         }
@@ -523,12 +513,7 @@ export default {
         // check if the object can be attacked with the given object
         if (objectDest.canBeAttacked.includes(object2)) {
           this.output += `<br>You attack the <strong>${objectDest.name}</strong> with the <strong>${object2}</strong>`;
-          objectDest.condition = "broken";
-          if (objectDest.command[verb]) {
-            this.output += `<br>${objectDest.command[verb](object2)}`;
-            this.updateDesc++;
-            this.player.update++;
-          }
+          this.additionalCommand(objectDest, verb, object2);
         } else {
           this.output += `<br>You try to attack the <strong>${objectDest.name}</strong> with your ${object2}!<br>`;
           this.output += `<br>But it doesn't work!<br>`;
@@ -572,16 +557,11 @@ export default {
       }
       this.output += "<br>You can't smell anything special<br>";
     },
-    scream() {
+    scream(verb) {
       // check if any object in the room has a special scream command
       for (const obj in this.rooms[this.whereAmI].objects) {
         const objInRoom = this.rooms[this.whereAmI].objects[obj];
-        if (objInRoom.command.scream) {
-          this.output += objInRoom.command.scream();
-          this.updateDesc++;
-          this.player.update++;
-          return;
-        }
+        this.additionalCommand(objInRoom, verb);
       }
       const randomIndex = Math.floor(Math.random() * this.screams.length);
       this.output += `<br>"${this.screams[randomIndex]}"<br>`;
@@ -599,12 +579,7 @@ export default {
         if (item.canConsume) {
           this.output += `<br>You consume the <strong>${item.name}</strong><br>`;
           delete this.player.inventory[object1]; // remove from inventory
-
-          if (item.command[verb]) {
-            this.output += `<br>${item.command[verb](object1)}`;
-            this.updateDesc++;
-            this.player.update++;
-          }
+          this.additionalCommand(item, verb, object1);
         } else {
           this.output += `<br>You can't consume the <strong>${item.name}</strong>!<br>`;
         }
@@ -725,11 +700,7 @@ export default {
       }
       if (object) {
         // special behavior if command-verb exist in object
-        if (object.command[verb]) {
-          this.output += `<br>${object.command[verb](object)}`;
-          this.updateDesc++;
-          this.player.update++;
-        }
+        this.additionalCommand(object, verb, object);
         if (object.canTake) {
           this.player.inventory[object1] = object;
           if (containerName) {
@@ -784,10 +755,8 @@ export default {
       } else if (nouns.length === 1 && this.getDescription(object1)) {
         this.output += `<br>${this.getDescription(object1)}<br>`;
 
-        if (objectInRoom && objectInRoom.command.look) {
-          this.output += `<br>${objectInRoom.command.look(objectInRoom)}`;
-          this.updateDesc++;
-          this.player.update++;
+        if (objectInRoom) {
+          this.additionalCommand(objectInRoom, "look", objectInRoom);
         }
       } else if (nouns.length > 1) {
         this.output += "<br>What do you like to look at?<br>";
