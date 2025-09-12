@@ -151,10 +151,10 @@ export const rooms = {
       },
       key: {
         name: "chest key",
-        alias: ["key", "rusty key", "iron key", "chest key"],
+        alias: ["rusty key", "iron key", "chest key", "key"],
         description: "A rusty iron key that looks like it could fit a small chest.",
         scenery: false,
-        sceneryDesc: "A <strong>rusty key</strong> lies on the ground.",
+        sceneryDesc: "The <strong>chest key</strong> lies on the ground.",
         canTake: true,
         command: {},
       },
@@ -379,7 +379,8 @@ export const rooms = {
         name: "window",
         alias: ["window", "small window", "glass window", "wooden window"],
         description:
-          "A small window where the moonligh shines right through.<br>Outside you see the silhouette of a dark and big forest.",
+          "A small window where the moonligh shines right through.<br>Outside you see the silhouette of a dark and big forest.<br>" +
+          "You also see a dark bird flying in the distance near the window.",
         scenery: true,
         canTake: false,
         command: {
@@ -402,6 +403,30 @@ export const rooms = {
           validPrepositions: ["in", "inside", "into"],
         },
         command: {
+          put: (object) => {
+            if (object === "worm") {
+              delete player.inventory.worm; // remove worm from inventory
+              rooms.hallway.objects.nest.container.storage.necklace = {
+                name: "golden necklace",
+                alias: ["necklace", "golden necklace", "heartshaped locket", "locket"],
+                description: "A golden necklace with a small red heartshaped locket.",
+                scenery: false,
+                canTake: true,
+                canWear: true,
+                equipped: false,
+                sceneryDesc: "A <strong>golden necklace</strong> couches on the ground.",
+                command: {
+                  dress: () => {
+                    player.inventory.necklace.equipped = true;
+                    player.condition = "dead";
+                    return "You put on the golden necklace. It feels warm against your skin.<br>"+
+                    "A little bit too warm. It start to burn over your whole body. It hurt's...";
+                  }
+                },
+              };
+              return "You put the worm in the nest.<br>After a while a bird flies back to the nest eats the worm and leaves something behind.";
+            }
+          },
           take: () => {
             return "It would break if you take it.";
           },

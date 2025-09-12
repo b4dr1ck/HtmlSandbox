@@ -448,9 +448,9 @@ export default {
             this.output += `<br>You are already wearing the <strong>${item.name}</strong>!<br>`;
             return;
           }
+          if (this.additionalCommand(item, verb)) return;
           this.output += `<br>You put on the <strong>${item.name}</strong><br>`;
           item.equipped = true;
-          if (this.additionalCommand(item, verb)) return;
         } else {
           this.output += `<br>You can't wear the <strong>${item.name}</strong>!<br>`;
         }
@@ -799,9 +799,9 @@ export default {
           return;
         }
 
+        this.output += `<br>You drop the <strong>${item.name}</strong> to the ground.<br>`;
         this.rooms[this.whereAmI].objects[object1] = item; // add the item back to the room
         delete this.player.inventory[object1]; // remove from inventory
-        this.output += `<br>You drop the <strong>${object1}</strong> to the ground.<br>`;
       } else {
         this.output += `<br>You don't have that in your inventory!<br>`;
       }
