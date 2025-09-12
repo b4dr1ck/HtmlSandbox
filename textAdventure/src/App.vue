@@ -614,8 +614,14 @@ export default {
           this.output += `<br>The <strong>${object.name}</strong> is not lighted!<br>`;
           return;
         }
-        object.isLighted = true;
-        this.output += `<br>You light the <strong>${object.name}</strong><br>`;
+        const lightItem = Object.keys(player.inventory).find((item) => player.inventory[item].canLight);
+        if (lightItem) {
+          object.isLighted = true;
+          this.output += `<br>You light the <strong>${object.name}</strong> with your ${lightItem}<br>`;
+        } else {
+          this.output += `<br>You need something to light the <strong>${object.name}</strong>!<br>`;
+          return;
+        }
         this.additionalCommand(object, verb);
       } else {
         this.output += `<br>You can't light that!<br>`;

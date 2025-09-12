@@ -42,13 +42,19 @@ export const rooms = {
           },
           light: () => {
             rooms.hiddenRoom.objects.bookshelf.hidden = false;
-            rooms.hiddenRoom.description = "You are in a small cave-like room.";
+            rooms.hiddenRoom.description =
+              "You are in a small cave-like room." +
+              "Behind you in the south is a narrow path that leads back to the dead end.";
+
             return "The room is now illuminated.";
           },
           extinguish: () => {
             rooms.hiddenRoom.objects.bookshelf.hidden = true;
             rooms.hiddenRoom.description =
-              "You are in a small dark cave-like room.<br>" + "It's too dark to see anything";
+              "You are in a small dark cave-like room.<br>" +
+              "It's too dark to see anything." +
+              "Behind you in the south is a narrow path that leads back to the dead end.";
+
             return "The torch is extinguished and the room is dark again.";
           },
         },
@@ -261,7 +267,7 @@ export const rooms = {
     alias: ["hallway", "dark hallway", "long hallway"],
     description:
       "You are in a long dark hallway with a torch on the western walls.<br>" +
-      "On the wall in the east is a little chest. Above the chest you see a window.<br>" +
+      "On the wall in the east is a little chest. Above the chest you see a window that light some light into the hallway-<br>" +
       "A door in the north leads you back to the room with the book.<br>" +
       "Another small and dark path leads to the west.<br>" +
       "In front of you in the southern end of the hallway is a ladder that leads up to a hatch.<br>",
@@ -307,6 +313,17 @@ export const rooms = {
                   return "As you bite in the apple a big fat worms appears. Yukky!";
                 },
               },
+            },
+            matches: {
+              name: "matches",
+              alias: ["matches", "box of matches", "matchbox"],
+              description: "A small box of matches. It could be useful to light something.",
+              scenery: false,
+              sceneryDesc: "A <strong>box of matches</strong> lies on the ground.",
+              canTake: true,
+              canLight: true,
+              isLighted: false,
+              command: {},
             },
           },
           validPrepositions: ["in", "inside", "into"],
@@ -448,7 +465,7 @@ export const rooms = {
                 },
                 read: () => {
                   if (player.inventory.glasses && player.inventory.glasses.equipped) {
-                    return "With the glasses you can read some lines of the book: 'Speak the word 'hctibuoykcuf' in the dark";
+                    return "With the glasses you can read some lines of the book:<br><i>\"Speak the word 'hctibuoykcuf' in the dark!\"<i>";
                   } else {
                     return "You don't understand a single word.";
                   }
