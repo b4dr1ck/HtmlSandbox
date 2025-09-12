@@ -15,6 +15,73 @@ export const newItems = {
 
 // all rooms in the game
 export const rooms = {
+  hiddenRoom: {
+    name: "Hidden Room",
+    alias: ["hidden room", "secret room", "dark room"],
+    description:
+      "You are in a small dark cave-like room.<br>" +
+      "It's too dark to see anything<br>" +
+      "Behind you in the south is a narrow path that leads back to the dead end.",
+    exit: {
+      south: { target: "deadEnd" },
+      out: { target: "deadEnd" },
+    },
+    objects: {
+      torch: {
+        name: "torch",
+        alias: ["torch", "torches"],
+        description: "An old wooden torch hanging on the wall.",
+        scenery: false,
+        sceneryDesc: "<br>Near the entrance is a <strong>torch</strong> on the wall.",
+        canTake: false,
+        canLight: true,
+        isLighted: false,
+        command: {
+          take: () => {
+            return "It's fixed to the wall.";
+          },
+          light: () => {
+            rooms.hiddenRoom.objects.bookshelf.hidden = false;
+            rooms.hiddenRoom.description = "You are in a small cave-like room.";
+            return "The room is now illuminated.";
+          },
+          extinguish: () => {
+            rooms.hiddenRoom.objects.bookshelf.hidden = true;
+            rooms.hiddenRoom.description =
+              "You are in a small dark cave-like room.<br>" + "It's too dark to see anything";
+            return "The torch is extinguished and the room is dark again.";
+          },
+        },
+      },
+      bookshelf: {
+        name: "bookshelf",
+        alias: ["bookshelf", "shelf", "wooden bookshelf", "books"],
+        description: "A wooden bookshelf filled with old dusty books and some miscellaneous items.",
+        scenery: false,
+        sceneryDesc: "A <strong>wooden bookshelf</strong> stands against the wall.",
+        canTake: false,
+        hidden: true,
+        container: {
+          storage: {
+            glasses: {
+              name: "glasses",
+              alias: ["glasses", "pair of glasses", "spectacles", " old glasses"],
+              description: "A pair of old-fashioned round glasses with thin metal red frames.",
+              scenery: false,
+              sceneryDesc: "A <strong>pair of glasses</strong> lies on the ground.",
+              canTake: true,
+              canWear: true,
+              equipped: false,
+              command: {},
+            },
+          },
+          containText: "<br>Some interesting items are on the shelf:",
+          validPrepositions: ["on", "onto"],
+        },
+        command: {},
+      },
+    },
+  },
   deadEnd: {
     name: "Dead End",
     alias: ["dead end", "west path", "blocked path"],
@@ -24,7 +91,8 @@ export const rooms = {
       "You can go back east to the hallway.<br>",
     exit: {
       east: { target: "hallway" },
-      north: { target: "" },
+      north: { target: "hiddenRoom" },
+      in: { target: "hiddenRoom" },
     },
     objects: {
       secretPath: {
@@ -192,7 +260,7 @@ export const rooms = {
     name: "Hallway",
     alias: ["hallway", "dark hallway", "long hallway"],
     description:
-      "You are in a long dark hallway with flickering torches on the walls.<br>" +
+      "You are in a long dark hallway with a torch on the western walls.<br>" +
       "On the wall in the east is a little chest. Above the chest you see a window.<br>" +
       "A door in the north leads you back to the room with the book.<br>" +
       "Another small and dark path leads to the west.<br>" +
@@ -279,10 +347,12 @@ export const rooms = {
       torch: {
         name: "torch",
         alias: ["torch", "torches"],
-        description: "The torch is flickering and casting eerie shadows on the walls.",
+        description: "The torch is made of wood and hangs on the wall.",
         scenery: true,
         canTake: false,
         canPull: true,
+        canLight: true,
+        isLighted: true,
         command: {
           pull: () => {
             rooms.deadEnd.objects.secretPath.hidden = false;
@@ -371,10 +441,17 @@ export const rooms = {
                 "You see an old dusty book with a red cover that shows a pentagram.<br>Inside the book, there are strange symbols and drawings.",
               scenery: true,
               canTake: false,
-              canRead: "..dsadas...dsa343fasf..dadasdsa...",
+              canRead: "'...'",
               command: {
                 take: () => {
                   return "It seems to be magically bound to the table.";
+                },
+                read: () => {
+                  if (player.inventory.glasses && player.inventory.glasses.equipped) {
+                    return "With the glasses you can read some lines of the book: 'Speak the word 'hctibuoykcuf' in the dark";
+                  } else {
+                    return "You don't understand a single word.";
+                  }
                 },
               },
             },

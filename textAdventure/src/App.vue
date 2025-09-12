@@ -66,6 +66,8 @@ export default {
         diagnose: ["diagnose", "condition", "health", "state"],
         dress: ["wear", "dress", "put on", "dress on", "equip", "clothe"],
         undress: ["undress", "put off", "dress off", "disrobe", "unclothe", "strip"],
+        light: ["light", "inflame", "ignite", "kindle"],
+        extinguish: ["extinguish", "erase", "douse", "purge"],
       },
       validPrepositions: ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"],
       player: player,
@@ -254,8 +256,6 @@ export default {
       return room.exit[direction];
     },
     getDescription(object) {
-      let condition = "";
-
       const inventory = this.player.inventory;
       const room = this.rooms[this.whereAmI];
       const objects = room.objects;
@@ -263,8 +263,7 @@ export default {
 
       // in the inventory
       if (inventory[object]) {
-        condition = inventory[object].condition ? `(${inventory[object].condition})` : "";
-        return `(inventory) ${condition} ${inventory[object].description}`;
+        return `(inventory) ${inventory[object].description}`;
       }
 
       // the room itself
@@ -274,12 +273,11 @@ export default {
 
       // object in the room
       if (objectInRoom) {
-        condition = objectInRoom.condition ? `(${objectInRoom.condition})` : "";
         // object is hidden
         if (objectInRoom.hidden) {
           return null;
         }
-        let desc = `${condition} ${objectInRoom.description}`;
+        let desc = `${objectInRoom.description}`;
         // object is a switch
         if ("isActive" in objectInRoom) {
           const onOrOff = objectInRoom.isActive ? "on" : "off";
@@ -290,26 +288,33 @@ export default {
           const openOrClosed = objectInRoom.open ? "open" : "closed";
           desc += ` (${openOrClosed})`;
         }
+
+        if ("isLighted" in objectInRoom) {
+          const lightedOrNot = objectInRoom.isLighted ? "it is lighted" : "it is not lighted";
+          desc += ` (${lightedOrNot})`;
+        }
         // is a container
         if (objectInRoom.container && Object.keys(objectInRoom.container.storage).length > 0) {
           if ("open" in objectInRoom) {
             if (objectInRoom.open) {
-              desc += `<br>${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
+              let containText = `${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
+              if (objectInRoom.container.containText) {
+                containText = objectInRoom.container.containText;
+              }
+              desc += `<br>${containText}`;
               for (const item in objectInRoom.container.storage) {
-                condition = objectInRoom.container.storage[item].condition
-                  ? `(${objectInRoom.container.storage[item].condition})`
-                  : "";
-                desc += `<br><strong>* ${condition} ${objectInRoom.container.storage[item].name}</strong>`;
+                desc += `<br><strong>* ${objectInRoom.container.storage[item].name}</strong>`;
               }
             }
           } else {
             // if the object is a container you can not open/close, always show it's content
-            desc += `<br>${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
+            let containText = `${objectInRoom.container.validPrepositions[0]} the <strong>${objectInRoom.name}</strong> you see:`;
+            if (objectInRoom.container.containText) {
+              containText = objectInRoom.container.containText;
+            }
+            desc += `<br>${containText}`;
             for (const item in objectInRoom.container.storage) {
-              condition = objectInRoom.container.storage[item].condition
-                ? `(${objectInRoom.container.storage[item].condition})`
-                : "";
-              desc += `<br><strong>* ${condition} ${objectInRoom.container.storage[item].name}</strong>`;
+              desc += `<br><strong>*  ${objectInRoom.container.storage[item].name}</strong>`;
             }
           }
         }
@@ -319,9 +324,9 @@ export default {
       for (const obj in objects) {
         if (objects[obj].container && Object.keys(objects[obj].container.storage).length > 0) {
           const item = objects[obj].container.storage[object];
-          condition = item.condition ? `(${item.condition})` : "";
+
           if (item) {
-            return `(${objects[obj].container.validPrepositions[0]} ${objects[obj].name}) ${condition} ${item.description}`;
+            return `(${objects[obj].container.validPrepositions[0]} ${objects[obj].name}) ${item.description}`;
           }
         }
       }
@@ -353,19 +358,16 @@ export default {
     },
     inventory() {
       const inventory = this.player.inventory;
-      let condition = "";
+      let equipped = "";
       if (Object.keys(inventory).length === 0) {
         this.output += `<br>You don't carry anything with you<br>`;
       } else {
         this.output += `<br>Your inventory:<br>`;
         for (const item in inventory) {
-          if ("condition" in inventory[item]) {
-            condition = `(${inventory[item].condition}) `;
-          }
           if (inventory[item].equipped) {
-            condition = `(equipped) ${condition}`;
+            equipped = `(equipped) `;
           }
-          this.output += `* <strong>${condition}${inventory[item].name}</strong><br>`;
+          this.output += `* <strong>${equipped}${inventory[item].name}</strong><br>`;
         }
       }
     },
@@ -472,6 +474,7 @@ export default {
 
       if (item && item.canRead) {
         this.output += `<br>You read the <strong>${item.name}</strong>:<br><i>"${item.canRead}</i>"<br>`;
+        this.additionalCommand(item, verb);
       } else if (item) {
         this.output += `<br>You can't read the <strong>${item.name}</strong>!<br>`;
       } else {
@@ -585,6 +588,37 @@ export default {
         }
       } else {
         this.output += `<br>You don't have that in your inventory!<br>`;
+      }
+    },
+    extinguish(verb, nouns) {
+      this.light(verb, nouns);
+    },
+    light(verb, nouns, _preposition) {
+      const object1 = nouns[0];
+      if (!this.checkNounsAmount(verb, nouns)) return;
+
+      const object = this.player.inventory[object1] || this.rooms[this.whereAmI].objects[object1];
+
+      if (object && object.canLight) {
+        if (object.isLighted) {
+          if (verb === "extinguish") {
+            object.isLighted = false;
+            this.output += `<br>You extinguish the <strong>${object.name}</strong><br>`;
+            this.additionalCommand(object, verb);
+            return;
+          }
+          this.output += `<br>The <strong>${object.name}</strong> is already lighted!<br>`;
+          return;
+        }
+        if (verb === "extinguish") {
+          this.output += `<br>The <strong>${object.name}</strong> is not lighted!<br>`;
+          return;
+        }
+        object.isLighted = true;
+        this.output += `<br>You light the <strong>${object.name}</strong><br>`;
+        this.additionalCommand(object, verb);
+      } else {
+        this.output += `<br>You can't light that!<br>`;
       }
     },
     combine(verb, nouns, preposition) {
