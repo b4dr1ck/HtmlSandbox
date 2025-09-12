@@ -385,7 +385,7 @@ export const rooms = {
         command: {
           look: () => {
             rooms.hallway.objects.nest.hidden = false;
-            return "On a closer look you see a <strong>small bird nest<strong> on the window sill.";
+            return "On a closer look you see a <strong>small bird nest</strong> on the window sill.";
           },
         },
       },
