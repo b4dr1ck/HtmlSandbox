@@ -41,6 +41,7 @@ export const rooms = {
           },
           light: () => {
             rooms.hiddenRoom.objects.bookshelf.hidden = false;
+            rooms.hiddenRoom.objects.vendingmachine.hidden = false;
             rooms.hiddenRoom.description =
               "You are in a small cave-like room." +
               "Behind you in the south is a narrow path that leads back to the dead end.";
@@ -49,6 +50,7 @@ export const rooms = {
           },
           extinguish: () => {
             rooms.hiddenRoom.objects.bookshelf.hidden = true;
+            rooms.hiddenRoom.objects.vendingmachine.hidden = true;
             rooms.hiddenRoom.description =
               "You are in a small cave-like room.<br>" +
               "It's too dark to see any details.<br>" +
@@ -62,17 +64,24 @@ export const rooms = {
         name: "vending machine",
         alias: ["vending machine", "vendor machine", "machine"],
         description: "An old rusty vending machine, with the a sign 'Snacks' on it.",
-        scenery: true,
+        scenery: false,
+        sceneryDesc: "An old <strong>vending machine</strong> stands next to the shelf.",
+        hidden: true,
         canTake: false,
-        container: {
-          storeOnly: true,
-          storage: {},
-          validPrepositions: ["in", "inside", "into"],
-        },
         command: {
           put: (object) => {
             if (object === "goldcoin") {
-              return "You insert the coin into the vending machine.";
+              rooms.hiddenRoom.objects["snack"] = {
+                name: "chocolate bar",
+                alias: ["snack", "small snack", "chocolate bar", "candy bar"],
+                description: "A small chocolate bar. It looks delicious.",
+                scenery: false,
+                sceneryDesc: "A <strong>chocolate bar</strong> lies on the ground.",
+                canTake: true,
+                canConsume: true,
+                command: {},
+              };
+              return "You insert the coin into the vending machine. A <strong>chocolate bar</strong> appears.";
             } else {
               return "The vending machine only accepts coins.";
             }
@@ -88,7 +97,6 @@ export const rooms = {
         canTake: false,
         hidden: true,
         container: {
-          storeOnly: false,
           storage: {
             glasses: {
               name: "glasses",
@@ -118,8 +126,6 @@ export const rooms = {
       "You can go back east to the hallway.<br>",
     exit: {
       east: { target: "hallway" },
-      north: { target: "hiddenRoom" },
-      in: { target: "hiddenRoom" },
     },
     objects: {
       secretPath: {
@@ -329,7 +335,6 @@ export const rooms = {
         open: false,
         locked: "key",
         container: {
-          storeOnly: false,
           storage: {
             apple: {
               name: "apple",
@@ -393,7 +398,6 @@ export const rooms = {
         hidden: true,
         canTake: false,
         container: {
-          storeOnly: false,
           storage: {},
           validPrepositions: ["in", "inside", "into"],
         },
@@ -413,7 +417,12 @@ export const rooms = {
         isLighted: true,
         command: {
           pull: () => {
+            if (rooms.hallway.objects.torch.isLighted) {
+              return "Not a good idea to pull a lit torch. It's pretty hot!";
+            }
             rooms.deadEnd.objects.secretPath.hidden = false;
+            rooms.deadEnd.exit.north = { target: "hiddenRoom" };
+            rooms.deadEnd.exit.in = { target: "hiddenRoom" };
 
             return "A strange noise 'krrrrrrrr' echoes through the hallway. It feels like a stone wall has moved somewhere.";
           },
@@ -491,7 +500,6 @@ export const rooms = {
         scenery: true,
         canTake: false,
         container: {
-          storeOnly: false,
           storage: {
             book: {
               name: "book",

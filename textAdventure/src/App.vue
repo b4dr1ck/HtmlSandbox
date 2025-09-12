@@ -303,6 +303,7 @@ export default {
               }
               desc += `<br>${containText}`;
               for (const item in objectInRoom.container.storage) {
+                if (objectInRoom.container.storage[item].hidden) continue;
                 desc += `<br><strong>* ${objectInRoom.container.storage[item].name}</strong>`;
               }
             }
@@ -314,6 +315,7 @@ export default {
             }
             desc += `<br>${containText}`;
             for (const item in objectInRoom.container.storage) {
+              if (objectInRoom.container.storage[item].hidden) continue;
               desc += `<br><strong>*  ${objectInRoom.container.storage[item].name}</strong>`;
             }
           }
@@ -383,8 +385,8 @@ export default {
       if (!this.checkNounsAmount(verb, nouns)) return;
 
       if (objectInRoom && (objectInRoom.canPull || objectInRoom.canPush)) {
-        this.output += `<br>You ${verb} the <strong>${objectInRoom.name}</strong><br>`;
         if (this.additionalCommand(objectInRoom, verb)) return;
+        this.output += `<br>You ${verb} the <strong>${objectInRoom.name}</strong><br>`;
       } else {
         this.output += `<br>You can't ${verb} that!<br>`;
       }
@@ -396,9 +398,9 @@ export default {
       if (!this.checkNounsAmount(verb, nouns)) return;
 
       if (objectInRoom && objectInRoom.isActive) {
+        if (this.additionalCommand(objectInRoom, verb)) return;
         this.output += `<br>You deactivate the <strong>${objectInRoom.name}</strong><br>`;
         objectInRoom.isActive = false;
-        if (this.additionalCommand(objectInRoom, verb)) return;
       } else if (objectInRoom && !objectInRoom.isActive) {
         this.output += `<br>The ${objectInRoom.name} is already deactivated!<br>`;
       } else {
@@ -682,7 +684,7 @@ export default {
       }
       if (objectInRoom) {
         if (this.additionalCommand(objectInRoom, verb, object1)) {
-          this.rooms[this.whereAmI].objects[object1] = item; 
+          this.rooms[this.whereAmI].objects[object1] = item;
           return;
         }
       }
@@ -703,6 +705,9 @@ export default {
           this.output += `<br>You don't have the <strong>${object1}</strong> in your inventory!<br>`;
           return;
         }
+
+        if (this.additionalCommand(objectDest, verb, object1)) return;
+
         if (!objectDest.container) {
           this.output += `<br>The <strong>${objectDest.name}</strong> is not a container!<br>`;
           return;
@@ -720,8 +725,6 @@ export default {
           } are: ${objectDest.container.validPrepositions.join(", ")}</small><br>`;
           return;
         }
-
-        if (this.additionalCommand(objectDest, verb, object1)) return;
 
         delete this.player.inventory[object1];
         objectDest.container.storage[object1] = objectSrc;
@@ -747,11 +750,7 @@ export default {
       // if object is not found in the room, check in containers
       if (!object) {
         for (const obj in objects) {
-          if (
-            objects[obj].container &&
-            Object.keys(objects[obj].container.storage).length > 0 &&
-            !objects[obj].container.storeOnly
-          ) {
+          if (objects[obj].container && Object.keys(objects[obj].container.storage).length > 0) {
             if ("open" in objects[obj]) {
               if (objects[obj].open) {
                 object = objects[obj].container.storage[object1];
