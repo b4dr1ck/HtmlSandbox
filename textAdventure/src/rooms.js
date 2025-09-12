@@ -157,8 +157,9 @@ export const rooms = {
     smell: "It smells like old wood and dust and mold",
     alias: ["attic", "loft", "roof space"],
     description:
-      "You are in a dusty dark attic with wooden beams.<br>" +
-      "There is a hatch in the north that leads you back to the hallway<br>",
+      "You are in a dark attic.<br>" +
+      "Old wooden beams support the roof and the wooden floor is covered in a thick layer of dust.<br>" +
+      "There is a hatch behind you on the ground that leads you back to the hallway.<br>",
     exit: {
       north: { target: "hallway", handicap: "hatch" },
       down: { target: "hallway", handicap: "hatch" },
@@ -189,9 +190,9 @@ export const rooms = {
         alias: ["water", "bottle of water", "bottle", "plastic bottle"],
         description: "A plastic bottle filled with dirty brown water.",
         scenery: false,
-        sceneryDesc: "A <strong>bottle of water</strong> lies on the ground.",
+        sceneryDesc: "A <strong>bottle of water</strong> stands on the ground.",
         canTake: true,
-        canExtinguish: true,
+        isLiquid: true,
         canConsume: true,
         command: {
           consume: () => {
@@ -206,7 +207,7 @@ export const rooms = {
         description: "A shiny gold coin. It looks valuable.",
         scenery: false,
         hidden: true,
-        sceneryDesc: "A <strong>gold coin</strong> lies on the dusty floor.",
+        sceneryDesc: "A <strong>gold coin</strong>  glimmers on the floor.",
         canTake: true,
         command: {},
       },
@@ -216,7 +217,7 @@ export const rooms = {
         alias: ["clothes", "old clothes", "tattered clothes", "rags"],
         description: "The clothes are old, tattered and dirty. They look like they haven't been worn in years.",
         scenery: false,
-        sceneryDesc: "Some <strong>old tattered clothes</strong> lie in a corner.",
+        sceneryDesc: "Some <strong>old tattered clothes</strong> lie on the ground.",
         canWear: true,
         equipped: false,
         canTake: true,
@@ -279,13 +280,13 @@ export const rooms = {
   hallway: {
     smell: "It smells musty and damp and you smell the smoke of burning torches.",
     name: "Hallway",
-    alias: ["hallway", "dark hallway", "long hallway"],
+    alias: ["hallway", "dark hallway", "long hallway", "corridor"],
     description:
-      "You are in a long dark hallway with a torch on the western walls.<br>" +
-      "On the wall in the east is a little chest. Above the chest you see a window that light some light into the hallway-<br>" +
+      "You are in a long dark hallway. The walls are made of stones and there is a torch on the western wall.<br>" +
+      "On the wall to the east is a little chest on the ground.<br>Above that chest you see a window - it's dark outside.<br>" +
       "A door in the north leads you back to the room with the book.<br>" +
-      "Another small and dark path leads to the west.<br>" +
-      "In front of you in the southern end of the hallway is a ladder that leads up to a hatch.<br>",
+      "Another small and dark path leads to the west into the unknown.<br>" +
+      "In front of you in the southern end of the hallway is a ladder on a wall that leads up to a hatch.<br>",
     exit: {
       north: { target: "room", handicap: "door" },
       in: { target: "room", handicap: "door" },
@@ -347,7 +348,8 @@ export const rooms = {
       window: {
         name: "window",
         alias: ["window", "small window", "glass window", "wooden window"],
-        description: "A small window that lets in a little light. Outside you can see a dark and big forest.",
+        description:
+          "A small window where the moonligh shines right through.<br>Outside you see the silhouette of a dark and big forest.",
         scenery: true,
         canTake: false,
         command: {
@@ -448,7 +450,7 @@ export const rooms = {
     name: "Dark Room",
     alias: ["room", "dark room", "small room", "dimly lit room"],
     description:
-      "You are in the center of a small dimly lit room.<br>Beside you is a table with a book on it.<br>" +
+      "You are in the center of a small dimly lit room.<br>Beside you, on the eastern wall, is a table with a book on it.<br>" +
       "The room has stone walls and on the the western wall is a little switch that seems to control the light.<br>" +
       "Behind you, in the south, is the only door.<br>",
     exit: {

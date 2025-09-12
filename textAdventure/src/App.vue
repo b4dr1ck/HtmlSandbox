@@ -41,8 +41,8 @@ export default {
         hand: ["hand", "hands", "your hand", "your hands"],
       },
       verbAliases: {
-        pull: ["pull", "pull on"],
-        push: ["push", "press", "press on", "push on"],
+        pull: ["pull", "pull on", "drag on", "drag"],
+        push: ["push", "press", "press on", "push on", "move", "shift"],
         look: ["look", "see", "view", "examine", "inspect", "look at", "show"],
         climb: ["climb", "crawl", "climb on", "crawl on", "climb up", "crawl up"],
         go: ["go", "go to", "walk", "walk to", "move", "move to", "travel", "travel to", "head", "head to"],
@@ -603,7 +603,7 @@ export default {
         if (object.isLighted) {
           if (verb === "extinguish") {
             const extinguishObject = Object.keys(this.player.inventory).find(
-              (item) => this.player.inventory[item].canExtinguish
+              (item) => this.player.inventory[item].isLiquid
             );
             if (extinguishObject) {
               object.isLighted = false;
@@ -780,6 +780,7 @@ export default {
           this.output += `<br>You need to undress the <strong>${item.name}</strong> first!<br>`;
           return;
         }
+
         this.rooms[this.whereAmI].objects[object1] = item; // add the item back to the room
         delete this.player.inventory[object1]; // remove from inventory
         this.output += `<br>You drop the <strong>${object1}</strong> to the ground.<br>`;
@@ -918,13 +919,10 @@ h3 {
 #wrapper {
   font-size: 18px;
   font-family: monospace;
-  max-width: 900px;
   margin: 0 auto;
   padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
   color: white;
-  background-color: rgba(44, 44, 44, 0.6);
+  background-color: black;
 }
 #output {
   height: 500px;
@@ -941,7 +939,7 @@ input {
   font-family: monospace;
   border: none;
   width: 90%;
-  background-color: rgb(44, 44, 44);
+  background-color: black;
   color: rgb(214, 214, 214);
   outline: none;
 }
