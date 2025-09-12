@@ -160,6 +160,7 @@ export default {
           objectAliases[room] = this.rooms[room].alias;
           const objects = this.rooms[room].objects;
           for (const obj in objects) {
+            if (objects[obj].hidden) continue;
             if (objects[obj].alias) {
               objectAliases[obj] = objects[obj].alias;
               if (objects[obj].container) {

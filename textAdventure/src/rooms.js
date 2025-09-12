@@ -425,6 +425,8 @@ export const rooms = {
                 },
               };
               return "You put the worm in the nest.<br>After a while a bird flies back to the nest eats the worm and leaves something behind.";
+            } else {
+              return "I don't think the bird would like that.";
             }
           },
           take: () => {
