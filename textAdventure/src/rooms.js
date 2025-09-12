@@ -252,7 +252,7 @@ export const rooms = {
         scenery: false,
         sceneryDesc: "A <strong>big fat rat</strong> scurries around the attic. Something shiny is in its mouth.",
         canTake: false,
-        canBeAttacked: ["stone", "ball", "hand"],
+        canBeAttacked: ["hand"],
         command: {
           scream: () => {
             delete rooms.attic.objects.rat; // remove rat from the room
@@ -260,16 +260,18 @@ export const rooms = {
 
             return "As you scream the rat escapes into a hole in the wall. Something shiny falls out of its mouth and rolls across the floor.";
           },
-          attack: (object) => {
-            if (object === "hand") {
-              player.condition = "dead";
-              return "Ouch! The rat bites you. Maybe you should use something else to attack it.";
-            }
+          throw: (object) => {
             delete rooms.attic.objects.rat; // remove rat from the room
             rooms.attic.objects.goldcoin.hidden = false; // reveal gold coin
             delete player.inventory[object]; // remove the used object from inventory
 
             return "The rat escapes into a hole in the wall. Something shiny falls out of its mouth and rolls across the floor.";
+          },
+          attack: (object) => {
+            if (object === "hand") {
+              player.condition = "dead";
+              return "Ouch! The rat bites you. Maybe you should use something else to attack it.";
+            }
           },
         },
       },
@@ -482,7 +484,6 @@ export const rooms = {
       out: { target: "hallway", handicap: "door" },
     },
     objects: {
-
       table: {
         name: "table",
         alias: ["table", "wooden table", "desk"],

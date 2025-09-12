@@ -675,14 +675,16 @@ export default {
       const object2 = nouns[1];
       const item = this.player.inventory[object1];
       const objectInRoom = this.rooms[this.whereAmI].objects[object2];
-      // is object2 can be attacked, call the attack function
+
       if (!item) {
         this.output += `<br>You don't have that in your inventory!<br>`;
         return;
       }
-      if (objectInRoom && objectInRoom.canBeAttacked && objectInRoom.canBeAttacked.includes(object1)) {
-        this.attack(verb, nouns.reverse(), "with");
-        return;
+      if (objectInRoom) {
+        if (this.additionalCommand(objectInRoom, verb, object1)) {
+          this.rooms[this.whereAmI].objects[object1] = item; 
+          return;
+        }
       }
 
       // otherwise call the put function
