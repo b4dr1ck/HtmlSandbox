@@ -58,6 +58,27 @@ export const rooms = {
           },
         },
       },
+      vendingmachine: {
+        name: "vending machine",
+        alias: ["vending machine", "vendor machine", "machine"],
+        description: "An old rusty vending machine, with the a sign 'Snacks' on it.",
+        scenery: true,
+        canTake: false,
+        container: {
+          storeOnly: true,
+          storage: {},
+          validPrepositions: ["in", "inside", "into"],
+        },
+        command: {
+          put: (object) => {
+            if (object === "goldcoin") {
+              return "You insert the coin into the vending machine.";
+            } else {
+              return "The vending machine only accepts coins.";
+            }
+          },
+        },
+      },
       bookshelf: {
         name: "bookshelf",
         alias: ["bookshelf", "shelf", "wooden bookshelf", "books"],
@@ -67,6 +88,7 @@ export const rooms = {
         canTake: false,
         hidden: true,
         container: {
+          storeOnly: false,
           storage: {
             glasses: {
               name: "glasses",
@@ -305,6 +327,7 @@ export const rooms = {
         open: false,
         locked: "key",
         container: {
+          storeOnly: false,
           storage: {
             apple: {
               name: "apple",
@@ -368,6 +391,7 @@ export const rooms = {
         hidden: true,
         canTake: false,
         container: {
+          storeOnly: false,
           storage: {},
           validPrepositions: ["in", "inside", "into"],
         },
@@ -458,6 +482,7 @@ export const rooms = {
       out: { target: "hallway", handicap: "door" },
     },
     objects: {
+
       table: {
         name: "table",
         alias: ["table", "wooden table", "desk"],
@@ -465,6 +490,7 @@ export const rooms = {
         scenery: true,
         canTake: false,
         container: {
+          storeOnly: false,
           storage: {
             book: {
               name: "book",
@@ -473,7 +499,7 @@ export const rooms = {
                 "You see an old dusty book with a red cover that shows a pentagram.<br>Inside the book, there are strange symbols and drawings.",
               scenery: true,
               canTake: false,
-              canRead: "'...'",
+              canRead: "...§2!%$8...{½¼³½34..",
               command: {
                 take: () => {
                   return "It seems to be magically bound to the table.";
