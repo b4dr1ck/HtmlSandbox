@@ -34,7 +34,6 @@ export const rooms = {
         scenery: false,
         sceneryDesc: "<br>Near the entrance is a <strong>torch</strong> on the wall.",
         canTake: false,
-        canLight: true,
         isLighted: false,
         command: {
           take: () => {
@@ -51,11 +50,11 @@ export const rooms = {
           extinguish: () => {
             rooms.hiddenRoom.objects.bookshelf.hidden = true;
             rooms.hiddenRoom.description =
-              "You are in a small dark cave-like room.<br>" +
-              "It's too dark to see anything." +
+              "You are in a small cave-like room.<br>" +
+              "It's too dark to see any details.<br>" +
               "Behind you in the south is a narrow path that leads back to the dead end.";
 
-            return "The torch is extinguished and the room is dark again.";
+            return "The room is now dark again.";
           },
         },
       },
@@ -184,6 +183,22 @@ export const rooms = {
         scenery: true,
         canTake: false,
         command: {},
+      },
+      water: {
+        name: "bottle of water",
+        alias: ["water", "bottle of water", "bottle", "plastic bottle"],
+        description: "A plastic bottle filled with dirty brown water.",
+        scenery: false,
+        sceneryDesc: "A <strong>bottle of water</strong> lies on the ground.",
+        canTake: true,
+        canExtinguish: true,
+        canConsume: true,
+        command: {
+          consume: () => {
+            player.condition = "dead";
+            return "You drink the dirty water and immediately feel sick. Before you can react you collapse to the ground.";
+          },
+        },
       },
       goldcoin: {
         name: "gold coin",
@@ -321,7 +336,6 @@ export const rooms = {
               scenery: false,
               sceneryDesc: "A <strong>box of matches</strong> lies on the ground.",
               canTake: true,
-              canLight: true,
               isLighted: false,
               command: {},
             },
@@ -368,7 +382,6 @@ export const rooms = {
         scenery: true,
         canTake: false,
         canPull: true,
-        canLight: true,
         isLighted: true,
         command: {
           pull: () => {
@@ -465,7 +478,7 @@ export const rooms = {
                 },
                 read: () => {
                   if (player.inventory.glasses && player.inventory.glasses.equipped) {
-                    return "With the glasses you can read some lines of the book:<br><i>\"Speak the word 'hctibuoykcuf' in the dark!\"<i>";
+                    return "With the glasses you can read some lines of the book:<br><i>\"Speak the word 'hctibuoykcuf' in the dark hideout!\"<i>";
                   } else {
                     return "You don't understand a single word.";
                   }

@@ -599,12 +599,19 @@ export default {
 
       const object = this.player.inventory[object1] || this.rooms[this.whereAmI].objects[object1];
 
-      if (object && object.canLight) {
+      if (object && "isLighted" in object) {
         if (object.isLighted) {
           if (verb === "extinguish") {
-            object.isLighted = false;
-            this.output += `<br>You extinguish the <strong>${object.name}</strong><br>`;
-            this.additionalCommand(object, verb);
+            const extinguishObject = Object.keys(this.player.inventory).find(
+              (item) => this.player.inventory[item].canExtinguish
+            );
+            if (extinguishObject) {
+              object.isLighted = false;
+              this.output += `<br>You extinguish the <strong>${object.name}</strong> with your ${extinguishObject}<br>`;
+              this.additionalCommand(object, verb);
+            } else {
+              this.output += `<br>You need something to extinguish the <strong>${object.name}</strong>!<br>`;
+            }
             return;
           }
           this.output += `<br>The <strong>${object.name}</strong> is already lighted!<br>`;
@@ -614,7 +621,7 @@ export default {
           this.output += `<br>The <strong>${object.name}</strong> is not lighted!<br>`;
           return;
         }
-        const lightItem = Object.keys(player.inventory).find((item) => player.inventory[item].canLight);
+        const lightItem = Object.keys(player.inventory).find((item) => "isLighted" in player.inventory[item]);
         if (lightItem) {
           object.isLighted = true;
           this.output += `<br>You light the <strong>${object.name}</strong> with your ${lightItem}<br>`;
