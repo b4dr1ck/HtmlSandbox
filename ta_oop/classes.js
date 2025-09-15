@@ -1,0 +1,406 @@
+export class Player {
+  #currentRoom;
+  #inventory;
+  #condition;
+  #health;
+
+  constructor(startingRoom) {
+    this.#currentRoom = startingRoom;
+    this.#inventory = [];
+    this.#condition = "healthy";
+    this.#health = 100;
+  }
+
+  get currentRoom() {
+    return this.#currentRoom;
+  }
+  get inventory() {
+    return this.#inventory;
+  }
+  get condition() {
+    return this.#condition;
+  }
+  get health() {
+    return this.#health;
+  }
+
+  set condition(newCondition) {
+    this.#condition = newCondition;
+  }
+  set currentRoom(newRoom) {
+    this.#currentRoom = newRoom;
+  }
+
+  addToInventory(...item) {
+    this.#inventory.push(...item);
+  }
+  removeFromInventory(itemName) {
+    this.#inventory = this.#inventory.filter((item) => item.uniqueKey.toLowerCase() !== itemName.toLowerCase());
+  }
+  isInInventory(itemName) {
+    return this.#inventory.some((item) => item.uniqueKey.toLowerCase() === itemName.toLowerCase());
+  }
+  diagnose() {
+    console.log(`You are ${this.#condition} with ${this.#health} health.`);
+  }
+  adjustHealth(amount) {
+    this.#health += amount;
+    if (this.#health > 100) {
+      this.#health = 100;
+    }
+    if (this.#health <= 0) {
+      this.#health = 0;
+      this.#condition = "dead";
+    } else if (this.#health < 30) {
+      this.#condition = "critical";
+    } else if (this.#health < 70) {
+      this.#condition = "injured";
+    } else {
+      this.#condition = "healthy";
+    }
+  }
+}
+
+class BaseObject {
+  #name;
+  #uniqueKey;
+  #aliases;
+  #description;
+  #smell;
+  #noise;
+  #hidden;
+  #trigger;
+
+  constructor(name, uniqueKey, aliases, description) {
+    this.#name = name;
+    this.#uniqueKey = uniqueKey;
+    this.#aliases = aliases;
+    this.#description = description;
+    this.#smell = "It smells like nothing in particular.";
+    this.#noise = "You hear nothing special.";
+    this.#hidden = false;
+    this.#trigger = {};
+  }
+
+  get name() {
+    return this.#name;
+  }
+  get uniqueKey() {
+    return this.#uniqueKey;
+  }
+  get description() {
+    return this.#description;
+  }
+  get smell() {
+    return this.#smell;
+  }
+  get noise() {
+    return this.#noise;
+  }
+  get hidden() {
+    return this.#hidden;
+  }
+  get aliases() {
+    return this.#aliases;
+  }
+
+  set name(newName) {
+    this.#name = newName;
+  }
+  set description(newDescription) {
+    this.#description = newDescription;
+  }
+  set smell(newSmell) {
+    this.#smell = newSmell;
+  }
+  set noise(newNoise) {
+    this.#noise = newNoise;
+  }
+  set hidden(isHidden) {
+    this.#hidden = isHidden;
+  }
+
+  createTrigger(onCommand, script) {
+    this.#trigger[onCommand] = script;
+  }
+  trigger(command, ...args) {
+    if (this.#trigger[command]) {
+      this.#trigger[command](...args);
+      return true;
+    }
+    return false;
+  }
+}
+
+export class Room extends BaseObject {
+  #exits;
+  #objects;
+  constructor(name, uniqueKey, aliases, description) {
+    super(name, uniqueKey, aliases, description);
+    this.#exits = {};
+    this.#objects = [];
+  }
+
+  get exits() {
+    return this.#exits;
+  }
+  get objects() {
+    return this.#objects;
+  }
+
+  set exits(newExits) {
+    this.#exits = newExits;
+  }
+
+  addObjects(...object) {
+    this.#objects.push(...object);
+  }
+  removeObject(objectName) {
+    this.#objects = this.#objects.filter((obj) => obj.uniqueKey.toLowerCase() !== objectName.toLowerCase());
+  }
+}
+
+export class GameObject extends BaseObject {
+  #sceneryDescription;
+  #canTake;
+  #read;
+  #canBeAttacked;
+  #condition;
+  constructor(name, uniqueKey, aliases, description) {
+    super(name, uniqueKey, aliases, description);
+
+    const article = ["a", "e", "i", "o", "u"].includes(name[0].toLowerCase()) ? "an" : "a";
+    this.smell = `It smells like ${article} ${name.toLowerCase()}`;
+    this.noise = `It sounds like  ${article} ${name.toLowerCase()}`;
+    this.read = "";
+    this.#canBeAttacked = false;
+    this.#canTake = false;
+    this.#sceneryDescription = "";
+    this.#condition = "";
+  }
+
+  get description() {
+    return this.#sceneryDescription ? this.#sceneryDescription : super.description;
+  }
+  get canTake() {
+    return this.#canTake;
+  }
+  get read() {
+    return this.#read;
+  }
+  get canBeAttacked() {
+    return this.#canBeAttacked;
+  }
+  get condition() {
+    return this.#condition;
+  }
+
+  set sceneryDescription(newDescription) {
+    this.#sceneryDescription = newDescription;
+  }
+  set canTake(takeable) {
+    this.#canTake = takeable;
+  }
+  set read(text) {
+    this.#read = text;
+  }
+  set canBeAttacked(attackable) {
+    this.#canBeAttacked = attackable;
+  }
+  set condition(newCondition) {
+    this.#condition = newCondition;
+  }
+}
+
+export class Lockable extends GameObject {
+  #isLocked;
+  #isOpen;
+  #keyName;
+  constructor(name, uniqueKey, aliases, description) {
+    super(name, uniqueKey, aliases, description);
+    this.#isLocked = false;
+    this.#isOpen = false;
+    this.#keyName = "";
+  }
+
+  get isLocked() {
+    return this.#isLocked;
+  }
+  get isOpen() {
+    return this.#isOpen;
+  }
+  get keyName() {
+    return this.#keyName;
+  }
+
+  set isLocked(lockStatus) {
+    this.#isLocked = lockStatus;
+  }
+  set isOpen(openStatus) {
+    this.#isOpen = openStatus;
+  }
+  set keyName(keyName) {
+    this.#keyName = keyName;
+  }
+
+  open() {
+    if (!this.#isLocked) {
+      this.#isOpen = true;
+      return true;
+    }
+    return false;
+  }
+  unlock(key) {
+    if (!key) {
+      return false;
+    }
+    if (key.toLowerCase() === this.#keyName.toLowerCase()) {
+      this.#isLocked = false;
+      return true;
+    }
+    return false;
+  }
+}
+
+export class Equipment extends GameObject {
+  #canWear;
+  #isEquipped;
+  constructor(name, uniqueKey, aliases, description) {
+    super(name, uniqueKey, aliases, description);
+    this.#canWear = false;
+    this.#isEquipped = false;
+  }
+
+  get canWear() {
+    return this.#canWear;
+  }
+  get isEquipped() {
+    return this.#isEquipped;
+  }
+
+  set canWear(wearable) {
+    this.#canWear = wearable;
+  }
+
+  dress() {
+    if (this.#canWear && !this.#isEquipped) {
+      this.#isEquipped = true;
+      return true;
+    }
+    return false;
+  }
+  undress() {
+    if (this.#canWear && this.#isEquipped) {
+      this.#isEquipped = false;
+      return true;
+    }
+    return false;
+  }
+}
+
+export class Consumable extends GameObject {
+  #canConsume;
+  constructor(name, uniqueKey, aliases, description) {
+    super(name, uniqueKey, aliases, description);
+    this.#canConsume = false;
+  }
+
+  get canConsume() {
+    return this.#canConsume;
+  }
+
+  set canConsume(consumable) {
+    this.#canConsume = consumable;
+  }
+
+  consume() {
+    if (this.#canConsume) {
+      return true;
+    }
+    return false;
+  }
+}
+
+export class TriggerObject extends GameObject {
+  #state;
+  constructor(name, uniqueKey, aliases, description) {
+    super(name, uniqueKey, aliases, description);
+    this.#state = false;
+  }
+
+  get state() {
+    return this.#state;
+  }
+
+  turnOn() {
+    this.#state = true;
+  }
+  turnOff() {
+    this.#state = false;
+  }
+}
+
+export class Combineable extends GameObject {
+  #canCombineWith;
+  #combineResult;
+  constructor(name, uniqueKey, aliases, description, canCombineWith, combineResult) {
+    super(name, uniqueKey, aliases, description);
+    this.#canCombineWith = canCombineWith;
+    this.#combineResult = combineResult;
+  }
+
+  get canCombineWith() {
+    return this.#canCombineWith;
+  }
+  get combineResult() {
+    return this.#combineResult;
+  }
+
+  combine(object) {
+    if (object.canCombineWith.toLowerCase() === this.uniqueKey.toLowerCase()) {
+      return this.#combineResult;
+    }
+    return false;
+  }
+}
+
+export class Container extends Lockable {
+  #contains;
+  constructor(name, uniqueKey, aliases, description, keyName) {
+    super(name, uniqueKey, aliases, description, keyName);
+    this.#contains = [];
+  }
+
+  get contains() {
+    if (!this.isOpen) {
+      return null;
+    }
+    return this.#contains;
+  }
+
+  addItem(item) {
+    this.#contains.push(item);
+  }
+  removeItem(itemName) {
+    this.#contains = this.#contains.filter((item) => item.uniqueKey.toLowerCase() !== itemName.toLowerCase());
+  }
+}
+
+export class Weapon extends GameObject {
+  #damage;
+  constructor(name, uniqueKey, aliases, description, damage) {
+    super(name, uniqueKey, aliases, description);
+    this.#damage = damage;
+  }
+
+  get damage() {
+    return this.#damage;
+  }
+
+  attack(target) {
+    if (target.canBeAttacked) {
+      return this.#damage;
+    }
+    return false;
+  }
+}
