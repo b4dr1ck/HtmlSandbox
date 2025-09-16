@@ -1,4 +1,15 @@
-import { Room, GameObject, Container, Player, Consumable, Equipment, Combineable,Weapon } from "./classes.js";
+import {
+  Room,
+  GameObject,
+  Container,
+  Player,
+  Consumable,
+  Equipment,
+  Combineable,
+  Weapon,
+  TriggerObject,
+  LightSource,
+} from "./classes.js";
 
 const rooms = [];
 const room1 = new Room("Dark Room", "darkroom1", ["dark room", "room"], "A dark, damp room with stone walls.");
@@ -8,6 +19,9 @@ const gold = new GameObject("Gold Coin", "gold1", ["gold", "coin", "money"], "A 
 const book = new GameObject("Book", "book1", ["book", "tome", "grimoire", "magic book"], "An old, dusty magic book.");
 const key = new GameObject("Silver Key", "key1", ["key", "silver key"], "A small silver key.");
 const weapon = new Weapon("Makeshift Weapon", "weapon1", ["sword", "blade", "weapon"], "A sharp steel sword.", 10);
+const Lever = new TriggerObject("Lever", "lever1", ["lever", "switch", "handle"], "A rusty lever on the wall.");
+const torch = new LightSource("Torch", "torch1", ["torch", "light"], "A wooden torch mounted on the wall.");
+torch.inflammable = true;
 const stick = new Combineable(
   "Wooden Stick",
   "stick1",
@@ -35,7 +49,6 @@ const eatApple = (object) => {
   console.log(`You eat the ${object.name}. There's a worm inside!`);
 };
 
-
 player.diagnose();
 
 apple.createTrigger("eat", eatApple);
@@ -51,9 +64,19 @@ chest.unlock("key1");
 chest.open();
 console.log(`Chest contains: ${chest.contains}`);
 
+console.log(room1.isInRoom("chest1"));
 
-room1.addObjects(apple, book, chest, armor, stone, stick);
+room1.addObjects(apple, book, chest, armor, stone, stick, Lever, torch);
 rooms.push(room1);
+
+console.log(room1.isInRoom("chest1"));
+
+Lever.turnOn();
+console.log(Lever.description);
+
+torch.light();
+console.log(torch.description);
+console.log(torch instanceof LightSource);
 
 console.log("combine...");
 const combined = stick.combine(stone);

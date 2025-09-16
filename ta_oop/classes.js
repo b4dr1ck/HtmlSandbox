@@ -158,6 +158,9 @@ export class Room extends BaseObject {
   removeObject(objectName) {
     this.#objects = this.#objects.filter((obj) => obj.uniqueKey.toLowerCase() !== objectName.toLowerCase());
   }
+  isInRoom(objectName) {
+    return this.#objects.some((obj) => obj.uniqueKey.toLowerCase() === objectName.toLowerCase());
+  }
 }
 
 export class GameObject extends BaseObject {
@@ -165,6 +168,8 @@ export class GameObject extends BaseObject {
   #canTake;
   #read;
   #canBeAttacked;
+  #moveable;
+  #health;  
   #condition;
   constructor(name, uniqueKey, aliases, description) {
     super(name, uniqueKey, aliases, description);
@@ -176,7 +181,9 @@ export class GameObject extends BaseObject {
     this.#canBeAttacked = false;
     this.#canTake = false;
     this.#sceneryDescription = "";
-    this.#condition = "";
+    this.#condition = "intact";
+    this.#moveable = false;
+    this.#health = 100;
   }
 
   get description() {
@@ -194,6 +201,12 @@ export class GameObject extends BaseObject {
   get condition() {
     return this.#condition;
   }
+  get health() {
+    return this.#health;
+  }
+  get moveable() {
+    return this.#moveable;
+  }
 
   set sceneryDescription(newDescription) {
     this.#sceneryDescription = newDescription;
@@ -209,6 +222,20 @@ export class GameObject extends BaseObject {
   }
   set condition(newCondition) {
     this.#condition = newCondition;
+  }
+  set moveable(isMoveable) {  
+    this.#moveable = isMoveable;
+  }
+ 
+  adjustHealth(amount) {
+    this.#health += amount;
+    if (this.#health > 100) {
+      this.#health = 100;
+    }
+    if (this.#health <= 0) {
+      this.#health = 0;
+      this.#condition = "destroyed";
+    }
   }
 }
 
@@ -312,13 +339,6 @@ export class Consumable extends GameObject {
   set canConsume(consumable) {
     this.#canConsume = consumable;
   }
-
-  consume() {
-    if (this.#canConsume) {
-      return true;
-    }
-    return false;
-  }
 }
 
 export class TriggerObject extends GameObject {
@@ -331,12 +351,54 @@ export class TriggerObject extends GameObject {
   get state() {
     return this.#state;
   }
+  get description() {
+    return super.description + (this.#state ? " It is currently on." : " It is currently off.");
+  }
 
   turnOn() {
     this.#state = true;
   }
   turnOff() {
     this.#state = false;
+  }
+}
+
+export class LightSource extends TriggerObject {
+  #inflammable;
+  constructor(name, uniqueKey, aliases, description) {
+    super(name, uniqueKey, aliases, description);
+    this.#inflammable = false;
+  }
+
+  get inflammable() {
+    return this.#inflammable;
+  }
+  get description() {
+    if (!this.#inflammable) {
+      return super.description;
+    }
+    return super.description
+      .replace(" It is currently on.", " It is currently lit.")
+      .replace(" It is currently off.", " It is currently unlit.");
+  }
+
+  set inflammable(canBurn) {
+    this.#inflammable = canBurn;
+  }
+
+  light() {
+    if (this.#inflammable) {
+      this.turnOn();
+      return true;
+    }
+    return false;
+  }
+  extinguish() {
+    if (this.#inflammable) {
+      this.turnOff();
+      return true;
+    }
+    return false;
   }
 }
 
@@ -384,6 +446,9 @@ export class Container extends Lockable {
   removeItem(itemName) {
     this.#contains = this.#contains.filter((item) => item.uniqueKey.toLowerCase() !== itemName.toLowerCase());
   }
+  isInContainer(itemName) {
+    return this.#contains.some((item) => item.uniqueKey.toLowerCase() === itemName.toLowerCase());
+  }
 }
 
 export class Weapon extends GameObject {
@@ -399,6 +464,7 @@ export class Weapon extends GameObject {
 
   attack(target) {
     if (target.canBeAttacked) {
+      target.adjustHealth(-this.#damage);
       return this.#damage;
     }
     return false;
