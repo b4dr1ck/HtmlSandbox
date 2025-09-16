@@ -29,8 +29,5 @@ rooms[room1.uniqueKey] = room1;
 rooms[room2.uniqueKey] = room2;
 player.addToInventory(gold,stone);
 player.removeFromInventory(stone.uniqueKey);
-console.log(player.isInInventory(stone.uniqueKey));
-console.log(player);
-console.log(rooms)
 
 export { rooms, player };

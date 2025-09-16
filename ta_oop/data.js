@@ -1,3 +1,5 @@
+import { player } from "./init.js";
+
 const verbs = {
   pull: ["pull", "pull on", "drag on", "drag"],
   push: ["push", "press", "press on", "push on", "move", "shift"],
@@ -43,5 +45,36 @@ const directions = {
 };
 const prepositions = ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"];
 
+const getRoomAliases = (room) => {
+  return { [room.uniqueKey]: room.aliases };
+};
 
-export { verbs, directions, prepositions };
+const getObjectsAliases = (room) => {
+  const aliases = {};
+  for (const object in room.objects) {
+    aliases[object] = room.objects[object].aliases;
+  }
+  return aliases;
+};
+
+const getInventoryAliases = (player) => {
+  const aliases = {};
+  for (const item in player.inventory) {
+    aliases[item] = player.inventory[item].aliases;
+  }
+  return aliases;
+};
+
+const getContainerAliases = (room) => {
+  const aliases = {};
+  for (const object in room.objects) {
+    if (room.objects[object].constructor.name === "Container") {
+      for (const item in room.objects[object].contains) {
+        aliases[item] = room.objects[object].contains[item].aliases;
+      }
+    }
+  }
+  return aliases;
+};
+
+export { verbs, directions, prepositions, getRoomAliases, getObjectsAliases, getInventoryAliases, getContainerAliases };
