@@ -6,7 +6,7 @@ export class Player {
 
   constructor(startingRoom) {
     this.#currentRoom = startingRoom;
-    this.#inventory = [];
+    this.#inventory = {};
     this.#condition = "healthy";
     this.#health = 100;
   }
@@ -31,14 +31,18 @@ export class Player {
     this.#currentRoom = newRoom;
   }
 
-  addToInventory(...item) {
-    this.#inventory.push(...item);
+  addToInventory(...items) {
+    items.forEach((item) => {
+      this.#inventory[item.uniqueKey] = item;
+    });
   }
   removeFromInventory(itemName) {
-    this.#inventory = this.#inventory.filter((item) => item.uniqueKey.toLowerCase() !== itemName.toLowerCase());
+    this.#inventory = Object.fromEntries(
+      Object.entries(this.#inventory).filter(([key]) => key.toLowerCase() !== itemName.toLowerCase())
+    );
   }
   isInInventory(itemName) {
-    return this.#inventory.some((item) => item.uniqueKey.toLowerCase() === itemName.toLowerCase());
+    return this.#inventory.hasOwnProperty(itemName);
   }
   diagnose() {
     console.log(`You are ${this.#condition} with ${this.#health} health.`);
@@ -138,7 +142,7 @@ export class Room extends BaseObject {
   constructor(name, uniqueKey, aliases, description) {
     super(name, uniqueKey, aliases, description);
     this.#exits = {};
-    this.#objects = [];
+    this.#objects = {};
   }
 
   get exits() {
@@ -152,14 +156,18 @@ export class Room extends BaseObject {
     this.#exits = newExits;
   }
 
-  addObjects(...object) {
-    this.#objects.push(...object);
+  addObjects(...objects) {
+    objects.forEach((obj) => {
+      this.#objects[obj.uniqueKey] = obj;
+    });
   }
   removeObject(objectName) {
-    this.#objects = this.#objects.filter((obj) => obj.uniqueKey.toLowerCase() !== objectName.toLowerCase());
+    this.#objects = Object.fromEntries(
+      Object.entries(this.#objects).filter(([key]) => key.toLowerCase() !== objectName.toLowerCase())
+    );
   }
   isInRoom(objectName) {
-    return this.#objects.some((obj) => obj.uniqueKey.toLowerCase() === objectName.toLowerCase());
+    return this.#objects.hasOwnProperty(objectName);
   }
 }
 
@@ -169,14 +177,14 @@ export class GameObject extends BaseObject {
   #read;
   #canBeAttacked;
   #moveable;
-  #health;  
+  #health;
   #condition;
   constructor(name, uniqueKey, aliases, description) {
     super(name, uniqueKey, aliases, description);
 
     const article = ["a", "e", "i", "o", "u"].includes(name[0].toLowerCase()) ? "an" : "a";
     this.smell = `It smells like ${article} ${name.toLowerCase()}`;
-    this.noise = `It sounds like  ${article} ${name.toLowerCase()}`;
+    this.noise = `It sounds like ${article} ${name.toLowerCase()}`;
     this.read = "";
     this.#canBeAttacked = false;
     this.#canTake = false;
@@ -223,10 +231,10 @@ export class GameObject extends BaseObject {
   set condition(newCondition) {
     this.#condition = newCondition;
   }
-  set moveable(isMoveable) {  
+  set moveable(isMoveable) {
     this.#moveable = isMoveable;
   }
- 
+
   adjustHealth(amount) {
     this.#health += amount;
     if (this.#health > 100) {
@@ -430,7 +438,7 @@ export class Container extends Lockable {
   #contains;
   constructor(name, uniqueKey, aliases, description, keyName) {
     super(name, uniqueKey, aliases, description, keyName);
-    this.#contains = [];
+    this.#contains = {};
   }
 
   get contains() {
@@ -440,14 +448,18 @@ export class Container extends Lockable {
     return this.#contains;
   }
 
-  addItem(item) {
-    this.#contains.push(item);
+  addItems(...items) {
+    items.forEach((item) => {
+      this.#contains[item.uniqueKey] = item;
+    });
   }
   removeItem(itemName) {
-    this.#contains = this.#contains.filter((item) => item.uniqueKey.toLowerCase() !== itemName.toLowerCase());
+    this.#contains = Object.fromEntries(
+      Object.entries(this.#contains).filter(([key]) => key.toLowerCase() !== itemName.toLowerCase())
+    );
   }
   isInContainer(itemName) {
-    return this.#contains.some((item) => item.uniqueKey.toLowerCase() === itemName.toLowerCase());
+    return this.#contains.hasOwnProperty(itemName);
   }
 }
 
