@@ -44,6 +44,15 @@ const directions = {
   out: ["out", "outside", "exit"],
 };
 const prepositions = ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"];
+const cmdNotFoundMemes = [
+  "What do you want to do?",
+  "I don't understand that command.",
+  "Please try something else.",
+  "I don't know what you mean.",
+  "Can you rephrase that?",
+  "That doesn't make sense to me.",
+  "I'm not sure how to respond to that.",
+];
 
 const getRoomAliases = (room) => {
   return { [room.uniqueKey]: room.aliases };
@@ -77,4 +86,4 @@ const getContainerAliases = (room) => {
   return aliases;
 };
 
-export { verbs, directions, prepositions, getRoomAliases, getObjectsAliases, getInventoryAliases, getContainerAliases };
+export { verbs, directions, prepositions, cmdNotFoundMemes, getRoomAliases, getObjectsAliases, getInventoryAliases, getContainerAliases };

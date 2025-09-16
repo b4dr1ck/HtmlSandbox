@@ -16,6 +16,7 @@ const room1 = new Room("Dark Room", "darkroom1", ["dark room", "room"], "A dark,
 const room2 = new Room("Hallway", "hallway1", ["hallway", "corridor"], "A hallway with flickering lights.");
 const player = new Player(room1);
 const apple = new Consumable("Apple", "apple1", ["apple", "fruit"], "A shiny red apple.");
+apple.sceneryDescription = "A shiny red apple sits here, looking delicious.";
 const stone = new GameObject("Stone", "stone1", ["stone", "rock"], "A small, smooth stone.");
 const gold = new GameObject("Gold Coin", "gold1", ["gold", "coin"], "A shiny gold coin.");
 const chest = new Container("Chest", "chest1", ["chest", "box"], "An old wooden chest.");

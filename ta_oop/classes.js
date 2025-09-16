@@ -194,8 +194,8 @@ export class GameObject extends BaseObject {
     this.#health = 100;
   }
 
-  get description() {
-    return this.#sceneryDescription ? this.#sceneryDescription : super.description;
+  get sceneryDescription() {
+    return this.#sceneryDescription;
   }
   get canTake() {
     return this.#canTake;

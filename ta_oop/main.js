@@ -3,6 +3,7 @@ import {
   verbs,
   directions,
   prepositions,
+  cmdNotFoundMemes,
   getRoomAliases,
   getObjectsAliases,
   getInventoryAliases,
@@ -51,14 +52,52 @@ const parseInput = (input) => {
   return input;
 };
 
+const getRoomDescription = (room) => {
+  let descText = "";
+
+  descText += `<strong>${room.name}</strong><br><br>`;
+  descText += `${room.description}<br>`;
+
+  for (const object in room.objects) {
+    if (room.objects[object].sceneryDescription && !room.objects[object].hidden) {
+      descText += `${room.objects[object].sceneryDescription}<br>`;
+    }
+  }
+
+  return descText;
+};
+
 const commands = {
   look: (verb, nouns, preps) => {
-    console.log(`You look at the ${nouns}`);
+    outputText.push(`You look at the <strong>${nouns}</strong>`);
   },
 };
 
-const parsedInput = parseInput("look at the chest");
 
-if (parsedInput.verb) {
-  commands[parsedInput.verb](parsedInput.verb, parsedInput.nouns, parsedInput.preps);
-}
+const outputText = [];
+const inputElement = document.querySelector("#input");
+const outputElement = document.querySelector("#output");
+const roomDesc = document.querySelector("#roomDesc");
+roomDesc.innerHTML = getRoomDescription(player.currentRoom);
+
+inputElement.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    const inputValue = inputElement.value;
+    if (inputValue.trim() === "") return;
+
+    const parsedInput = parseInput(inputValue);
+
+    inputElement.value = "";
+
+    try {
+      commands[parsedInput.verb](parsedInput.verb, parsedInput.nouns, parsedInput.preps);
+    } catch (error) {
+      const randomIndex = Math.floor(Math.random() * cmdNotFoundMemes.length);
+      outputText.push(cmdNotFoundMemes[randomIndex]);
+    }
+
+    roomDesc.innerHTML = getRoomDescription(player.currentRoom);
+    outputElement.innerHTML = outputText.join("<br>");
+    outputElement.scrollTop = outputElement.scrollHeight;
+  }
+});
