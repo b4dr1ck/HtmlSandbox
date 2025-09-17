@@ -53,6 +53,13 @@ const cmdNotFoundMemes = [
   "That doesn't make sense to me.",
   "I'm not sure how to respond to that.",
 ];
+const cantSeeObjectMemes = [
+  "You don't see that here.",
+  "There's nothing like that here.",
+  "You can't find that here.",
+  "That object isn't here.",
+  "You don't notice that here.",
+];
 
 const getRoomAliases = (room) => {
   return { [room.uniqueKey]: room.aliases };
@@ -102,6 +109,9 @@ const getRoomDescription = (room) => {
 };
 
 const findObject = (key) => {
+  if (!key) {
+    return null;
+  }
   if (rooms[key]) {
     return rooms[key];
   }
@@ -126,6 +136,7 @@ export {
   directions,
   prepositions,
   cmdNotFoundMemes,
+  cantSeeObjectMemes,
   getRoomAliases,
   getObjectsAliases,
   getInventoryAliases,

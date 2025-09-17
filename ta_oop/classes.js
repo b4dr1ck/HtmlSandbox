@@ -43,7 +43,10 @@ export class Player {
     );
   }
   isInInventory(itemName) {
-    return this.#inventory.hasOwnProperty(itemName);
+    if (!this.#inventory.hasOwnProperty(itemName)) {
+      return false;
+    }
+    return this.#inventory[itemName];
   }
   diagnose() {
     console.log(`You are ${this.#condition} with ${this.#health} health.`);
@@ -133,8 +136,7 @@ class BaseObject {
   }
   trigger(command, ...args) {
     if (this.#trigger[command]) {
-      this.#trigger[command](...args);
-      return true;
+      return this.#trigger[command](...args);
     }
     return false;
   }

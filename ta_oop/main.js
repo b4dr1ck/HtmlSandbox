@@ -4,6 +4,7 @@ import {
   directions,
   prepositions,
   cmdNotFoundMemes,
+  cantSeeObjectMemes,
   getRoomAliases,
   getObjectsAliases,
   getInventoryAliases,
@@ -65,18 +66,20 @@ const commands = {
     // get room-description if no object specified
     if (!object) {
       const room = rooms[player.currentRoom.uniqueKey].description;
+      outputText.push("You can't see that, so you look around instead and see:");
       outputText.push(room);
       return;
     }
 
     if (object.hidden) {
-      outputText.push("You don't see that here.");
+      const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
+      outputText.push(cantSeeObjectMemes[randomIndex]);
       return;
     }
 
     // trigger if object has a trigger function
     if (object.hasTriggers) {
-      object.trigger(verb, object);
+      outputText.push(object.trigger(verb, object));
       return;
     }
 
@@ -133,17 +136,20 @@ const commands = {
   close: (verb, nouns, _preps) => {
     commands.open(verb, nouns, _preps);
   },
-  open: (verb, nouns, _preps) => {
+  open: (verb, nouns, preps) => {
     const id = nouns[0];
+    const prep = preps[0];
+
     const object = findObject(id);
 
-    if (!object) {
-      outputText.push("You don't see that here.");
+    if (!object || object.hidden) {
+      const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
+      outputText.push(cantSeeObjectMemes[randomIndex]);
       return;
     }
 
-    if (object.hidden) {
-      outputText.push("You don't see that here.");
+    if (object.hasTriggers) {
+      outputText.push(object.trigger(verb, object));
       return;
     }
 
@@ -162,9 +168,19 @@ const commands = {
       return;
     }
 
-    if (object.constructor.name === "Lockable" && object.isLocked) {
-      outputText.push(`The <strong>${object.name}</strong> is locked.`);
-      return;
+    // open locked object with a key
+    if ((object.constructor.name === "Container" || object.constructor.name === "Lockable") && object.isLocked) {
+      const key = player.isInInventory(object.keyName);
+      if (!key) {
+        outputText.push(`You don't have the key for the <strong>${object.name}</strong>.`);
+      }
+      if (prep === "with") {
+        object.unlock(object.keyName);
+        outputText.push(`You unlock the <strong>${object.name}</strong> with the <strong>${key.name}</strong>.`);
+      } else {
+        outputText.push(`The <strong>${object.name}</strong> is locked.`);
+        return;
+      }
     }
 
     if (verb === "close") {
@@ -173,6 +189,69 @@ const commands = {
       object.open();
     }
     outputText.push(`You ${verb} the <strong>${object.name}</strong>.`);
+  },
+  take: (_verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!object || object.hidden) {
+      const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
+      outputText.push(cantSeeObjectMemes[randomIndex]);
+      return;
+    }
+
+    if (object.hasTriggers) {
+      outputText.push(object.trigger("take", object));
+      return;
+    }
+
+    if (!object.canTake) {
+      outputText.push(`You can't take the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (player.isInInventory(object.uniqueKey)) {
+      outputText.push(`You already have the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    player.addToInventory(object);
+    rooms[player.currentRoom.uniqueKey].removeObject(object.uniqueKey);
+    outputText.push(`You take the <strong>${object.name}</strong>.`);
+  },
+  drop: (_verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!object || object.hidden) {
+      const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
+      outputText.push(cantSeeObjectMemes[randomIndex]);
+      return;
+    }
+
+    if (object.hasTriggers) {
+      outputText.push(object.trigger("drop", object));
+      return;
+    }
+
+    if (!player.isInInventory(object.uniqueKey)) {
+      outputText.push(`You don't have the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    player.removeFromInventory(object.uniqueKey);
+    rooms[player.currentRoom.uniqueKey].addObjects(object);
+    outputText.push(`You drop the <strong>${object.name}</strong>.`);
+  },
+  inventory() {
+    if (Object.keys(player.inventory).length === 0) {
+      outputText.push("Your don't carry anything with you.");
+      return;
+    }
+
+    for (const item in player.inventory) {
+      outputText.push(`* ${player.inventory[item].name}`);
+    }
   },
 };
 
@@ -194,11 +273,14 @@ inputElement.addEventListener("keydown", (event) => {
     try {
       commands[parsedInput.verb](parsedInput.verb, parsedInput.nouns, parsedInput.preps);
     } catch (error) {
+      console.error(error);
       const randomIndex = Math.floor(Math.random() * cmdNotFoundMemes.length);
       outputText.push(cmdNotFoundMemes[randomIndex]);
     }
 
     roomDesc.innerHTML = getRoomDescription(player.currentRoom);
     outputElement.innerHTML = outputText.join("<br>");
+
+    console.log(rooms, player);
   }
 });

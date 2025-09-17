@@ -23,16 +23,23 @@ const apple = new Consumable("Apple", "apple1", ["apple", "fruit"], "A shiny red
 apple.sceneryDescription = "A shiny red apple sits here, looking delicious.";
 apple.canTake = true;
 const stone = new GameObject("Stone", "stone1", ["stone", "rock"], "A small, smooth stone.");
+stone.sceneryDescription = "A small, smooth stone lies on the ground.";
+stone.canTake = true;
 const gold = new GameObject("Gold Coin", "gold1", ["gold", "coin"], "A shiny gold coin.");
+gold.sceneryDescription = "A shiny gold coin glints in the light.";
+gold.canTake = true;
 const chest = new Container("Chest", "chest1", ["chest", "box"], "An old wooden chest.", ["in", "inside"]);
+chest.isLocked = true;
+chest.keyName = "key1";
 const amulet = new Equipment("Amulet", "amulet1", ["amulet", "necklace"], "A mysterious amulet with a glowing gem.");
 const diamond = new GameObject("Diamond", "diamond1", ["diamond", "gem"], "A sparkling diamond.");
+const key = new GameObject("Key", "key1", ["key", "small key", "brass key"], "A small brass key.");
+key.canTake = true;
+key.sceneryDescription = "A small brass key lies here.";
 
-chest.addItems(amulet, diamond);
-room1.addObjects(apple, stone, chest, door);
-room2.addObjects(door);
+chest.addItems(amulet, diamond, gold);
+room1.addObjects(apple, chest, door, stone, key);
 rooms[room1.uniqueKey] = room1;
 rooms[room2.uniqueKey] = room2;
-player.addToInventory(gold, stone);
 
 export { rooms, player };
