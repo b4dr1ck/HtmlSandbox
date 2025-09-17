@@ -14,8 +14,18 @@ import {
 
 const rooms = [];
 const door = new Lockable("Door", "door1", ["door", "wooden door"], "A sturdy wooden door.");
-const room1 = new Room("Dark Room", "darkroom1", ["dark room", "room"], "A dark, damp room with stone walls.");
-const room2 = new Room("Hallway", "hallway1", ["hallway", "corridor"], "A hallway with flickering lights.");
+const room1 = new Room(
+  "Dark Room",
+  "darkroom1",
+  ["dark room", "room"],
+  "You are in a dark, damp room with stone walls."
+);
+const room2 = new Room(
+  "Hallway",
+  "hallway1",
+  ["hallway", "corridor"],
+  "You stand in a hallway with flickering lights."
+);
 room1.exits = { north: { destination: "hallway1", obstacle: door } };
 room2.exits = { south: { destination: "darkroom1", obstacle: door } };
 const player = new Player(room1);

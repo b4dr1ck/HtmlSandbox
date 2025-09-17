@@ -119,6 +119,12 @@ const commands = {
 
     const destination = player.currentRoom.exits[direction].destination;
     const obstacle = player.currentRoom.exits[direction].obstacle;
+    const trigger = player.currentRoom.exits[direction].trigger;
+
+    if (trigger) {
+      outputText.push(trigger());
+      return;
+    }
 
     if (obstacle) {
       if (obstacle.constructor.name === "Lockable" && !obstacle.isOpen) {
@@ -249,6 +255,7 @@ const commands = {
       return;
     }
 
+    outputText.push("You are carrying:");
     for (const item in player.inventory) {
       outputText.push(`* ${player.inventory[item].name}`);
     }

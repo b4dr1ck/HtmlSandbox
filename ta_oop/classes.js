@@ -78,6 +78,7 @@ class BaseObject {
   #noise;
   #hidden;
   #trigger;
+  // TODO: pre-trigger, post-trigger?!
 
   constructor(name, uniqueKey, aliases, description) {
     this.#name = name;
