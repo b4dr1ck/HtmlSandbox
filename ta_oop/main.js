@@ -8,6 +8,8 @@ import {
   getObjectsAliases,
   getInventoryAliases,
   getContainerAliases,
+  getRoomDescription,
+  findObject,
 } from "./data.js";
 
 const parseInput = (input) => {
@@ -24,6 +26,7 @@ const parseInput = (input) => {
     ...containerAliases,
   };
 
+  outputText.push(`<span style="color: gray;">&gt; ${input}</span>`);
   input = input
     .toLowerCase()
     .trim()
@@ -48,31 +51,48 @@ const parseInput = (input) => {
   const nouns = input.filter((word) => Object.keys(allAliases).includes(word) && !prepositions.includes(word));
 
   input = { verb, nouns, preps };
+  console.log(input);
 
   return input;
 };
 
-const getRoomDescription = (room) => {
-  let descText = "";
-
-  descText += `<strong>${room.name}</strong><br><br>`;
-  descText += `${room.description}<br>`;
-
-  for (const object in room.objects) {
-    if (room.objects[object].sceneryDescription && !room.objects[object].hidden) {
-      descText += `${room.objects[object].sceneryDescription}<br>`;
-    }
-  }
-
-  return descText;
-};
-
 const commands = {
-  look: (verb, nouns, preps) => {
-    outputText.push(`You look at the <strong>${nouns}</strong>`);
+  look: (_verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!object) {
+      const room = rooms[player.currentRoom.uniqueKey].description;
+      outputText.push(room);
+      return;
+    }
+
+    if (object.hidden) {
+      outputText.push("You don't see that here.");
+      return;
+    }
+
+    let desc = "";
+
+    // prefix if object is not in the room
+    if (object.whereAmI.place !== "room") {
+      desc += `(${object.whereAmI.place}) `;
+    }
+    desc += object.description;
+
+    // list contents if container
+    if (object.constructor.name === "Container") {
+      const contents = object.contains;
+      if (contents) {
+        desc += `<br>${object.containText}`;
+        for (const item in contents) {
+          desc += `<br>* ${contents[item].name}`;
+        }
+      }
+    }
+    outputText.push(desc);
   },
 };
-
 
 const outputText = [];
 const inputElement = document.querySelector("#input");
@@ -98,6 +118,5 @@ inputElement.addEventListener("keydown", (event) => {
 
     roomDesc.innerHTML = getRoomDescription(player.currentRoom);
     outputElement.innerHTML = outputText.join("<br>");
-    outputElement.scrollTop = outputElement.scrollHeight;
   }
 });

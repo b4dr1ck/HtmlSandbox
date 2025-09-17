@@ -1,4 +1,4 @@
-import { player } from "./init.js";
+import { player, rooms } from "./init.js";
 
 const verbs = {
   pull: ["pull", "pull on", "drag on", "drag"],
@@ -86,4 +86,50 @@ const getContainerAliases = (room) => {
   return aliases;
 };
 
-export { verbs, directions, prepositions, cmdNotFoundMemes, getRoomAliases, getObjectsAliases, getInventoryAliases, getContainerAliases };
+const getRoomDescription = (room) => {
+  let descText = "";
+
+  descText += `<strong>${room.name}</strong><br><br>`;
+  descText += `${room.description}<br>`;
+
+  for (const object in room.objects) {
+    if (room.objects[object].sceneryDescription && !room.objects[object].hidden) {
+      descText += `${room.objects[object].sceneryDescription}<br>`;
+    }
+  }
+
+  return descText;
+};
+
+const findObject = (key) => {
+  if (rooms[key]) {
+    return rooms[key];
+  }
+  if (player.inventory[key]) {
+    return player.inventory[key];
+  }
+  if (player.currentRoom.objects[key]) {
+    return player.currentRoom.objects[key];
+  }
+  for (const object in player.currentRoom.objects) {
+    if (player.currentRoom.objects[object].constructor.name === "Container") {
+      if (player.currentRoom.objects[object].contains[key]) {
+        return player.currentRoom.objects[object].contains[key];
+      }
+    }
+  }
+  return null;
+};
+
+export {
+  verbs,
+  directions,
+  prepositions,
+  cmdNotFoundMemes,
+  getRoomAliases,
+  getObjectsAliases,
+  getInventoryAliases,
+  getContainerAliases,
+  getRoomDescription,
+  findObject,
+};

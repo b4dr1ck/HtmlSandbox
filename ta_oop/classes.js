@@ -33,6 +33,7 @@ export class Player {
 
   addToInventory(...items) {
     items.forEach((item) => {
+      item.whereAmI = { place: "inventory", preposition: "in" };
       this.#inventory[item.uniqueKey] = item;
     });
   }
@@ -74,6 +75,7 @@ class BaseObject {
   #noise;
   #hidden;
   #trigger;
+  #whereAmI;
 
   constructor(name, uniqueKey, aliases, description) {
     this.#name = name;
@@ -84,6 +86,7 @@ class BaseObject {
     this.#noise = "You hear nothing special.";
     this.#hidden = false;
     this.#trigger = {};
+    this.#whereAmI = { place: "room", preposition: "in" };
   }
 
   get name() {
@@ -107,6 +110,9 @@ class BaseObject {
   get aliases() {
     return this.#aliases;
   }
+  get whereAmI() {
+    return this.#whereAmI;
+  }
 
   set name(newName) {
     this.#name = newName;
@@ -122,6 +128,9 @@ class BaseObject {
   }
   set hidden(isHidden) {
     this.#hidden = isHidden;
+  }
+  set whereAmI(location) {
+    this.#whereAmI = location;
   }
 
   createTrigger(onCommand, script) {
@@ -158,6 +167,7 @@ export class Room extends BaseObject {
 
   addObjects(...objects) {
     objects.forEach((obj) => {
+      obj.whereAmI = { place: "room", preposition: "in" };
       this.#objects[obj.uniqueKey] = obj;
     });
   }
@@ -436,9 +446,13 @@ export class Combineable extends GameObject {
 
 export class Container extends Lockable {
   #contains;
-  constructor(name, uniqueKey, aliases, description, keyName) {
-    super(name, uniqueKey, aliases, description, keyName);
+  #containText;
+  #validPrepositions;
+  constructor(name, uniqueKey, aliases, description,validPrepositions) {
+    super(name, uniqueKey, aliases, description);
     this.#contains = {};
+    this.#containText = "It contain's:";
+    this.#validPrepositions = validPrepositions;
   }
 
   get contains() {
@@ -447,9 +461,20 @@ export class Container extends Lockable {
     }
     return this.#contains;
   }
+  get containText() {
+    return this.#containText;
+  }
+  get validPrepositions() {
+    return this.#validPrepositions;
+  }
+
+  set containText(newText) {
+    this.#containText = newText;
+  }
 
   addItems(...items) {
     items.forEach((item) => {
+      item.whereAmI = { place: super.name, preposition: this.#validPrepositions[0] };
       this.#contains[item.uniqueKey] = item;
     });
   }
