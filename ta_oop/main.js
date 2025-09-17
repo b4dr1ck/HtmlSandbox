@@ -102,10 +102,15 @@ const commands = {
   },
   go: (_verb, nouns, _preps) => {
     const direction = nouns[0];
-    const directions = rooms[player.currentRoom.uniqueKey].exits;
+    const directions = Object.keys(rooms[player.currentRoom.uniqueKey].exits);
 
-    if (!direction || !Object.keys(directions).includes(direction)) {
+    if (!direction) {
       outputText.push("Go where?");
+      return;
+    }
+
+    if (!directions.includes(direction)) {
+      outputText.push(`You can't go <strong>${direction}</strong> from here.`);
       return;
     }
 
