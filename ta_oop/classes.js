@@ -75,7 +75,6 @@ class BaseObject {
   #noise;
   #hidden;
   #trigger;
-  #whereAmI;
 
   constructor(name, uniqueKey, aliases, description) {
     this.#name = name;
@@ -86,7 +85,6 @@ class BaseObject {
     this.#noise = "You hear nothing special.";
     this.#hidden = false;
     this.#trigger = {};
-    this.#whereAmI = { place: "room", preposition: "in" };
   }
 
   get name() {
@@ -110,8 +108,8 @@ class BaseObject {
   get aliases() {
     return this.#aliases;
   }
-  get whereAmI() {
-    return this.#whereAmI;
+  get hasTriggers() {
+    return Object.keys(this.#trigger).length > 0;
   }
 
   set name(newName) {
@@ -128,9 +126,6 @@ class BaseObject {
   }
   set hidden(isHidden) {
     this.#hidden = isHidden;
-  }
-  set whereAmI(location) {
-    this.#whereAmI = location;
   }
 
   createTrigger(onCommand, script) {
@@ -182,6 +177,7 @@ export class Room extends BaseObject {
 }
 
 export class GameObject extends BaseObject {
+  #whereAmI;
   #sceneryDescription;
   #canTake;
   #read;
@@ -202,6 +198,7 @@ export class GameObject extends BaseObject {
     this.#condition = "intact";
     this.#moveable = false;
     this.#health = 100;
+    this.#whereAmI = { place: "room", preposition: "in" };
   }
 
   get sceneryDescription() {
@@ -225,6 +222,9 @@ export class GameObject extends BaseObject {
   get moveable() {
     return this.#moveable;
   }
+  get whereAmI() {
+    return this.#whereAmI;
+  }
 
   set sceneryDescription(newDescription) {
     this.#sceneryDescription = newDescription;
@@ -243,6 +243,9 @@ export class GameObject extends BaseObject {
   }
   set moveable(isMoveable) {
     this.#moveable = isMoveable;
+  }
+  set whereAmI(location) {
+    this.#whereAmI = location;
   }
 
   adjustHealth(amount) {
@@ -268,6 +271,17 @@ export class Lockable extends GameObject {
     this.#keyName = "";
   }
 
+  get description() {
+    let descText = super.description;
+    if (this.#isLocked) {
+      descText += " It is locked.";
+    } else if (this.#isOpen) {
+      descText += " It is open.";
+    } else {
+      descText += " It is closed.";
+    }
+    return descText;
+  }
   get isLocked() {
     return this.#isLocked;
   }
@@ -288,6 +302,13 @@ export class Lockable extends GameObject {
     this.#keyName = keyName;
   }
 
+  close() {
+    if (this.#isOpen) {
+      this.#isOpen = false;
+      return true;
+    }
+    return false;
+  }
   open() {
     if (!this.#isLocked) {
       this.#isOpen = true;
@@ -448,7 +469,7 @@ export class Container extends Lockable {
   #contains;
   #containText;
   #validPrepositions;
-  constructor(name, uniqueKey, aliases, description,validPrepositions) {
+  constructor(name, uniqueKey, aliases, description, validPrepositions) {
     super(name, uniqueKey, aliases, description);
     this.#contains = {};
     this.#containText = "It contain's:";

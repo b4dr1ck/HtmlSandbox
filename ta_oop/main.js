@@ -20,6 +20,7 @@ const parseInput = (input) => {
 
   const allAliases = {
     ...verbs,
+    ...directions,
     ...roomAliases,
     ...objectsAliases,
     ...inventoryAliases,
@@ -57,10 +58,11 @@ const parseInput = (input) => {
 };
 
 const commands = {
-  look: (_verb, nouns, _preps) => {
+  look: (verb, nouns, _preps) => {
     const id = nouns[0];
     const object = findObject(id);
 
+    // get room-description if no object specified
     if (!object) {
       const room = rooms[player.currentRoom.uniqueKey].description;
       outputText.push(room);
@@ -69,6 +71,12 @@ const commands = {
 
     if (object.hidden) {
       outputText.push("You don't see that here.");
+      return;
+    }
+
+    // trigger if object has a trigger function
+    if (object.hasTriggers) {
+      object.trigger(verb, object);
       return;
     }
 
@@ -91,6 +99,75 @@ const commands = {
       }
     }
     outputText.push(desc);
+  },
+  go: (_verb, nouns, _preps) => {
+    const direction = nouns[0];
+    const directions = rooms[player.currentRoom.uniqueKey].exits;
+
+    if (!direction || !Object.keys(directions).includes(direction)) {
+      outputText.push("Go where?");
+      return;
+    }
+
+    const destination = player.currentRoom.exits[direction].destination;
+    const obstacle = player.currentRoom.exits[direction].obstacle;
+
+    if (obstacle) {
+      if (obstacle.constructor.name === "Lockable" && !obstacle.isOpen) {
+        outputText.push(`The way is blocked by the <strong>${obstacle.name}</strong>`);
+        return;
+      }
+      outputText.push(`You pass through the <strong>${obstacle.name}</strong> in the <strong>${direction}</strong>`);
+    } else {
+      outputText.push(`You go <strong>${direction}</strong>.`);
+    }
+
+    player.currentRoom = rooms[destination];
+    outputText.push(`You have arrived the <strong>${player.currentRoom.name}</strong>.`);
+  },
+  close: (verb, nouns, _preps) => {
+    commands.open(verb, nouns, _preps);
+  },
+  open: (verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!object) {
+      outputText.push("You don't see that here.");
+      return;
+    }
+
+    if (object.hidden) {
+      outputText.push("You don't see that here.");
+      return;
+    }
+
+    if (object.constructor.name !== "Container" && object.constructor.name !== "Lockable") {
+      outputText.push(`You can't ${verb} the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (object.isOpen && verb === "open") {
+      outputText.push(`The <strong>${object.name}</strong> is already open.`);
+      return;
+    }
+
+    if (!object.isOpen && verb === "close") {
+      outputText.push(`The <strong>${object.name}</strong> is already closed.`);
+      return;
+    }
+
+    if (object.constructor.name === "Lockable" && object.isLocked) {
+      outputText.push(`The <strong>${object.name}</strong> is locked.`);
+      return;
+    }
+
+    if (verb === "close") {
+      object.close();
+    } else {
+      object.open();
+    }
+    outputText.push(`You ${verb} the <strong>${object.name}</strong>.`);
   },
 };
 
