@@ -44,7 +44,7 @@ const directions = {
   in: ["in", "inside", "into"],
   out: ["out", "outside", "exit"],
 };
-const prepositions = ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up"];
+const prepositions = ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up", "and"];
 const cmdNotFoundMemes = [
   "What do you want to do?",
   "I don't understand that command.",

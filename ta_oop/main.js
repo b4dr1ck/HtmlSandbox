@@ -60,6 +60,7 @@ const parseInput = (input) => {
 
 const validateObject = (object, verb) => {
   if (!object) {
+    verb = verb.charAt(0).toUpperCase() + verb.slice(1);
     outputText.push(`${verb} what?`);
     return false;
   }
@@ -374,7 +375,7 @@ const commands = {
 
     if (!validateObject(object, verb)) return;
 
-    if (object.constructor.name !== "TriggerObject") {
+    if (object.constructor.name !== "TriggerObject" && object.constructor.name !== "LightSource") {
       outputText.push(`You can't ${verb} the <strong>${object.name}</strong>.`);
       return;
     }
