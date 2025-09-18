@@ -58,30 +58,30 @@ const parseInput = (input) => {
   return input;
 };
 
+const validateObject = (object, verb) => {
+  if (!object) {
+    outputText.push(`${verb} what?`);
+    return false;
+  }
+  if (object.hidden) {
+    const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
+    outputText.push(cantSeeObjectMemes[randomIndex]);
+    return false;
+  }
+
+  if (object.hasTriggers) {
+    outputText.push(object.trigger(verb, object));
+    return false;
+  }
+  return true;
+};
+
 const commands = {
   look: (verb, nouns, _preps) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    // get room-description if no object specified
-    if (!object) {
-      const room = rooms[player.currentRoom.uniqueKey].description;
-      outputText.push("You can't see that, so you look around instead and see:");
-      outputText.push(room);
-      return;
-    }
-
-    if (object.hidden) {
-      const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
-      outputText.push(cantSeeObjectMemes[randomIndex]);
-      return;
-    }
-
-    // trigger if object has a trigger function
-    if (object.hasTriggers) {
-      outputText.push(object.trigger(verb, object));
-      return;
-    }
+    if (!validateObject(object, verb)) return;
 
     let desc = "";
 
@@ -145,19 +145,9 @@ const commands = {
   open: (verb, nouns, preps) => {
     const id = nouns[0];
     const prep = preps[0];
-
     const object = findObject(id);
 
-    if (!object || object.hidden) {
-      const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
-      outputText.push(cantSeeObjectMemes[randomIndex]);
-      return;
-    }
-
-    if (object.hasTriggers) {
-      outputText.push(object.trigger(verb, object));
-      return;
-    }
+    if (!validateObject(object, verb)) return;
 
     if (object.constructor.name !== "Container" && object.constructor.name !== "Lockable") {
       outputText.push(`You can't ${verb} the <strong>${object.name}</strong>.`);
@@ -196,20 +186,11 @@ const commands = {
     }
     outputText.push(`You ${verb} the <strong>${object.name}</strong>.`);
   },
-  take: (_verb, nouns, _preps) => {
+  take: (verb, nouns, _preps) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!object || object.hidden) {
-      const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
-      outputText.push(cantSeeObjectMemes[randomIndex]);
-      return;
-    }
-
-    if (object.hasTriggers) {
-      outputText.push(object.trigger("take", object));
-      return;
-    }
+    if (!validateObject(object, verb)) return;
 
     if (!object.canTake) {
       outputText.push(`You can't take the <strong>${object.name}</strong>.`);
@@ -221,22 +202,153 @@ const commands = {
       return;
     }
 
+    // take from container if not in room
+    if (object.whereAmI.place !== "room") {
+      const containerId = object.whereAmI.place;
+      const container = findObject(containerId);
+      if (container && container.constructor.name === "Container") {
+        player.addToInventory(object);
+        container.removeItem(object.uniqueKey);
+        outputText.push(`You take the <strong>${object.name}</strong> from the <strong>${container.name}</strong>.`);
+        return;
+      }
+    }
     player.addToInventory(object);
     rooms[player.currentRoom.uniqueKey].removeObject(object.uniqueKey);
     outputText.push(`You take the <strong>${object.name}</strong>.`);
   },
-  drop: (_verb, nouns, _preps) => {
+  drop: (verb, nouns, _preps) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!object || object.hidden) {
-      const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
-      outputText.push(cantSeeObjectMemes[randomIndex]);
+    if (!validateObject(object, verb)) return;
+
+    if (!player.isInInventory(object.uniqueKey)) {
+      outputText.push(`You don't have the <strong>${object.name}</strong>.`);
       return;
     }
 
-    if (object.hasTriggers) {
-      outputText.push(object.trigger("drop", object));
+    if (object.isEquipped) {
+      outputText.push(`You must undress from the <strong>${object.name}</strong> before dropping it.`);
+      return;
+    }
+
+    player.removeFromInventory(object.uniqueKey);
+    rooms[player.currentRoom.uniqueKey].addObjects(object);
+    outputText.push(`You drop the <strong>${object.name}</strong>.`);
+  },
+  put: (verb, nouns, preps) => {
+    const id = nouns[0];
+    const containerId = nouns[1];
+    const prep = preps[0];
+
+    const object = findObject(id);
+    const container = findObject(containerId);
+
+    if (!validateObject(object, verb)) return;
+    if (!container) {
+      outputText.push(`Put the <strong>${object.name}</strong> where?`);
+      return;
+    }
+
+    if (container.constructor.name !== "Container") {
+      outputText.push(`You can't put things in the <strong>${container.name}</strong>.`);
+      return;
+    }
+
+    if (!player.isInInventory(object.uniqueKey)) {
+      outputText.push(`You don't have the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (!container.isOpen) {
+      outputText.push(`The <strong>${container.name}</strong> is closed.`);
+      return;
+    }
+
+    if (!container.validPrepositions.includes(prep)) {
+      outputText.push(`You can't put things ${prep} the <strong>${container.name}</strong>.`);
+      return;
+    }
+
+    player.removeFromInventory(object.uniqueKey);
+    container.addItems(object);
+    outputText.push(`You put the <strong>${object.name}</strong> ${prep} the <strong>${container.name}</strong>.`);
+  },
+  hear: (verb, nouns, _preps) => {
+    commands.smell(verb, nouns, _preps);
+  },
+  smell: (verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!validateObject(object, verb)) return;
+
+    if (!object[verb]) {
+      outputText.push(`The <strong>${object.name}</strong> doesn't have a ${verb}.`);
+      return;
+    }
+
+    outputText.push(object[verb]);
+  },
+  read: (verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!validateObject(object, verb)) return;
+
+    if (!object.read) {
+      outputText.push(`You can't read the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    outputText.push(`You read the <strong>${object.name}</strong> and it says:`);
+    outputText.push(`"${object.read}"`);
+  },
+  undress: (verb, nouns, _preps) => {
+    commands.dress(verb, nouns, _preps);
+  },
+  dress: (verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!validateObject(object, verb)) return;
+
+    if (object.constructor.name !== "Equipment" && !object.canWear) {
+      outputText.push(`You can't wear the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (!player.isInInventory(object.uniqueKey)) {
+      outputText.push(`You don't have the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (object.isEquipped && verb === "dress") {
+      outputText.push(`You already wear <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (!object.isEquipped && verb === "undress") {
+      outputText.push(`You don't wear the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    object[verb]();
+    if (verb === "dress") {
+      outputText.push(`You put on the <strong>${object.name}</strong>.`);
+    } else {
+      outputText.push(`You take off the <strong>${object.name}</strong>.`);
+    }
+  },
+  consume: (verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!validateObject(object, verb)) return;
+
+    if (object.constructor.name !== "Consumable") {
+      outputText.push(`You can't consume the <strong>${object.name}</strong>.`);
       return;
     }
 
@@ -246,20 +358,53 @@ const commands = {
     }
 
     player.removeFromInventory(object.uniqueKey);
-    rooms[player.currentRoom.uniqueKey].addObjects(object);
-    outputText.push(`You drop the <strong>${object.name}</strong>.`);
+    outputText.push(`You consume the <strong>${object.name}</strong>.`);
+  },
+  deactivate: (verb, nouns, _preps) => {
+    commands.activate(verb, nouns, _preps);
+  },
+  activate: (verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!validateObject(object, verb)) return;
+
+    if (object.constructor.name !== "TriggerObject") {
+      outputText.push(`You can't ${verb} the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (verb === "activate") {
+      if (object.state) {
+        outputText.push(`The <strong>${object.name}</strong> is already on.`);
+        return;
+      }
+      object.turnOn();
+    } else {
+      if (!object.state) {
+        outputText.push(`The <strong>${object.name}</strong> is already off.`);
+        return;
+      }
+      object.turnOff();
+    }
+    outputText.push(`You ${verb} the <strong>${object.name}</strong>.`);
   },
   inventory() {
-    if (Object.keys(player.inventory).length === 0) {
+    if (player.isInventoryEmpty()) {
       outputText.push("Your don't carry anything with you.");
       return;
     }
 
     outputText.push("You are carrying:");
     for (const item in player.inventory) {
+      if (player.inventory[item].isEquipped) {
+        outputText.push(`* (equipped) ${player.inventory[item].name}`);
+        continue;
+      }
       outputText.push(`* ${player.inventory[item].name}`);
     }
   },
+
 };
 
 const outputText = [];

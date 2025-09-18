@@ -18,7 +18,7 @@ const room1 = new Room(
   "Dark Room",
   "darkroom1",
   ["dark room", "room"],
-  "You are in a dark, damp room with stone walls."
+  "You are in a dark, damp room with stone walls. There is a door to the north and a switch on the wall."
 );
 const room2 = new Room(
   "Hallway",
@@ -29,26 +29,39 @@ const room2 = new Room(
 room1.exits = { north: { destination: "hallway1", obstacle: door } };
 room2.exits = { south: { destination: "darkroom1", obstacle: door } };
 const player = new Player(room1);
-const apple = new Consumable("Apple", "apple1", ["apple", "fruit"], "A shiny red apple.");
+const apple = new Consumable("apple", "apple1", ["apple", "fruit"], "A shiny red apple.");
 apple.sceneryDescription = "A shiny red apple sits here, looking delicious.";
 apple.canTake = true;
-const stone = new GameObject("Stone", "stone1", ["stone", "rock"], "A small, smooth stone.");
+const book = new GameObject("book", "book1", ["book", "tome"], "An old, dusty book.");
+book.sceneryDescription = "An old, dusty book lies on the ground.";
+book.canTake = true;
+book.read = "'Bla bla bla bla...'";
+book.smell = "It smells of old paper and dust.";
+const stone = new GameObject("stone", "stone1", ["stone", "rock"], "A small, smooth stone.");
 stone.sceneryDescription = "A small, smooth stone lies on the ground.";
 stone.canTake = true;
-const gold = new GameObject("Gold Coin", "gold1", ["gold", "coin"], "A shiny gold coin.");
+const gold = new GameObject("gold coin", "gold1", ["gold", "coin"], "A shiny gold coin.");
 gold.sceneryDescription = "A shiny gold coin glints in the light.";
 gold.canTake = true;
-const chest = new Container("Chest", "chest1", ["chest", "box"], "An old wooden chest.", ["in", "inside"]);
+const chest = new Container("chest", "chest1", ["chest", "box"], "An old wooden chest.", ["in", "inside"]);
 chest.isLocked = true;
 chest.keyName = "key1";
-const amulet = new Equipment("Amulet", "amulet1", ["amulet", "necklace"], "A mysterious amulet with a glowing gem.");
-const diamond = new GameObject("Diamond", "diamond1", ["diamond", "gem"], "A sparkling diamond.");
-const key = new GameObject("Key", "key1", ["key", "small key", "brass key"], "A small brass key.");
+const amulet = new Equipment("amulet", "amulet1", ["amulet", "necklace"], "A mysterious amulet with a glowing gem.");
+amulet.canTake = true;
+amulet.sceneryDescription = "A mysterious amulet with a glowing gem lies here.";
+const diamond = new GameObject("diamond", "diamond1", ["diamond", "gem"], "A sparkling diamond.");
+diamond.canTake = true;
+diamond.sceneryDescription = "A sparkling diamond rests here, catching the light.";
+const key = new GameObject("key", "key1", ["key", "small key", "brass key"], "A small brass key.");
 key.canTake = true;
 key.sceneryDescription = "A small brass key lies here.";
+const shirt = new Equipment("shirt", "shirt1", ["shirt", "tunic"], "A simple cotton shirt.");
+shirt.canTake = true;
+shirt.sceneryDescription = "A simple cotton shirt is folded neatly here.";
+const switch1 = new TriggerObject("switch", "switch1", ["switch", "lever"], "A rusty switch on the wall.");
 
 chest.addItems(amulet, diamond, gold);
-room1.addObjects(apple, chest, door, stone, key);
+room1.addObjects(apple, chest, door, stone, key, book, shirt, switch1);
 rooms[room1.uniqueKey] = room1;
 rooms[room2.uniqueKey] = room2;
 

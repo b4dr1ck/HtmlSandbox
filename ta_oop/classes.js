@@ -48,6 +48,9 @@ export class Player {
     }
     return this.#inventory[itemName];
   }
+  isInventoryEmpty() {
+    return Object.keys(this.#inventory).length === 0;
+  }
   diagnose() {
     console.log(`You are ${this.#condition} with ${this.#health} health.`);
   }
@@ -75,7 +78,7 @@ class BaseObject {
   #aliases;
   #description;
   #smell;
-  #noise;
+  #hear;
   #hidden;
   #trigger;
   // TODO: pre-trigger, post-trigger?!
@@ -86,7 +89,7 @@ class BaseObject {
     this.#aliases = aliases;
     this.#description = description;
     this.#smell = "It smells like nothing in particular.";
-    this.#noise = "You hear nothing special.";
+    this.#hear = "You hear nothing special.";
     this.#hidden = false;
     this.#trigger = {};
   }
@@ -103,8 +106,8 @@ class BaseObject {
   get smell() {
     return this.#smell;
   }
-  get noise() {
-    return this.#noise;
+  get hear() {
+    return this.#hear;
   }
   get hidden() {
     return this.#hidden;
@@ -125,8 +128,8 @@ class BaseObject {
   set smell(newSmell) {
     this.#smell = newSmell;
   }
-  set noise(newNoise) {
-    this.#noise = newNoise;
+  set hear(newNoise) {
+    this.#hear = newNoise;
   }
   set hidden(isHidden) {
     this.#hidden = isHidden;
@@ -193,8 +196,8 @@ export class GameObject extends BaseObject {
 
     const article = ["a", "e", "i", "o", "u"].includes(name[0].toLowerCase()) ? "an" : "a";
     this.smell = `It smells like ${article} ${name.toLowerCase()}`;
-    this.noise = `It sounds like ${article} ${name.toLowerCase()}`;
-    this.read = "";
+    this.hear = `It sounds like ${article} ${name.toLowerCase()}`;
+    this.#read = "";
     this.#canBeAttacked = false;
     this.#canTake = false;
     this.#sceneryDescription = "";
@@ -336,7 +339,7 @@ export class Equipment extends GameObject {
   #isEquipped;
   constructor(name, uniqueKey, aliases, description) {
     super(name, uniqueKey, aliases, description);
-    this.#canWear = false;
+    this.#canWear = true;
     this.#isEquipped = false;
   }
 
@@ -352,18 +355,12 @@ export class Equipment extends GameObject {
   }
 
   dress() {
-    if (this.#canWear && !this.#isEquipped) {
-      this.#isEquipped = true;
-      return true;
-    }
-    return false;
+    this.#isEquipped = true;
+    return true;
   }
   undress() {
-    if (this.#canWear && this.#isEquipped) {
-      this.#isEquipped = false;
-      return true;
-    }
-    return false;
+    this.#isEquipped = false;
+    return true;
   }
 }
 
@@ -498,7 +495,7 @@ export class Container extends Lockable {
 
   addItems(...items) {
     items.forEach((item) => {
-      item.whereAmI = { place: super.name, preposition: this.#validPrepositions[0] };
+      item.whereAmI = { place: super.uniqueKey, preposition: this.#validPrepositions[0] };
       this.#contains[item.uniqueKey] = item;
     });
   }
