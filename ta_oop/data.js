@@ -27,6 +27,7 @@ const verbs = {
   diagnose: ["diagnose", "condition", "health", "state"],
   dress: ["wear", "dress", "put on", "dress on", "equip", "clothe"],
   undress: ["undress", "take off", "dress off", "disrobe", "unclothe", "strip"],
+  use: ["use"],
 };
 const directions = {
   north: ["north", "n"],

@@ -520,6 +520,35 @@ const commands = {
       outputText.push(`You can't climb the <strong>${object.name}</strong>.`);
     }
   },
+  use: (verb, nouns, preps) => {
+    const id1 = nouns[0];
+    const id2 = nouns[1];
+    const prep = preps[0];
+
+    const object1 = findObject(id1);
+    const object2 = findObject(id2);
+
+    if (!player.isInInventory(object1.uniqueKey)) {
+      outputText.push(`You don't have the <strong>${object1.name}</strong>.`);
+      return;
+    }
+
+    if (!object2) {
+      outputText.push(`Use the <strong>${object1.name}</strong> where?`);
+      return;
+    }
+
+    if (prep !== "on" && prep !== "with") {
+      outputText.push(`Wrong syntax. Use "use [object1] on/with [object2]".`);
+      return;
+    }
+
+    if (object2.hasTriggers) {
+      outputText.push(object2.trigger(verb, object1));
+    } else {
+      outputText.push(`You can't use the <strong>${object1.name}</strong> on the <strong>${object2.name}</strong>.`);
+    }
+  },
 };
 
 const outputText = [];

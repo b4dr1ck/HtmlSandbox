@@ -68,6 +68,16 @@ const torch = new LightSource(
 );
 torch.inflammable = true;
 torch.sceneryDescription = "A wooden torch is mounted on the wall here.";
+
+const testTrigger = (object) => {
+  if (object.uniqueKey === "apple1") {
+    console.log(`Trigger (apple) activated!`);
+    return "An apple a day keeps the doctor away!";
+  }
+};
+
+torch.createTrigger("use", testTrigger);
+
 shirt.sceneryDescription = "A simple cotton shirt is folded neatly here.";
 const switch1 = new TriggerObject("switch", "switch1", ["switch", "lever"], "A rusty switch on the wall.");
 const flashlight = new LightSource(
