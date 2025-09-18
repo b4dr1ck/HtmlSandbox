@@ -80,7 +80,6 @@ class BaseObject {
   #smell;
   #hear;
   #hidden;
-  #canClimb;
   #trigger;
 
   constructor(name, uniqueKey, aliases, description) {
@@ -92,7 +91,6 @@ class BaseObject {
     this.#hear = "You hear nothing special.";
     this.#hidden = false;
     this.#trigger = {};
-    this.#canClimb = false;
   }
 
   get name() {
@@ -119,9 +117,6 @@ class BaseObject {
   get hasTriggers() {
     return Object.keys(this.#trigger).length > 0;
   }
-  get canClimb() {
-    return this.#canClimb;
-  }
 
   set name(newName) {
     this.#name = newName;
@@ -137,9 +132,6 @@ class BaseObject {
   }
   set hidden(isHidden) {
     this.#hidden = isHidden;
-  }
-  set canClimb(climbable) {
-    this.#canClimb = climbable;
   }
 
   createTrigger(onCommand, script) {
@@ -198,6 +190,8 @@ export class GameObject extends BaseObject {
   #moveable;
   #health;
   #condition;
+  #canThrow;
+  #canClimb;
   constructor(name, uniqueKey, aliases, description) {
     super(name, uniqueKey, aliases, description);
 
@@ -212,6 +206,8 @@ export class GameObject extends BaseObject {
     this.#moveable = false;
     this.#health = 100;
     this.#whereAmI = { key: uniqueKey, name: "room", preposition: "in" };
+    this.#canThrow = false;
+    this.#canClimb = false;
   }
 
   get description() {
@@ -244,6 +240,12 @@ export class GameObject extends BaseObject {
   get whereAmI() {
     return this.#whereAmI;
   }
+  get canThrow() {
+    return this.#canThrow;
+  }
+  get canClimb() {
+    return this.#canClimb;
+  }
 
   set sceneryDescription(newDescription) {
     this.#sceneryDescription = newDescription;
@@ -265,6 +267,12 @@ export class GameObject extends BaseObject {
   }
   set whereAmI(location) {
     this.#whereAmI = location;
+  }
+  set canThrow(throwable) {
+    this.#canThrow = throwable;
+  }
+  set canClimb(climbable) {
+    this.#canClimb = climbable;
   }
 
   adjustHealth(amount) {
