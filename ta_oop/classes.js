@@ -80,8 +80,8 @@ class BaseObject {
   #smell;
   #hear;
   #hidden;
+  #canClimb;
   #trigger;
-  // TODO: pre-trigger, post-trigger?!
 
   constructor(name, uniqueKey, aliases, description) {
     this.#name = name;
@@ -92,6 +92,7 @@ class BaseObject {
     this.#hear = "You hear nothing special.";
     this.#hidden = false;
     this.#trigger = {};
+    this.#canClimb = false;
   }
 
   get name() {
@@ -118,6 +119,9 @@ class BaseObject {
   get hasTriggers() {
     return Object.keys(this.#trigger).length > 0;
   }
+  get canClimb() {
+    return this.#canClimb;
+  }
 
   set name(newName) {
     this.#name = newName;
@@ -133,6 +137,9 @@ class BaseObject {
   }
   set hidden(isHidden) {
     this.#hidden = isHidden;
+  }
+  set canClimb(climbable) {
+    this.#canClimb = climbable;
   }
 
   createTrigger(onCommand, script) {

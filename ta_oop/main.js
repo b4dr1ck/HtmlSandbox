@@ -104,7 +104,7 @@ const commands = {
     }
     outputText.push(desc);
   },
-  go: (_verb, nouns, _preps) => {
+  go: (verb, nouns, _preps) => {
     const direction = nouns[0];
     const directions = Object.keys(rooms[player.currentRoom.uniqueKey].exits);
 
@@ -132,9 +132,15 @@ const commands = {
         outputText.push(`The way is blocked by the <strong>${obstacle.name}</strong>`);
         return;
       }
-      outputText.push(`You pass through the <strong>${obstacle.name}</strong> in the <strong>${direction}</strong>`);
+      if (verb !== "climb") {
+        outputText.push(`You pass through the <strong>${obstacle.name}</strong> in the <strong>${direction}</strong>`);
+      } else {
+        outputText.push(`You climb through the <strong>${obstacle.name}</strong>`);
+      }
     } else {
-      outputText.push(`You go <strong>${direction}</strong>.`);
+      if (verb !== "climb") {
+        outputText.push(`You go <strong>${direction}</strong>.`);
+      }
     }
 
     player.currentRoom = rooms[destination];
@@ -499,6 +505,19 @@ const commands = {
 
     if (object2.attack(object1)) {
       outputText.push(`You attack the <strong>${object1.name}</strong> with your <strong>${object2.name}</strong>!`);
+    }
+  },
+  climb: (verb, nouns, preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!validateObject(object, verb)) return;
+
+    if (object.canClimb) {
+      outputText.push("You climb the " + object.name + ".");
+      commands.go(verb, [object.uniqueKey], preps);
+    } else {
+      outputText.push(`You can't climb the <strong>${object.name}</strong>.`);
     }
   },
 };
