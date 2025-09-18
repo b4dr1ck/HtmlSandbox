@@ -270,15 +270,20 @@ export class Lockable extends GameObject {
   #isLocked;
   #isOpen;
   #keyName;
+  #alwaysOpen;
   constructor(name, uniqueKey, aliases, description) {
     super(name, uniqueKey, aliases, description);
     this.#isLocked = false;
     this.#isOpen = false;
     this.#keyName = "";
+    this.#alwaysOpen = false;
   }
 
   get description() {
     let descText = super.description;
+    if (this.#alwaysOpen) {
+      return descText;
+    }
     if (this.#isLocked) {
       descText += " It is locked.";
     } else if (this.#isOpen) {
@@ -297,6 +302,9 @@ export class Lockable extends GameObject {
   get keyName() {
     return this.#keyName;
   }
+  get alwaysOpen() {
+    return this.#alwaysOpen;
+  }
 
   set isLocked(lockStatus) {
     this.#isLocked = lockStatus;
@@ -306,6 +314,9 @@ export class Lockable extends GameObject {
   }
   set keyName(keyName) {
     this.#keyName = keyName;
+  }
+  set alwaysOpen(alwaysOpen) {
+    this.#alwaysOpen = alwaysOpen;
   }
 
   close() {
@@ -458,7 +469,7 @@ export class Combineable extends GameObject {
   }
 
   combine(object) {
-    if (object.canCombineWith.toLowerCase() === this.uniqueKey.toLowerCase()) {
+    if (object.canCombineWith === this.uniqueKey) {
       return this.#combineResult;
     }
     return false;
@@ -477,10 +488,12 @@ export class Container extends Lockable {
   }
 
   get contains() {
+    if (super.alwaysOpen || this.isOpen) {
+      return this.#contains;
+    }
     if (!this.isOpen) {
       return null;
     }
-    return this.#contains;
   }
   get containText() {
     return this.#containText;

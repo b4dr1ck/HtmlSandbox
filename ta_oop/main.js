@@ -94,7 +94,7 @@ const commands = {
     // list contents if container
     if (object.constructor.name === "Container") {
       const contents = object.contains;
-      if (contents) {
+      if (Object.keys(contents).length) {
         desc += `<br>${object.containText}`;
         for (const item in contents) {
           desc += `<br>* ${contents[item].name}`;
@@ -151,6 +151,11 @@ const commands = {
 
     if (object.constructor.name !== "Container" && object.constructor.name !== "Lockable") {
       outputText.push(`You can't ${verb} the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (object.alwaysOpen) {
+      outputText.push(`The <strong>${object.name}</strong> can't be ${verb}ed.`);
       return;
     }
 
@@ -261,7 +266,7 @@ const commands = {
       return;
     }
 
-    if (!container.isOpen) {
+    if (!container.isOpen && !container.alwaysOpen) {
       outputText.push(`The <strong>${container.name}</strong> is closed.`);
       return;
     }
@@ -404,7 +409,49 @@ const commands = {
       outputText.push(`* ${player.inventory[item].name}`);
     }
   },
+  combine: (verb, nouns, preps) => {
+    const id1 = nouns[0];
+    const id2 = nouns[1];
 
+    const object1 = findObject(id1);
+    const object2 = findObject(id2);
+
+    if (!validateObject(object1, verb)) return;
+    if (!validateObject(object2, verb)) return;
+
+    if (object1.constructor.name !== "Combineable" || object2.constructor.name !== "Combineable") {
+      outputText.push(
+        `You can't combine the <strong>${object1.name}</strong> and the <strong>${object2.name}</strong>.`
+      );
+      return;
+    }
+
+    if (!player.isInInventory(object1.uniqueKey) || !player.isInInventory(object2.uniqueKey)) {
+      outputText.push(
+        `You must have both the <strong>${object1.name}</strong> and the <strong>${object2.name}</strong> to combine them.`
+      );
+      return;
+    }
+
+    if (preps[0] !== "with" && preps[0] !== "and") {
+      outputText.push(`Wrong syntax. Use "combine [object1] with/and [object2]".`);
+      return;
+    }
+
+    if (object1.combine(object2)) {
+      player.removeFromInventory(object1.uniqueKey);
+      player.removeFromInventory(object2.uniqueKey);
+      player.addToInventory(object1.combineResult);
+
+      outputText.push(
+        `You combine the <strong>${object1.name}</strong> with the <strong>${object2.name}</strong> to create a <strong>${object1.combineResult.name}</strong>.`
+      );
+    } else {
+      outputText.push(
+        `You can't combine the <strong>${object1.name}</strong> with the <strong>${object2.name}</strong>.`
+      );
+    }
+  },
 };
 
 const outputText = [];
@@ -432,6 +479,9 @@ inputElement.addEventListener("keydown", (event) => {
 
     roomDesc.innerHTML = getRoomDescription(player.currentRoom);
     outputElement.innerHTML = outputText.join("<br>");
+
+    // always scroll to the bottom of the outputElement after each input
+    outputElement.scrollTop = outputElement.scrollHeight;
 
     console.log(rooms, player);
   }

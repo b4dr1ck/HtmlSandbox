@@ -20,7 +20,7 @@ const verbs = {
   fuck: ["shit", "ass", "cunt", "bitch", "damn"],
   scream: ["shout", "yell"],
   smell: ["smell", "scent", "reek", "nose"],
-  hear:["hear","listen","listen to",],
+  hear: ["hear", "listen", "listen to"],
   read: ["read"],
   help: ["help", "help me"],
   combine: ["combine", "craft"],
@@ -124,8 +124,10 @@ const findObject = (key) => {
   }
   for (const object in player.currentRoom.objects) {
     if (player.currentRoom.objects[object].constructor.name === "Container") {
-      if (player.currentRoom.objects[object].contains[key]) {
-        return player.currentRoom.objects[object].contains[key];
+      if (player.currentRoom.objects[object].contains) {
+        if (key in player.currentRoom.objects[object].contains) {
+          return player.currentRoom.objects[object].contains[key];
+        }
       }
     }
   }

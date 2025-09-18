@@ -18,7 +18,7 @@ const room1 = new Room(
   "Dark Room",
   "darkroom1",
   ["dark room", "room"],
-  "You are in a dark, damp room with stone walls. There is a door to the north and a switch on the wall."
+  "You are in a dark, damp room with stone walls.<br>There is a door to the north and a switch on the wall.<br>A chest and a table are also here."
 );
 const room2 = new Room(
   "Hallway",
@@ -44,6 +44,8 @@ const gold = new GameObject("gold coin", "gold1", ["gold", "coin"], "A shiny gol
 gold.sceneryDescription = "A shiny gold coin glints in the light.";
 gold.canTake = true;
 const chest = new Container("chest", "chest1", ["chest", "box"], "An old wooden chest.", ["in", "inside"]);
+const table = new Container("table", "table1", ["table"], "A sturdy wooden table.", ["on", "top of"]);
+table.alwaysOpen = true;
 chest.isLocked = true;
 chest.keyName = "key1";
 const amulet = new Equipment("amulet", "amulet1", ["amulet", "necklace"], "A mysterious amulet with a glowing gem.");
@@ -59,9 +61,38 @@ const shirt = new Equipment("shirt", "shirt1", ["shirt", "tunic"], "A simple cot
 shirt.canTake = true;
 shirt.sceneryDescription = "A simple cotton shirt is folded neatly here.";
 const switch1 = new TriggerObject("switch", "switch1", ["switch", "lever"], "A rusty switch on the wall.");
+const flashlight = new LightSource(
+  "flashlight",
+  "flashlight2",
+  ["flashlight", "working flashlight", "light"],
+  "A battery-powered flashlight. It's working!"
+);
+flashlight.canTake = true;
+flashlight.sceneryDescription = "A battery-powered flashlight lies here. It's working!";
+const flashlightEmpty = new Combineable(
+  "empty flashlight",
+  "flashlight1",
+  ["flashlight", "empty flashlight", "light"],
+  "A battery-powered flashlight. It's empty!",
+  "battery1",
+  flashlight
+);
+flashlightEmpty.canTake = true;
+flashlightEmpty.sceneryDescription = "A battery-powered flashlight lies here. It looks empty.";
+const battery = new Combineable(
+  "battery",
+  "battery1",
+  ["battery", "AA battery"],
+  "A single AA battery.",
+  "flashlight1",
+  flashlight
+);
+battery.canTake = true;
+battery.sceneryDescription = "A single AA battery lies here.";
 
+table.addItems(flashlightEmpty, battery);
 chest.addItems(amulet, diamond, gold);
-room1.addObjects(apple, chest, door, stone, key, book, shirt, switch1);
+room1.addObjects(apple, chest, table, door, stone, key, book, shirt, switch1);
 rooms[room1.uniqueKey] = room1;
 rooms[room2.uniqueKey] = room2;
 
