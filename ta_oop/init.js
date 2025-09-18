@@ -30,6 +30,7 @@ room1.exits = { north: { destination: "hallway1", obstacle: door } };
 room2.exits = { south: { destination: "darkroom1", obstacle: door } };
 const player = new Player(room1);
 const apple = new Consumable("apple", "apple1", ["apple", "fruit"], "A shiny red apple.");
+apple.canBeAttacked = true;
 apple.sceneryDescription = "A shiny red apple sits here, looking delicious.";
 apple.canTake = true;
 const book = new GameObject("book", "book1", ["book", "tome"], "An old, dusty book.");
@@ -59,6 +60,14 @@ key.canTake = true;
 key.sceneryDescription = "A small brass key lies here.";
 const shirt = new Equipment("shirt", "shirt1", ["shirt", "tunic"], "A simple cotton shirt.");
 shirt.canTake = true;
+const torch = new LightSource(
+  "torch",
+  "torch1",
+  ["torch", "wooden torch", "light"],
+  "A wooden torch mounted on the wall."
+);
+torch.inflammable = true;
+torch.sceneryDescription = "A wooden torch is mounted on the wall here.";
 shirt.sceneryDescription = "A simple cotton shirt is folded neatly here.";
 const switch1 = new TriggerObject("switch", "switch1", ["switch", "lever"], "A rusty switch on the wall.");
 const flashlight = new LightSource(
@@ -89,10 +98,14 @@ const battery = new Combineable(
 );
 battery.canTake = true;
 battery.sceneryDescription = "A single AA battery lies here.";
+const dagger = new Weapon("dagger", "dagger1", ["dagger", "knife"], "A sharp dagger with a gleaming blade.", 10);
+dagger.canTake = true;
+dagger.sceneryDescription = "A sharp dagger with a gleaming blade lies here.";
 
+player.addToInventory(dagger);
 table.addItems(flashlightEmpty, battery);
 chest.addItems(amulet, diamond, gold);
-room1.addObjects(apple, chest, table, door, stone, key, book, shirt, switch1);
+room1.addObjects(apple, chest, table, door, stone, key, book, shirt, switch1, torch);
 rooms[room1.uniqueKey] = room1;
 rooms[room2.uniqueKey] = room2;
 

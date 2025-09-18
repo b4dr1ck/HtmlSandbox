@@ -5,6 +5,7 @@ import {
   prepositions,
   cmdNotFoundMemes,
   cantSeeObjectMemes,
+  screams,
   getRoomAliases,
   getObjectsAliases,
   getInventoryAliases,
@@ -87,18 +88,17 @@ const commands = {
     let desc = "";
 
     // prefix if object is not in the room
-    if (object.whereAmI.place !== "room") {
-      desc += `(${object.whereAmI.place}) `;
+    if (object.whereAmI.name !== "room") {
+      desc += `(${object.whereAmI.name}) `;
     }
     desc += object.description;
 
     // list contents if container
     if (object.constructor.name === "Container") {
-      const contents = object.contains;
-      if (Object.keys(contents).length) {
+      if (!object.isEmpty()) {
         desc += `<br>${object.containText}`;
-        for (const item in contents) {
-          desc += `<br>* ${contents[item].name}`;
+        for (const item in object.contains) {
+          desc += `<br>* ${object.contains[item].name}`;
         }
       }
     }
@@ -209,8 +209,8 @@ const commands = {
     }
 
     // take from container if not in room
-    if (object.whereAmI.place !== "room") {
-      const containerId = object.whereAmI.place;
+    if (object.whereAmI.name !== "room") {
+      const containerId = object.whereAmI.key;
       const container = findObject(containerId);
       if (container && container.constructor.name === "Container") {
         player.addToInventory(object);
@@ -247,7 +247,6 @@ const commands = {
     const id = nouns[0];
     const containerId = nouns[1];
     const prep = preps[0];
-
     const object = findObject(id);
     const container = findObject(containerId);
 
@@ -410,9 +409,13 @@ const commands = {
       outputText.push(`* ${player.inventory[item].name}`);
     }
   },
+  diagnose: () => {
+    outputText.push(player.diagnose());
+  },
   combine: (verb, nouns, preps) => {
     const id1 = nouns[0];
     const id2 = nouns[1];
+    const prep = preps[0];
 
     const object1 = findObject(id1);
     const object2 = findObject(id2);
@@ -434,7 +437,7 @@ const commands = {
       return;
     }
 
-    if (preps[0] !== "with" && preps[0] !== "and") {
+    if (prep !== "with" && prep !== "and") {
       outputText.push(`Wrong syntax. Use "combine [object1] with/and [object2]".`);
       return;
     }
@@ -451,6 +454,51 @@ const commands = {
       outputText.push(
         `You can't combine the <strong>${object1.name}</strong> with the <strong>${object2.name}</strong>.`
       );
+    }
+  },
+  scream: (verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+    const randomIndex = Math.floor(Math.random() * screams.length);
+
+    if (!object) {
+      outputText.push(screams[randomIndex]);
+      return;
+    }
+
+    if (object.hasTriggers) {
+      outputText.push(object.trigger(verb, object));
+      return;
+    }
+
+    outputText.push(screams[randomIndex]);
+    outputText.push(`You scream at the <strong>${object.name}</strong>.`);
+  },
+  fuck: () => {
+    outputText.push('"Such language in a high-class establishment like this!"');
+  },
+  attack: (verb, nouns, preps) => {
+    const id1 = nouns[0];
+    const id2 = nouns[1];
+    const object1 = findObject(id1);
+    const object2 = findObject(id2);
+    const prep = preps[0];
+
+    if (!validateObject(object1, verb)) return;
+    if (!validateObject(object2, verb)) return;
+
+    if (!player.isInInventory(object2.uniqueKey)) {
+      outputText.push(`You don't have the <strong>${object2.name}</strong>.`);
+      return;
+    }
+
+    if (prep !== "with") {
+      outputText.push(`Wrong syntax. Use "attack [object1] with [object2]".`);
+      return;
+    }
+
+    if (object2.attack(object1)) {
+      outputText.push(`You attack the <strong>${object1.name}</strong> with your <strong>${object2.name}</strong>!`);
     }
   },
 };

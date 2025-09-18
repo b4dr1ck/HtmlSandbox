@@ -33,7 +33,7 @@ export class Player {
 
   addToInventory(...items) {
     items.forEach((item) => {
-      item.whereAmI = { place: "inventory", preposition: "in" };
+      item.whereAmI = { key: super.uniqueKey, name: "inventory", preposition: "in" };
       this.#inventory[item.uniqueKey] = item;
     });
   }
@@ -52,7 +52,7 @@ export class Player {
     return Object.keys(this.#inventory).length === 0;
   }
   diagnose() {
-    console.log(`You are ${this.#condition} with ${this.#health} health.`);
+    return `You are <strong>${this.#condition}</strong> with <strong>${this.#health}</strong> health.`;
   }
   adjustHealth(amount) {
     this.#health += amount;
@@ -168,7 +168,7 @@ export class Room extends BaseObject {
 
   addObjects(...objects) {
     objects.forEach((obj) => {
-      obj.whereAmI = { place: "room", preposition: "in" };
+      obj.whereAmI = { key: super.uniqueKey, name: "room", preposition: "in" };
       this.#objects[obj.uniqueKey] = obj;
     });
   }
@@ -204,9 +204,15 @@ export class GameObject extends BaseObject {
     this.#condition = "intact";
     this.#moveable = false;
     this.#health = 100;
-    this.#whereAmI = { place: "room", preposition: "in" };
+    this.#whereAmI = { key: uniqueKey, name: "room", preposition: "in" };
   }
 
+  get description() {
+    if (this.#condition !== "intact") {
+      return super.description + ` It is currently ${this.#condition}.`;
+    }
+    return super.description;
+  }
   get sceneryDescription() {
     return this.#sceneryDescription;
   }
@@ -262,6 +268,12 @@ export class GameObject extends BaseObject {
     if (this.#health <= 0) {
       this.#health = 0;
       this.#condition = "destroyed";
+    } else if (this.#health < 30) {
+      this.#condition = "heavily damaged";
+    } else if (this.#health < 70) {
+      this.#condition = "slightly damaged";
+    } else {
+      this.#condition = "intact";
     }
   }
 }
@@ -414,41 +426,8 @@ export class TriggerObject extends GameObject {
 }
 
 export class LightSource extends TriggerObject {
-  #inflammable;
   constructor(name, uniqueKey, aliases, description) {
     super(name, uniqueKey, aliases, description);
-    this.#inflammable = false;
-  }
-
-  get inflammable() {
-    return this.#inflammable;
-  }
-  get description() {
-    if (!this.#inflammable) {
-      return super.description;
-    }
-    return super.description
-      .replace(" It is currently on.", " It is currently lit.")
-      .replace(" It is currently off.", " It is currently unlit.");
-  }
-
-  set inflammable(canBurn) {
-    this.#inflammable = canBurn;
-  }
-
-  light() {
-    if (this.#inflammable) {
-      this.turnOn();
-      return true;
-    }
-    return false;
-  }
-  extinguish() {
-    if (this.#inflammable) {
-      this.turnOff();
-      return true;
-    }
-    return false;
   }
 }
 
@@ -508,7 +487,7 @@ export class Container extends Lockable {
 
   addItems(...items) {
     items.forEach((item) => {
-      item.whereAmI = { place: super.uniqueKey, preposition: this.#validPrepositions[0] };
+      item.whereAmI = { key: super.uniqueKey, name: super.name, preposition: this.#validPrepositions[0] };
       this.#contains[item.uniqueKey] = item;
     });
   }
@@ -519,6 +498,9 @@ export class Container extends Lockable {
   }
   isInContainer(itemName) {
     return this.#contains.hasOwnProperty(itemName);
+  }
+  isEmpty() {
+    return Object.keys(this.#contains).length === 0;
   }
 }
 

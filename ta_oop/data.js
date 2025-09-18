@@ -12,8 +12,8 @@ const verbs = {
   drop: ["drop", "discard", "put down"],
   inventory: ["inventory", "items", "bag", "backpack", "pack", "inv"],
   put: ["put", "place", "set", "store", "deposit", "give"],
-  activate: ["turn on", "switch on"],
-  deactivate: ["turn off", "switch off"],
+  activate: ["turn on", "switch on", "activate", "enable"],
+  deactivate: ["turn off", "switch off", "deactivate", "disable"],
   throw: ["throw", "toss", "hurl", "chuck"],
   consume: ["consume", "eat", "drink"],
   attack: ["attack", "destroy", "bash", "strike", "kill", "hit", "smash"],
@@ -27,8 +27,6 @@ const verbs = {
   diagnose: ["diagnose", "condition", "health", "state"],
   dress: ["wear", "dress", "put on", "dress on", "equip", "clothe"],
   undress: ["undress", "take off", "dress off", "disrobe", "unclothe", "strip"],
-  light: ["light", "inflame", "ignite", "kindle"],
-  extinguish: ["extinguish", "erase", "douse", "purge"],
 };
 const directions = {
   north: ["north", "n"],
@@ -44,6 +42,7 @@ const directions = {
   in: ["in", "inside", "into"],
   out: ["out", "outside", "exit"],
 };
+const screams = ["Waaaaaaaaaaaah", "Aaaaaaaaargh", "Noooooooo", "Meeeeeeh", "Aaaaaaaah", "Eeeeeeeek", "Yoooooooo"];
 const prepositions = ["in", "inside", "into", "on", "onto", "at", "to", "with", "from", "about", "for", "up", "and"];
 const cmdNotFoundMemes = [
   "What do you want to do?",
@@ -140,6 +139,7 @@ export {
   prepositions,
   cmdNotFoundMemes,
   cantSeeObjectMemes,
+  screams,
   getRoomAliases,
   getObjectsAliases,
   getInventoryAliases,
