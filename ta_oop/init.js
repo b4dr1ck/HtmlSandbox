@@ -34,6 +34,7 @@ apple.canBeAttacked = true;
 apple.sceneryDescription = "A shiny red apple sits here, looking delicious.";
 apple.canTake = true;
 apple.moveable = true;
+apple.canThrow = true;
 const book = new GameObject("book", "book1", ["book", "tome"], "An old, dusty book.");
 book.sceneryDescription = "An old, dusty book lies on the ground.";
 book.canTake = true;

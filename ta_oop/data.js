@@ -27,6 +27,7 @@ const verbs = {
   dress: ["wear", "dress", "put on", "dress on", "equip", "clothe"],
   undress: ["undress", "take off", "dress off", "disrobe", "unclothe", "strip"],
   use: ["use"],
+  jump: ["jump", "leap", "spring"],
 };
 const directions = {
   north: ["north", "n"],

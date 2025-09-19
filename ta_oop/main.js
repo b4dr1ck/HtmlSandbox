@@ -114,7 +114,7 @@ const commands = {
     }
 
     if (!directions.includes(direction)) {
-      outputText.push(`You can't go <strong>${direction}</strong> from here.`);
+      outputText.push(`You can't ${verb} <strong>${direction}</strong> from here.`);
       return;
     }
 
@@ -286,6 +286,43 @@ const commands = {
     player.removeFromInventory(object.uniqueKey);
     container.addItems(object);
     outputText.push(`You put the <strong>${object.name}</strong> ${prep} the <strong>${container.name}</strong>.`);
+  },
+  throw: (verb, nouns, preps) => {
+    const id = nouns[0];
+    const targetId = nouns[1];
+    const prep = preps[0];
+    const object = findObject(id);
+    const target = findObject(targetId);
+
+    if (!validateObject(object, verb)) return;
+    if (!target) {
+      outputText.push(`Throw the <strong>${object.name}</strong> where?`);
+      return;
+    }
+
+    if (!player.isInInventory(object.uniqueKey)) {
+      outputText.push(`You don't have the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (!object.canThrow) {
+      outputText.push(`You can't throw the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    if (prep !== "at") {
+      outputText.push(`Wrong syntax. Use "throw [object] at [target]".`);
+      return;
+    }
+
+    if (target.triggers.hasOwnProperty(verb)) {
+      outputText.push(object.trigger(verb, target));
+    } else {
+      outputText.push(`You throw the <strong>${object.name}</strong> at the <strong>${target.name}</strong>, but nothing happens.`);
+    }
+
+    player.removeFromInventory(object.uniqueKey);
+    rooms[player.currentRoom.uniqueKey].addObjects(object);
   },
   hear: (verb, nouns, _preps) => {
     commands.smell(verb, nouns, _preps);
@@ -580,6 +617,14 @@ const commands = {
     }
 
     outputText.push(`You move the <strong>${object.name}</strong>, but nothing happens!</strong>.`);
+  },
+  jump: (verb, nouns, _preps) => {
+    const direction = nouns[0];
+    if (direction) {
+      commands.go(verb, [direction], []);
+      return;
+    }
+    outputText.push("You jump up and down. Awesome!");
   },
 };
 
