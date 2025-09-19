@@ -38,6 +38,7 @@ const parseInput = (input) => {
     .replaceAll(" a ", " ")
     .replaceAll(" an ", " ");
 
+  const originalVerb = input.split(" ")[0];
   for (const alias in allAliases) {
     for (const term of allAliases[alias]) {
       const regex = new RegExp(`\\b${term}\\b`, "gi");
@@ -53,16 +54,16 @@ const parseInput = (input) => {
   const preps = input.filter((word) => prepositions.includes(word));
   const nouns = input.filter((word) => Object.keys(allAliases).includes(word) && !prepositions.includes(word));
 
-  input = { verb, nouns, preps };
+  input = { verb, nouns, preps, originalVerb };
   console.log(input);
 
   return input;
 };
 
-const validateObject = (object, verb) => {
+const validateObject = (object, verb, orig) => {
   if (!object) {
-    verb = verb.charAt(0).toUpperCase() + verb.slice(1);
-    outputText.push(`${verb} what?`);
+    orig = orig.charAt(0).toUpperCase() + orig.slice(1);
+    outputText.push(`${orig} what?`);
     return false;
   }
   if (object.hidden) {
@@ -79,11 +80,11 @@ const validateObject = (object, verb) => {
 };
 
 const commands = {
-  look: (verb, nouns, _preps) => {
+  look: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     let desc = "";
 
@@ -104,7 +105,7 @@ const commands = {
     }
     outputText.push(desc);
   },
-  go: (verb, nouns, _preps) => {
+  go: (verb, nouns, _preps, orig) => {
     const direction = nouns[0];
     const directions = Object.keys(rooms[player.currentRoom.uniqueKey].exits);
 
@@ -146,15 +147,15 @@ const commands = {
     player.currentRoom = rooms[destination];
     outputText.push(`You have arrived the <strong>${player.currentRoom.name}</strong>.`);
   },
-  close: (verb, nouns, _preps) => {
-    commands.open(verb, nouns, _preps);
+  close: (verb, nouns, _preps, orig) => {
+    commands.open(verb, nouns, _preps, orig);
   },
-  open: (verb, nouns, preps) => {
+  open: (verb, nouns, preps, orig) => {
     const id = nouns[0];
     const prep = preps[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (object.constructor.name !== "Container" && object.constructor.name !== "Lockable") {
       outputText.push(`You can't ${verb} the <strong>${object.name}</strong>.`);
@@ -198,11 +199,11 @@ const commands = {
     }
     outputText.push(`You ${verb} the <strong>${object.name}</strong>.`);
   },
-  take: (verb, nouns, _preps) => {
+  take: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (!object.canTake) {
       outputText.push(`You can't take the <strong>${object.name}</strong>.`);
@@ -230,11 +231,11 @@ const commands = {
     rooms[player.currentRoom.uniqueKey].removeObject(object.uniqueKey);
     outputText.push(`You take the <strong>${object.name}</strong>.`);
   },
-  drop: (verb, nouns, _preps) => {
+  drop: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (!player.isInInventory(object.uniqueKey)) {
       outputText.push(`You don't have the <strong>${object.name}</strong>.`);
@@ -250,14 +251,14 @@ const commands = {
     rooms[player.currentRoom.uniqueKey].addObjects(object);
     outputText.push(`You drop the <strong>${object.name}</strong>.`);
   },
-  put: (verb, nouns, preps) => {
+  put: (verb, nouns, preps, orig) => {
     const id = nouns[0];
     const containerId = nouns[1];
     const prep = preps[0];
     const object = findObject(id);
     const container = findObject(containerId);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
     if (!container) {
       outputText.push(`Put the <strong>${object.name}</strong> where?`);
       return;
@@ -287,14 +288,14 @@ const commands = {
     container.addItems(object);
     outputText.push(`You put the <strong>${object.name}</strong> ${prep} the <strong>${container.name}</strong>.`);
   },
-  throw: (verb, nouns, preps) => {
+  throw: (verb, nouns, preps, orig) => {
     const id = nouns[0];
     const targetId = nouns[1];
     const prep = preps[0];
     const object = findObject(id);
     const target = findObject(targetId);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
     if (!target) {
       outputText.push(`Throw the <strong>${object.name}</strong> where?`);
       return;
@@ -326,13 +327,13 @@ const commands = {
     player.removeFromInventory(object.uniqueKey);
     rooms[player.currentRoom.uniqueKey].addObjects(object);
   },
-  taste: (verb, nouns, _preps) => {
-    commands.smell(verb, nouns, _preps);
+  taste: (verb, nouns, _preps, orig) => {
+    commands.smell(verb, nouns, _preps, orig);
   },
-  hear: (verb, nouns, _preps) => {
-    commands.smell(verb, nouns, _preps);
+  hear: (verb, nouns, _preps, orig) => {
+    commands.smell(verb, nouns, _preps, orig);
   },
-  smell: (verb, nouns, _preps) => {
+  smell: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
@@ -341,7 +342,7 @@ const commands = {
       return;
     }
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (!object[verb]) {
       outputText.push(`The <strong>${object.name}</strong> doesn't have a ${verb}.`);
@@ -350,11 +351,11 @@ const commands = {
 
     outputText.push(object[verb]);
   },
-  read: (verb, nouns, _preps) => {
+  read: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (!object.read) {
       outputText.push(`You can't read the <strong>${object.name}</strong>.`);
@@ -364,14 +365,14 @@ const commands = {
     outputText.push(`You read the <strong>${object.name}</strong> and it says:`);
     outputText.push(`"${object.read}"`);
   },
-  undress: (verb, nouns, _preps) => {
-    commands.dress(verb, nouns, _preps);
+  undress: (verb, nouns, _preps, orig) => {
+    commands.dress(verb, nouns, _preps, orig);
   },
-  dress: (verb, nouns, _preps) => {
+  dress: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (object.constructor.name !== "Equipment" && !object.canWear) {
       outputText.push(`You can't wear the <strong>${object.name}</strong>.`);
@@ -400,11 +401,11 @@ const commands = {
       outputText.push(`You take off the <strong>${object.name}</strong>.`);
     }
   },
-  consume: (verb, nouns, _preps) => {
+  consume: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (object.constructor.name !== "Consumable") {
       outputText.push(`You can't consume the <strong>${object.name}</strong>.`);
@@ -419,14 +420,14 @@ const commands = {
     player.removeFromInventory(object.uniqueKey);
     outputText.push(`You consume the <strong>${object.name}</strong>.`);
   },
-  deactivate: (verb, nouns, _preps) => {
-    commands.activate(verb, nouns, _preps);
+  deactivate: (verb, nouns, _preps, orig) => {
+    commands.activate(verb, nouns, _preps, orig);
   },
-  activate: (verb, nouns, _preps) => {
+  activate: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (object.constructor.name !== "TriggerObject" && object.constructor.name !== "LightSource") {
       outputText.push(`You can't ${verb} the <strong>${object.name}</strong>.`);
@@ -469,7 +470,7 @@ const commands = {
   diagnose: () => {
     outputText.push(player.diagnose());
   },
-  combine: (verb, nouns, preps) => {
+  combine: (verb, nouns, preps, orig) => {
     const id1 = nouns[0];
     const id2 = nouns[1];
     const prep = preps[0];
@@ -477,8 +478,8 @@ const commands = {
     const object1 = findObject(id1);
     const object2 = findObject(id2);
 
-    if (!validateObject(object1, verb)) return;
-    if (!validateObject(object2, verb)) return;
+    if (!validateObject(object1, verb, orig)) return;
+    if (!validateObject(object2, verb, orig)) return;
 
     if (object1.constructor.name !== "Combineable" || object2.constructor.name !== "Combineable") {
       outputText.push(
@@ -513,7 +514,7 @@ const commands = {
       );
     }
   },
-  scream: (verb, nouns, _preps) => {
+  scream: (verb, nouns, _preps, _orig) => {
     const id = nouns[0];
     const object = findObject(id);
     const randomIndex = Math.floor(Math.random() * screams.length);
@@ -534,14 +535,14 @@ const commands = {
   fuck: () => {
     outputText.push('"Such language in a high-class establishment like this!"');
   },
-  attack: (verb, nouns, preps) => {
+  attack: (verb, nouns, preps, orig) => {
     const id1 = nouns[0];
     const id2 = nouns[1];
     const object1 = findObject(id1);
     const object2 = findObject(id2);
     const prep = preps[0];
 
-    if (!validateObject(object1, verb)) return;
+    if (!validateObject(object1, verb, orig)) return;
     if (!object2) {
       outputText.push(`Attack the <strong>${object1.name}</strong> with what?`);
       return;
@@ -565,20 +566,20 @@ const commands = {
       outputText.push(`You attack the <strong>${object1.name}</strong> with your <strong>${object2.name}</strong>!`);
     }
   },
-  climb: (verb, nouns, preps) => {
+  climb: (verb, nouns, preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (object.canClimb) {
       outputText.push("You climb the " + object.name + ".");
-      commands.go(verb, [object.uniqueKey], preps);
+      commands.go(verb, [object.uniqueKey], preps, orig);
     } else {
       outputText.push(`You can't climb the <strong>${object.name}</strong>.`);
     }
   },
-  use: (verb, nouns, preps) => {
+  use: (verb, nouns, preps, _orig) => {
     const id1 = nouns[0];
     const id2 = nouns[1];
     const prep = preps[0];
@@ -625,11 +626,11 @@ const commands = {
       outputText.push(`You can't use the <strong>${object1.name}</strong> on the <strong>${object2.name}</strong>.`);
     }
   },
-  move: (verb, nouns, _preps) => {
+  move: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (!object.moveable) {
       outputText.push(`You can't move the <strong>${object.name}</strong>.`);
@@ -638,7 +639,7 @@ const commands = {
 
     outputText.push(`You move the <strong>${object.name}</strong>, but nothing happens!</strong>.`);
   },
-  jump: (verb, nouns, _preps) => {
+  jump: (verb, nouns, _preps, orig) => {
     const direction = nouns[0];
     if (direction) {
       commands.go(verb, [direction], []);
@@ -646,11 +647,11 @@ const commands = {
     }
     outputText.push("You jump up and down. Awesome!");
   },
-  knock: (verb, nouns, _preps) => {
+  knock: (verb, nouns, _preps, orig) => {
     const id = nouns[0];
     const object = findObject(id);
 
-    if (!validateObject(object, verb)) return;
+    if (!validateObject(object, verb, orig)) return;
 
     if (object.triggers.hasOwnProperty(verb)) {
       outputText.push(object.trigger(verb, object));
@@ -679,6 +680,7 @@ const outputElement = document.querySelector("#output");
 const roomDesc = document.querySelector("#roomDesc");
 roomDesc.innerHTML = getRoomDescription(player.currentRoom);
 
+inputElement.focus();
 inputElement.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     const inputValue = inputElement.value;
@@ -689,7 +691,7 @@ inputElement.addEventListener("keydown", (event) => {
     inputElement.value = "";
 
     try {
-      commands[parsedInput.verb](parsedInput.verb, parsedInput.nouns, parsedInput.preps);
+      commands[parsedInput.verb](parsedInput.verb, parsedInput.nouns, parsedInput.preps, parsedInput.originalVerb);
     } catch (error) {
       console.error(error);
       const randomIndex = Math.floor(Math.random() * cmdNotFoundMemes.length);
