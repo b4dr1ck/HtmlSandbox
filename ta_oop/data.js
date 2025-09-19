@@ -1,11 +1,10 @@
 import { player, rooms } from "./init.js";
 
 const verbs = {
-  pull: ["pull", "pull on", "drag on", "drag"],
-  push: ["push", "press", "press on", "push on", "move", "shift"],
+  move: ["pull", "pull on", "drag on", "drag", "push", "press", "press on", "push on", "move", "shift"],
   look: ["look", "see", "view", "examine", "inspect", "look at", "show"],
   climb: ["climb", "crawl", "climb on", "crawl on", "climb up", "crawl up"],
-  go: ["go", "go to", "walk", "walk to", "move", "move to", "travel", "travel to", "head", "head to"],
+  go: ["go", "go to", "walk", "walk to", "move to", "travel", "travel to", "head", "head to"],
   open: ["open", "unlock", "unfasten", "unlatch"],
   close: ["close", "lock", "fasten", "latch"],
   take: ["take", "grab", "collect", "get", "remove", "pick up"],

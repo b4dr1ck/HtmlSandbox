@@ -33,6 +33,7 @@ const apple = new Consumable("apple", "apple1", ["apple", "fruit"], "A shiny red
 apple.canBeAttacked = true;
 apple.sceneryDescription = "A shiny red apple sits here, looking delicious.";
 apple.canTake = true;
+apple.moveable = true;
 const book = new GameObject("book", "book1", ["book", "tome"], "An old, dusty book.");
 book.sceneryDescription = "An old, dusty book lies on the ground.";
 book.canTake = true;
@@ -60,12 +61,7 @@ key.canTake = true;
 key.sceneryDescription = "A small brass key lies here.";
 const shirt = new Equipment("shirt", "shirt1", ["shirt", "tunic"], "A simple cotton shirt.");
 shirt.canTake = true;
-const torch = new LightSource(
-  "torch",
-  "torch1",
-  ["torch", "wooden torch", "light"],
-  "A wooden torch mounted on the wall."
-);
+const torch = new LightSource("torch", "torch1", ["torch", "wooden torch"], "A wooden torch mounted on the wall.");
 torch.inflammable = true;
 torch.sceneryDescription = "A wooden torch is mounted on the wall here.";
 
@@ -73,10 +69,14 @@ const testTrigger = (object) => {
   if (object.uniqueKey === "apple1") {
     console.log(`Trigger (apple) activated!`);
     return "An apple a day keeps the doctor away!";
+  } else {
+    console.log(`Trigger (${object.name}) activated!`);
+    return "....";
   }
 };
 
 torch.createTrigger("use", testTrigger);
+apple.createTrigger("move", testTrigger);
 
 shirt.sceneryDescription = "A simple cotton shirt is folded neatly here.";
 const switch1 = new TriggerObject("switch", "switch1", ["switch", "lever"], "A rusty switch on the wall.");

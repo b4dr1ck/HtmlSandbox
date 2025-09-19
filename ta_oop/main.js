@@ -71,7 +71,7 @@ const validateObject = (object, verb) => {
     return false;
   }
 
-  if (object.hasTriggers) {
+  if (object.triggers.hasOwnProperty(verb)) {
     outputText.push(object.trigger(verb, object));
     return false;
   }
@@ -95,7 +95,7 @@ const commands = {
 
     // list contents if container
     if (object.constructor.name === "Container") {
-      if (!object.isEmpty()) {
+      if (!object.isEmpty() && (object.isOpen || object.alwaysOpen)) {
         desc += `<br>${object.containText}`;
         for (const item in object.contains) {
           desc += `<br>* ${object.contains[item].name}`;
@@ -225,6 +225,7 @@ const commands = {
         return;
       }
     }
+
     player.addToInventory(object);
     rooms[player.currentRoom.uniqueKey].removeObject(object.uniqueKey);
     outputText.push(`You take the <strong>${object.name}</strong>.`);
@@ -472,7 +473,7 @@ const commands = {
       return;
     }
 
-    if (object.hasTriggers) {
+    if (object.triggers.hasOwnProperty(verb)) {
       outputText.push(object.trigger(verb, object));
       return;
     }
@@ -533,6 +534,12 @@ const commands = {
       return;
     }
 
+    // call the consume command if object1 is consumable and no object2
+    if (object1.constructor.name === "Consumable" && !object2) {
+      commands.consume(verb, [object1.uniqueKey], []);
+      return;
+    }
+
     if (!object2) {
       outputText.push(`Use the <strong>${object1.name}</strong> where?`);
       return;
@@ -543,11 +550,36 @@ const commands = {
       return;
     }
 
-    if (object2.hasTriggers) {
+    // call the combine command if objects are combineable
+    if (object1.constructor.name === "Combineable" && object2.constructor.name === "Combineable") {
+      commands.combine(verb, [object1.uniqueKey, object2.uniqueKey], [prep]);
+      return;
+    }
+
+    // call the open with object command if object2 is lockable or container
+    if ((object2.constructor.name === "Lockable" || object2.constructor.name === "Container") && object2.isLocked) {
+      commands.open(verb, [object2.uniqueKey], [prep]);
+      return;
+    }
+
+    if (object2.triggers.hasOwnProperty(verb)) {
       outputText.push(object2.trigger(verb, object1));
     } else {
       outputText.push(`You can't use the <strong>${object1.name}</strong> on the <strong>${object2.name}</strong>.`);
     }
+  },
+  move: (verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!validateObject(object, verb)) return;
+
+    if (!object.moveable) {
+      outputText.push(`You can't move the <strong>${object.name}</strong>.`);
+      return;
+    }
+
+    outputText.push(`You move the <strong>${object.name}</strong>, but nothing happens!</strong>.`);
   },
 };
 

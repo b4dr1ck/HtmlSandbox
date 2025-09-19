@@ -114,8 +114,8 @@ class BaseObject {
   get aliases() {
     return this.#aliases;
   }
-  get hasTriggers() {
-    return Object.keys(this.#trigger).length > 0;
+  get triggers() {
+    return this.#trigger;
   }
 
   set name(newName) {
