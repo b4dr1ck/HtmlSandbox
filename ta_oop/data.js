@@ -100,7 +100,7 @@ const getContainerAliases = (room) => {
 const getRoomDescription = (room) => {
   let descText = "";
 
-  descText += `<strong>${room.name}</strong><br><br>`;
+  descText += `<h3>${room.name}</h3>`;
   descText += `${room.description}<br>`;
 
   for (const object in room.objects) {
