@@ -65,6 +65,12 @@ shirt.canTake = true;
 const torch = new LightSource("torch", "torch1", ["torch", "wooden torch"], "A wooden torch mounted on the wall.");
 torch.inflammable = true;
 torch.sceneryDescription = "A wooden torch is mounted on the wall here.";
+torch.stateOnDescription = "It is currently lit";
+torch.stateOffDescription = "It is currently unlit.";
+const matches = new GameObject("box of matches", "matches1", ["matches", "box of matches"], "A small box of matches.");
+matches.canTake = true;
+matches.sceneryDescription = "A small box of matches lies here.";
+matches.read = "Strike on the side of the box to light a match.";
 
 const testTrigger = (object) => {
   if (object.uniqueKey === "apple1") {
@@ -76,9 +82,27 @@ const testTrigger = (object) => {
   }
 };
 
+const turnOnTorch = (object) => {
+  return "You can't light the torch like that. You need a fire source.";
+};
+
+const useMatchesOnTorch = (object) => {
+  if (object.uniqueKey === "matches1") {
+    if (torch.state) {
+      return "The torch is already lit.";
+    } else {
+      torch.turnOn();
+      return "You strike a match and light the torch. The room is now illuminated.";
+    }
+  } else {
+    return "You can't use that here.";
+  }
+};
+
 //room1.createTrigger("wait", testTrigger);
 door.createTrigger("knock", testTrigger);
-torch.createTrigger("use", testTrigger);
+torch.createTrigger("use", useMatchesOnTorch);
+torch.createTrigger("activate", turnOnTorch);
 apple.createTrigger("move", testTrigger);
 apple.createTrigger("smell", testTrigger);
 
@@ -116,7 +140,7 @@ const dagger = new Weapon("dagger", "dagger1", ["dagger", "knife"], "A sharp dag
 dagger.canTake = true;
 dagger.sceneryDescription = "A sharp dagger with a gleaming blade lies here.";
 
-player.addToInventory(dagger);
+player.addToInventory(dagger, matches);
 table.addItems(flashlightEmpty, battery);
 chest.addItems(amulet, diamond, gold);
 room1.addObjects(apple, chest, table, door, stone, key, book, shirt, switch1, torch);

@@ -440,16 +440,27 @@ export class Consumable extends GameObject {
 
 export class TriggerObject extends GameObject {
   #state;
+  #stateOnDescription;
+  #stateOffDescription;
   constructor(name, uniqueKey, aliases, description) {
     super(name, uniqueKey, aliases, description);
     this.#state = false;
+    this.#stateOnDescription = "It is currently on.";
+    this.#stateOffDescription = "It is currently off.";
   }
 
   get state() {
     return this.#state;
   }
   get description() {
-    return super.description + (this.#state ? " It is currently on." : " It is currently off.");
+    return super.description + (this.#state ? this.#stateOnDescription : this.#stateOffDescription);
+  }
+
+  set stateOnDescription(newDescriptions) {
+    this.#stateOnDescription = newDescriptions;
+  }
+  set stateOffDescription(newDescriptions) {
+    this.#stateOffDescription = newDescriptions;
   }
 
   turnOn() {
