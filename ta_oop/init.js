@@ -76,8 +76,11 @@ const testTrigger = (object) => {
   }
 };
 
+//room1.createTrigger("wait", testTrigger);
+door.createTrigger("knock", testTrigger);
 torch.createTrigger("use", testTrigger);
 apple.createTrigger("move", testTrigger);
+apple.createTrigger("smell", testTrigger);
 
 shirt.sceneryDescription = "A simple cotton shirt is folded neatly here.";
 const switch1 = new TriggerObject("switch", "switch1", ["switch", "lever"], "A rusty switch on the wall.");

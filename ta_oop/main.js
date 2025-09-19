@@ -88,7 +88,7 @@ const commands = {
     let desc = "";
 
     // prefix if object is not in the room
-    if (object.whereAmI.name !== "room") {
+    if (object.constructor.name !== "Room" && object.whereAmI.name !== "room") {
       desc += `(${object.whereAmI.name}) `;
     }
     desc += object.description;
@@ -318,7 +318,9 @@ const commands = {
     if (target.triggers.hasOwnProperty(verb)) {
       outputText.push(object.trigger(verb, target));
     } else {
-      outputText.push(`You throw the <strong>${object.name}</strong> at the <strong>${target.name}</strong>, but nothing happens.`);
+      outputText.push(
+        `You throw the <strong>${object.name}</strong> at the <strong>${target.name}</strong>, but nothing happens.`
+      );
     }
 
     player.removeFromInventory(object.uniqueKey);
@@ -330,6 +332,11 @@ const commands = {
   smell: (verb, nouns, _preps) => {
     const id = nouns[0];
     const object = findObject(id);
+
+    if (!object || object.constructor.name === "Room") {
+      outputText.push(player.currentRoom[verb]);
+      return;
+    }
 
     if (!validateObject(object, verb)) return;
 
@@ -625,6 +632,27 @@ const commands = {
       return;
     }
     outputText.push("You jump up and down. Awesome!");
+  },
+  knock: (verb, nouns, _preps) => {
+    const id = nouns[0];
+    const object = findObject(id);
+
+    if (!validateObject(object, verb)) return;
+
+    if (object.triggers.hasOwnProperty(verb)) {
+      outputText.push(object.trigger(verb, object));
+      return;
+    }
+
+    outputText.push(`You knock on the <strong>${object.name}</strong>, but nobody answers.`);
+  },
+  wait: (verb) => {
+    const room = player.currentRoom;
+    if (room.triggers.hasOwnProperty(verb)) {
+      outputText.push(room.trigger(verb, room));
+      return;
+    }
+    outputText.push("You wait for a while. Nothing happens.");
   },
 };
 

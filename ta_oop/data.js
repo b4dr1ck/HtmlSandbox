@@ -2,7 +2,7 @@ import { player, rooms } from "./init.js";
 
 const verbs = {
   move: ["pull", "pull on", "drag on", "drag", "push", "press", "press on", "push on", "move", "shift"],
-  look: ["look", "see", "view", "examine", "inspect", "look at", "show"],
+  look: ["look", "see", "view", "examine", "inspect", "look at", "show", "search", "check"],
   climb: ["climb", "crawl", "climb on", "crawl on", "climb up", "crawl up"],
   go: ["go", "go to", "walk", "walk to", "move to", "travel", "travel to", "head", "head to"],
   open: ["open", "unlock", "unfasten", "unlatch"],
@@ -28,6 +28,8 @@ const verbs = {
   undress: ["undress", "take off", "dress off", "disrobe", "unclothe", "strip"],
   use: ["use"],
   jump: ["jump", "leap", "spring"],
+  knock: ["knock", "tap"],
+  wait:["wait","sleep","rest","doze","snooze","linger"]
 };
 const directions = {
   north: ["north", "n"],

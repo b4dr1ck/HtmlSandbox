@@ -192,6 +192,7 @@ export class GameObject extends BaseObject {
   #condition;
   #canThrow;
   #canClimb;
+  #isAlive;
   constructor(name, uniqueKey, aliases, description) {
     super(name, uniqueKey, aliases, description);
 
@@ -208,6 +209,7 @@ export class GameObject extends BaseObject {
     this.#whereAmI = { key: uniqueKey, name: "room", preposition: "in" };
     this.#canThrow = false;
     this.#canClimb = false;
+    this.#isAlive = false;
   }
 
   get description() {
@@ -246,6 +248,9 @@ export class GameObject extends BaseObject {
   get canClimb() {
     return this.#canClimb;
   }
+  get isAlive() {
+    return this.#isAlive;
+  }
 
   set sceneryDescription(newDescription) {
     this.#sceneryDescription = newDescription;
@@ -274,6 +279,9 @@ export class GameObject extends BaseObject {
   set canClimb(climbable) {
     this.#canClimb = climbable;
   }
+  set isAlive(alive) {
+    this.#isAlive = alive;
+  }
 
   adjustHealth(amount) {
     this.#health += amount;
@@ -283,12 +291,24 @@ export class GameObject extends BaseObject {
     if (this.#health <= 0) {
       this.#health = 0;
       this.#condition = "destroyed";
+      if (this.#isAlive) {
+        this.#condition = "dead";
+      }
     } else if (this.#health < 30) {
       this.#condition = "heavily damaged";
+      if (this.#isAlive) {
+        this.#condition = "critically injured";
+      }
     } else if (this.#health < 70) {
       this.#condition = "slightly damaged";
+      if (this.#isAlive) {
+        this.#condition = "injured";
+      }
     } else {
       this.#condition = "intact";
+      if (this.#isAlive) {
+        this.#condition = "healthy";
+      }
     }
   }
 }
