@@ -49,6 +49,7 @@ gold.canTake = true;
 const chest = new Container("chest", "chest1", ["chest", "box"], "An old wooden chest.", ["in", "inside"]);
 const table = new Container("table", "table1", ["table"], "A sturdy wooden table.", ["on", "top of"]);
 table.alwaysOpen = true;
+table.containText = "On the table you see: ";
 chest.isLocked = true;
 chest.keyName = "key1";
 const amulet = new Equipment("amulet", "amulet1", ["amulet", "necklace"], "A mysterious amulet with a glowing gem.");
@@ -71,6 +72,8 @@ const matches = new GameObject("box of matches", "matches1", ["matches", "box of
 matches.canTake = true;
 matches.sceneryDescription = "A small box of matches lies here.";
 matches.read = "Strike on the side of the box to light a match.";
+const hand = new Weapon("hand", "hand1", ["hand"], "Your trusty hand.", 1);
+hand.hidden = true;
 
 const testTrigger = (object) => {
   if (object.uniqueKey === "apple1") {
@@ -140,7 +143,7 @@ const dagger = new Weapon("dagger", "dagger1", ["dagger", "knife"], "A sharp dag
 dagger.canTake = true;
 dagger.sceneryDescription = "A sharp dagger with a gleaming blade lies here.";
 
-player.addToInventory(dagger, matches);
+player.addToInventory(dagger, matches,hand);
 table.addItems(flashlightEmpty, battery);
 chest.addItems(amulet, diamond, gold);
 room1.addObjects(apple, chest, table, door, stone, key, book, shirt, switch1, torch);

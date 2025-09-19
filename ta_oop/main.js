@@ -456,6 +456,9 @@ const commands = {
 
     outputText.push("You are carrying:");
     for (const item in player.inventory) {
+      if (player.inventory[item].hidden) {
+        continue;
+      }
       if (player.inventory[item].isEquipped) {
         outputText.push(`* (equipped) ${player.inventory[item].name}`);
         continue;
@@ -663,6 +666,10 @@ const commands = {
       return;
     }
     outputText.push("You wait for a while. Nothing happens.");
+  },
+  help: () => {
+    outputText.push("Available commands:");
+    outputText.push(Object.keys(commands).sort().join("<br>"));
   },
 };
 
