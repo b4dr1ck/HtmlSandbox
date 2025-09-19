@@ -205,7 +205,7 @@ export class GameObject extends BaseObject {
     super(name, uniqueKey, aliases, description);
 
     const article = ["a", "e", "i", "o", "u"].includes(name[0].toLowerCase()) ? "an" : "a";
-    this.smell = `It smells like ${article} <strong>${name.toLowerCase()}/<strong>`;
+    this.smell = `It smells like ${article} <strong>${name.toLowerCase()}</strong>`;
     this.hear = `It sounds like ${article} <strong>${name.toLowerCase()}</strong>`;
     this.taste = `It tastes like ${article} <strong>${name.toLowerCase()}</strong>`;
     this.#read = "";
