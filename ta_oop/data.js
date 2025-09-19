@@ -21,6 +21,7 @@ const verbs = {
   smell: ["smell", "scent", "reek", "nose"],
   hear: ["hear", "listen", "listen to"],
   read: ["read"],
+  taste: ["taste", "lick"],
   help: ["help", "help me"],
   combine: ["combine", "craft"],
   diagnose: ["diagnose", "condition", "health", "state"],
@@ -29,7 +30,7 @@ const verbs = {
   use: ["use"],
   jump: ["jump", "leap", "spring"],
   knock: ["knock", "tap"],
-  wait:["wait","sleep","rest","doze","snooze","linger"]
+  wait: ["wait", "sleep", "rest", "doze", "snooze", "linger"],
 };
 const directions = {
   north: ["north", "n"],

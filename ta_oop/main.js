@@ -326,6 +326,9 @@ const commands = {
     player.removeFromInventory(object.uniqueKey);
     rooms[player.currentRoom.uniqueKey].addObjects(object);
   },
+  taste: (verb, nouns, _preps) => {
+    commands.smell(verb, nouns, _preps);
+  },
   hear: (verb, nouns, _preps) => {
     commands.smell(verb, nouns, _preps);
   },
@@ -536,7 +539,10 @@ const commands = {
     const prep = preps[0];
 
     if (!validateObject(object1, verb)) return;
-    if (!validateObject(object2, verb)) return;
+    if (!object2) {
+      outputText.push(`Attack the <strong>${object1.name}</strong> with what?`);
+      return;
+    }
 
     if (!player.isInInventory(object2.uniqueKey)) {
       outputText.push(`You don't have the <strong>${object2.name}</strong>.`);
@@ -546,6 +552,10 @@ const commands = {
     if (prep !== "with") {
       outputText.push(`Wrong syntax. Use "attack [object1] with [object2]".`);
       return;
+    }
+
+    if (!object1.canBeAttacked) {
+      outputText.push(`You can't attack the <strong>${object1.name}</strong>`);
     }
 
     if (object2.attack(object1)) {

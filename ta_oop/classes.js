@@ -79,6 +79,7 @@ class BaseObject {
   #description;
   #smell;
   #hear;
+  #taste;
   #hidden;
   #trigger;
 
@@ -89,6 +90,7 @@ class BaseObject {
     this.#description = description;
     this.#smell = "It smells like nothing in particular.";
     this.#hear = "You hear nothing special.";
+    this.#taste = "It tastes like nothing in particular.";
     this.#hidden = false;
     this.#trigger = {};
   }
@@ -107,6 +109,9 @@ class BaseObject {
   }
   get hear() {
     return this.#hear;
+  }
+  get taste() {
+    return this.#taste;
   }
   get hidden() {
     return this.#hidden;
@@ -129,6 +134,9 @@ class BaseObject {
   }
   set hear(newNoise) {
     this.#hear = newNoise;
+  }
+  set taste(newTaste) {
+    this.#taste = newTaste;
   }
   set hidden(isHidden) {
     this.#hidden = isHidden;
@@ -197,8 +205,9 @@ export class GameObject extends BaseObject {
     super(name, uniqueKey, aliases, description);
 
     const article = ["a", "e", "i", "o", "u"].includes(name[0].toLowerCase()) ? "an" : "a";
-    this.smell = `It smells like ${article} ${name.toLowerCase()}`;
-    this.hear = `It sounds like ${article} ${name.toLowerCase()}`;
+    this.smell = `It smells like ${article} <strong>${name.toLowerCase()}/<strong>`;
+    this.hear = `It sounds like ${article} <strong>${name.toLowerCase()}</strong>`;
+    this.taste = `It tastes like ${article} <strong>${name.toLowerCase()}</strong>`;
     this.#read = "";
     this.#canBeAttacked = false;
     this.#canTake = false;
@@ -213,7 +222,7 @@ export class GameObject extends BaseObject {
   }
 
   get description() {
-    if (this.#condition !== "intact") {
+    if (this.#condition !== "intact" && this.#condition !== "healthy") {
       return super.description + ` It is currently ${this.#condition}.`;
     }
     return super.description;
