@@ -126,7 +126,10 @@ const findObject = (key) => {
     return player.currentRoom.objects[key];
   }
   for (const object in player.currentRoom.objects) {
-    if (player.currentRoom.objects[object].constructor.name === "Container") {
+    if (
+      player.currentRoom.objects[object].constructor.name === "Container" ||
+      player.currentRoom.objects[object].constructor.name === "TableLike"
+    ) {
       if (player.currentRoom.objects[object].contains) {
         if (key in player.currentRoom.objects[object].contains) {
           return player.currentRoom.objects[object].contains[key];

@@ -566,6 +566,14 @@ export class Container extends Lockable {
   }
 }
 
+export class TableLike extends Container {
+  constructor(name, uniqueKey, aliases, description, validPrepositions) {
+    super(name, uniqueKey, aliases, description, validPrepositions);
+    super.alwaysOpen = true;
+    super.isOpen = true;
+  }
+}
+
 export class Weapon extends GameObject {
   #damage;
   constructor(name, uniqueKey, aliases, description, damage) {

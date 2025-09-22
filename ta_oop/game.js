@@ -98,8 +98,8 @@ const commands = {
     desc += object.description;
 
     // list contents if container
-    if (object.constructor.name === "Container") {
-      if (!object.isEmpty() && (object.isOpen || object.alwaysOpen)) {
+    if (object.constructor.name === "Container" || object.constructor.name === "TableLike") {
+      if (!object.isEmpty() && object.constructor.name === "TableLike") {
         desc += `<br>${object.containText}`;
         for (const item in object.contains) {
           desc += `<br>* ${object.contains[item].name}`;
@@ -160,12 +160,16 @@ const commands = {
 
     if (!validateObject(object, verb, orig)) return;
 
-    if (object.constructor.name !== "Container" && object.constructor.name !== "Lockable") {
+    if (
+      object.constructor.name !== "Container" &&
+      object.constructor.name !== "Lockable" &&
+      object.constructor.name !== "TableLike"
+    ) {
       outputText.push(`You can't ${verb} the <strong>${object.name}</strong>.`);
       return;
     }
 
-    if (object.alwaysOpen) {
+    if (object.constructor.name === "TableLike") {
       outputText.push(`The <strong>${object.name}</strong> can't be ${verb}ed.`);
       return;
     }
@@ -195,10 +199,6 @@ const commands = {
       }
     }
 
-    // reset the verb if it's "use"
-    if (verb === "use") {
-      verb = "open";
-    }
     if (verb === "close") {
       object.close();
     } else {
@@ -281,12 +281,12 @@ const commands = {
       return;
     }
 
-    if (container.constructor.name !== "Container") {
-      outputText.push(`You can't put things in the <strong>${container.name}</strong>.`);
+    if (container.constructor.name !== "Container" && container.constructor.name !== "TableLike") {
+      outputText.push(`You can't put things in or on the <strong>${container.name}</strong>.`);
       return;
     }
 
-    if (!container.isOpen && !container.alwaysOpen) {
+    if (!container.isOpen && container.constructor.name === "Container") {
       outputText.push(`The <strong>${container.name}</strong> is closed.`);
       return;
     }
@@ -606,7 +606,7 @@ const commands = {
 
     // call the consume command if object1 is consumable and no object2
     if (object1.constructor.name === "Consumable" && !object2) {
-      commands.consume(verb, [object1.uniqueKey], []);
+      commands.consume("consume", [object1.uniqueKey], []);
       return;
     }
 
@@ -622,13 +622,13 @@ const commands = {
 
     // call the combine command if objects are combineable
     if (object1.constructor.name === "Combineable" && object2.constructor.name === "Combineable") {
-      commands.combine(verb, [object1.uniqueKey, object2.uniqueKey], [prep]);
+      commands.combine("combine", [object1.uniqueKey, object2.uniqueKey], [prep]);
       return;
     }
 
     // call the open with object command if object2 is lockable or container
     if ((object2.constructor.name === "Lockable" || object2.constructor.name === "Container") && object2.isLocked) {
-      commands.open(verb, [object2.uniqueKey], [prep]);
+      commands.open("open", [object2.uniqueKey], [prep]);
       return;
     }
 

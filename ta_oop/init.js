@@ -2,6 +2,7 @@ import {
   Room,
   GameObject,
   Container,
+  TableLike,
   Player,
   Consumable,
   Equipment,
@@ -48,7 +49,7 @@ const book = new GameObject(
 );
 
 // *** table
-const table = new Container(
+const table = new TableLike(
   "table",
   "table1",
   ["table", "desk", "old table"],
@@ -261,7 +262,7 @@ torch.createTrigger("move", torchMoveTrigger);
 torch.moveable = true;
 
 // *** nest
-const nest = new Container(
+const nest = new TableLike(
   "bird's nest",
   "nest1",
   ["nest", "bird's nest", "small nest", "birds nest"],
@@ -281,8 +282,7 @@ const window2 = new GameObject(
   "window2",
   ["window", "opened window"],
   "You look outside the window. It's dark outside.<br>" +
-    "In the distance you can see an endless forest under a starry sky. The moon is full and bright" +
-    ""
+    "In the distance you can see an endless forest under a starry sky. The moon is full and bright."
 );
 
 const windowLookTrigger = (window2) => {
@@ -290,7 +290,7 @@ const windowLookTrigger = (window2) => {
   window2.deleteTrigger("look");
   return (
     window2.description +
-    "On a closer look you see a small nest of twigs and leaves sits on the window sill" +
+    "<br>On a closer look you see a small nest of twigs and leaves sits on the window sill" +
     "<br>You recognize it as a <strong>bird's nest</strong>."
   );
 };
@@ -319,7 +319,7 @@ chest.sceneryDescription = "A small <strong>chest</strong> standing under the be
 chest.hidden = true;
 
 // *** bench
-const bench = new Container(
+const bench = new TableLike(
   "stone bench",
   "bench1",
   ["bench", "stone bench", "old bench"],
