@@ -10,7 +10,6 @@ import {
   getObjectsAliases,
   getInventoryAliases,
   getContainerAliases,
-  getRoomDescription,
   findObject,
 } from "./data.js";
 
@@ -320,8 +319,8 @@ const commands = {
       return;
     }
 
-    if (prep !== "at") {
-      outputText.push(`Wrong syntax. Use "throw [object] at [target]".`);
+    if (prep !== "at" && prep !== "to") {
+      outputText.push(`Wrong syntax. Use "throw [object] at/to [target]".`);
       return;
     }
 
@@ -372,7 +371,7 @@ const commands = {
     }
 
     outputText.push(`You read the <strong>${object.name}</strong> and it says:`);
-    outputText.push(`"${object.read}"`);
+    outputText.push(`${object.read}`);
   },
   undress: (verb, nouns, _preps, orig) => {
     commands.dress(verb, nouns, _preps, orig);

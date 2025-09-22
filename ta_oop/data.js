@@ -101,7 +101,7 @@ const getRoomDescription = (room) => {
   let descText = "";
 
   descText += `<h3>${room.name}</h3>`;
-  descText += `${room.description}<br>`;
+  descText += `${room.description}`;
 
   for (const object in room.objects) {
     if (room.objects[object].sceneryDescription && !room.objects[object].hidden) {
