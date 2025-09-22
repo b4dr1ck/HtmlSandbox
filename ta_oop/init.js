@@ -69,6 +69,9 @@ torch.sceneryDescription = "A wooden torch is mounted on the wall here.";
 torch.stateOnDescription = "It is currently lit";
 torch.stateOffDescription = "It is currently unlit.";
 const matches = new GameObject("box of matches", "matches1", ["matches", "box of matches"], "A small box of matches.");
+const worm = new GameObject("worm", "worm1", ["worm"], "A small, wriggling worm.");
+worm.canTake = true;
+worm.sceneryDescription = "A small worm wriggling here.";
 matches.canTake = true;
 matches.sceneryDescription = "A small box of matches lies here.";
 matches.read = "Strike on the side of the box to light a match.";
@@ -102,12 +105,19 @@ const useMatchesOnTorch = (object) => {
   }
 };
 
+
+const consumeAppleTrigger = (object) => {
+  player.addToInventory(worm);
+  return "You eat the apple. Yukky! There are worms in it!<br>You take it out and put it in your inventory.";
+}
+
 //room1.createTrigger("wait", testTrigger);
 door.createTrigger("knock", testTrigger);
 torch.createTrigger("use", useMatchesOnTorch);
 torch.createTrigger("activate", turnOnTorch);
 apple.createTrigger("move", testTrigger);
 apple.createTrigger("smell", testTrigger);
+apple.createTrigger("consume", consumeAppleTrigger);
 
 shirt.sceneryDescription = "A simple cotton shirt is folded neatly here.";
 const switch1 = new TriggerObject("switch", "switch1", ["switch", "lever"], "A rusty switch on the wall.");
