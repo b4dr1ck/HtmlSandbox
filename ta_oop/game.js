@@ -195,6 +195,10 @@ const commands = {
       }
     }
 
+    // reset the verb if it's "use"
+    if (verb === "use") {
+      verb = "open";
+    }
     if (verb === "close") {
       object.close();
     } else {
@@ -273,7 +277,7 @@ const commands = {
     }
 
     if (container.triggers.hasOwnProperty(verb)) {
-      outputText.push(container.trigger(verb, container));
+      outputText.push(container.trigger(verb, object));
       return;
     }
 

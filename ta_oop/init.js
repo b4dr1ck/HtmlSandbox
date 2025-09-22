@@ -105,24 +105,24 @@ const walls = new GameObject(
 walls.read = "The writings on the walls are faded and hard to read.<br>They seem to be in an ancient language.";
 
 // *** floor
-const floor = new GameObject(
-  "floor",
+const floor1 = new GameObject(
+  "stone floor",
   "floor1",
   ["floor", "stone floor", "cold floor", "stone tiles"],
-  "Nothing special about the floor. Just cold grey stone tiles that seem to be very old."
+  "Nothing special about that floor. Just cold grey stone tiles that seem to be very old."
 );
 
 // *** key
-const key = new GameObject(
+const key1 = new GameObject(
   "rusty key",
   "key1",
   ["key", "rusty key", "old key"],
   "A small rusty key. It looks very old but seems to be intact."
 );
-key.sceneryDescription = "A small <strong>rusty key</strong> lies on the floor.";
-key.hidden = true;
-key.canTake = true;
-key.canThrow = true;
+key1.sceneryDescription = "A small <strong>rusty key</strong> lies on the floor.";
+key1.hidden = true;
+key1.canTake = true;
+key1.canThrow = true;
 
 // *** carpet
 const carpet = new GameObject(
@@ -132,11 +132,11 @@ const carpet = new GameObject(
   "A tatty old carpet. Its colors faded and threadbare.<br>It has seen better days."
 );
 carpet.moveable = true;
-const carpetTrigger = (carpet) => {
-  key.hidden = false;
+const carpetMoveTrigger = (carpet) => {
+  key1.hidden = false;
   return "You move the carpet aside, revealing a <strong>key</strong> taped to the floor underneath it.";
 };
-carpet.createTrigger("move", carpetTrigger);
+carpet.createTrigger("move", carpetMoveTrigger);
 
 // *** ball
 const ball = new GameObject(
@@ -148,14 +148,14 @@ const ball = new GameObject(
 ball.sceneryDescription = "A small <strong>red ball</strong> is sitting on the floor.";
 ball.canTake = true;
 ball.canThrow = true;
-const eatBall = (ball) => {
+const eatBallTrigger = (ball) => {
   player.adjustHealth(-100);
   return "You try to eat the ball, but it's too big and hard to chew.<br>You end up choking on it and coughing violently.";
 };
-ball.createTrigger("consume", eatBall);
+ball.createTrigger("consume", eatBallTrigger);
 
 darkRoom.exits = { north: { destination: "room2", obstacle: door } };
-darkRoom.addObjects(table, book, window, planks, chandelier, walls, floor, door, carpet, key, ball);
+darkRoom.addObjects(table, book, window, planks, chandelier, walls, floor1, door, carpet, key1, ball);
 
 //---------------------------------------------------------------------------------------------------
 // * hallway
@@ -169,17 +169,177 @@ const hallway = new Room(
     "The ceiling is high above you, lost in shadows and darkness.<br>" +
     "On the western wall are some ancient torches that provide a flickering light to the hallway.<br>" +
     "One of the torches is a bit different from the others.<br>" +
+    "Between each torch is a pillar made of the same dark marble as the walls.<br>" +
     "In the east is a opened window that lets in some fresh air.<br>" +
     "Underneath the window is a stone bench that looks very old and worn, but quite comfortable.<br>" +
     "Farther in the north the hallway continues into darkness.<br>" +
-    "In the south is the white door that leads back to the dimly lit room."
+    "In the south is the white door that leads back to the dimly lit room.<br>"
 );
 
-hallway.addObjects(door);
+// ** hallway.objects
+// *** stone
+const stone = new GameObject(
+  "stone",
+  "stone1",
+  ["stone", "small stone", "rock", "small rock", "pebble"],
+  "A small grey stone. It looks quite ordinary but could be useful."
+);
+stone.sceneryDescription = "A <strong>small stone</strong> is lying on the ground. Waiting to be picked up.";
+stone.canTake = true;
+stone.canThrow = true;
+const stoneEatTrigger = (stone) => {
+  player.adjustHealth(-50);
+  player.removeFromInventory(stone.uniqueKey);
+  return "You try to eat the stone, but it's too hard and gritty.<br>You end up hurting your teeth and feeling sick.";
+};
+stone.createTrigger("consume", stoneEatTrigger);
+
+// *** marble
+const marble = new GameObject(
+  "marble",
+  "marble1",
+  ["marble", "dark marble", "marble walls", "marble pillars", "walls", "pillars"],
+  "The dark marble walls and pillars are cold and smooth to the touch.<br>They seem solid and unyielding."
+);
+
+// *** floor
+const floor2 = new GameObject(
+  "dirt floor",
+  "floor2",
+  ["floor", "earth floor", "dirt floor", "ground"],
+  "The floor is just some earth and dirt below you.<br>It's uneven and a bit slippery in places."
+);
+
+// *** tapestries
+const tapestries = new GameObject(
+  "tapestries",
+  "tapestries1",
+  ["tapestries", "faded tapestries", "wall hangings", "hangings"],
+  "Some faded tapestries that depict scenes of battles and ancient rituals.<br>" +
+    "One of them shows a execution scene, with a hooded figure standing over a kneeling person.<br>" +
+    "Another one shows a group of robed figures standing around a glowing altar.<br>" +
+    "The rest of them are too faded to make out any details.<br>" +
+    "They are old and worn, but still quite beautiful."
+);
+
+tapestries.read = "One reads: <i>Execution of Heretics<i>, another <i>Ritual of the Blood Moon<i>.";
+const tapestriesTakeTrigger = (tapestries) => {
+  return "You try to take one of the tapestries, but it's firmly attached to the wall.<br>";
+};
+tapestries.createTrigger("take", tapestriesTakeTrigger);
+
+// *** torch
+const torch = new LightSource(
+  "torch",
+  "torch1",
+  ["torch", "ancient torch", "wall torch", "torch", "different torch"],
+  "An ancient wall-mounted torch made of iron.<br>The handle is a bit different from the others and looks very abused and worn."
+);
+torch.turnOn();
+torch.stateOnDescription = "The torch is burning brightly, casting a warm glow around it.";
+torch.stateOffDescription = "The torch is unlit.";
+
+const torchUseTrigger = (object) => {
+  if (object.uniqueKey === "waterbottle1") {
+    if (torch.state) {
+      torch.turnOff();
+      return "You pour the water from the bottle onto the torch, extinguishing its flame.<br>The torch is now unlit.";
+    }
+  }
+  return `You can't use the <strong>${object.name}</strong> here.`;
+};
+const torchMoveTrigger = (torch) => {
+  if (torch.state) {
+    player.adjustHealth(-5);
+    return "The torch is burning, so it's a bad idea to move it around. You burn yourself slightly.";
+  }
+  return "You push the torch to the side a bit and hear some stones shifting nearby.";
+};
+
+torch.createTrigger("use", torchUseTrigger);
+torch.createTrigger("move", torchMoveTrigger);
+torch.moveable = true;
+
+// *** nest
+const nest = new Container(
+  "bird's nest",
+  "nest1",
+  ["nest", "bird's nest", "small nest", "birds nest"],
+  "A small bird's nest made of twigs and leaves.",
+  ["in", "inside", "into"]
+);
+nest.alwaysOpen = true;
+nest.sceneryDescription = "A small <strong>bird's nest</strong> is sitting on the window sill.";
+nest.hidden = true;
+nest.containText = "In the nest lies: ";
+const nestPutTrigger = (item) => {};
+nest.createTrigger("put", nestPutTrigger);
+
+// *** window
+const window2 = new GameObject(
+  "window",
+  "window2",
+  ["window", "opened window"],
+  "You look outside the window. It's dark outside.<br>" +
+    "In the distance you can see an endless forest under a starry sky. The moon is full and bright" +
+    ""
+);
+
+const windowLookTrigger = (window2) => {
+  nest.hidden = false;
+  window2.deleteTrigger("look");
+  return (
+    window2.description +
+    "On a closer look you see a small nest of twigs and leaves sits on the window sill" +
+    "<br>You recognize it as a <strong>bird's nest</strong>."
+  );
+};
+const windowClimbTrigger = (window2) => {
+  player.adjustHealth(-100);
+  return (
+    "You try to climb out the window. Your foot slips on the sill and you fall to your death.<br>" +
+    "What do you expected?"
+  );
+};
+window2.createTrigger("look", windowLookTrigger);
+window2.createTrigger("climb", windowClimbTrigger);
+
+// *** chest
+const chest = new Container(
+  "small chest",
+  "chest1",
+  ["chest", "wooden chest", "old chest", "box"],
+  "An old wooden chest with iron rusty bands and a rusty lock.",
+  ["in", "inside", "into"]
+);
+
+chest.isLocked = true;
+chest.keyName = "key1";
+chest.sceneryDescription = "A small <strong>chest</strong> standing under the bench.";
+chest.hidden = true;
+
+// *** bench
+const bench = new Container(
+  "stone bench",
+  "bench1",
+  ["bench", "stone bench", "old bench"],
+  "An old stone bench that looks quite comfortable despite its age.<br>It has some cracks and chips on the surface.",
+  ["on", "on top of", "onto"]
+);
+bench.containText = "On the bench you see: ";
+bench.alwaysOpen = true;
+const benchLookTrigger = (bench) => {
+  chest.hidden = false;
+  bench.deleteTrigger("look");
+  return "On a closer look you find a <strong>chest</strong> standing under the bench.";
+};
+bench.createTrigger("look", benchLookTrigger);
+
 hallway.exits = {
   south: { destination: "room1", obstacle: door },
   //north: { destination: "room3", obstacle: null },
 };
+hallway.addObjects(door, stone, marble, floor2, tapestries, torch, window2, nest, bench, chest);
 
 //---------------------------------------------------------------------------------------------------
 // * player

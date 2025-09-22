@@ -145,6 +145,13 @@ class BaseObject {
   createTrigger(onCommand, script) {
     this.#trigger[onCommand] = script;
   }
+  deleteTrigger(onCommand) {
+    if (this.#trigger[onCommand]) {
+      delete this.#trigger[onCommand];
+      return true;
+    }
+    return false;
+  }
   trigger(command, ...args) {
     if (this.#trigger[command]) {
       return this.#trigger[command](...args);
