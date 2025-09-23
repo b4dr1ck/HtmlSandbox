@@ -226,7 +226,7 @@ const commands = {
     if (object.whereAmI.name !== "room") {
       const containerId = object.whereAmI.key;
       const container = findObject(containerId);
-      if (container && container.constructor.name === "Container") {
+      if (container && (container.constructor.name === "Container" || container.constructor.name === "TableLike")) {
         player.addToInventory(object);
         container.removeItem(object.uniqueKey);
         outputText.push(`You take the <strong>${object.name}</strong> from the <strong>${container.name}</strong>.`);

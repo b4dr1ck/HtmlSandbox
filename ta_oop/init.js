@@ -359,6 +359,16 @@ chest.sceneryDescription = "A small <strong>chest</strong> standing under the be
 chest.hidden = true;
 chest.addItems(apple);
 
+// *** amulet
+const amulet = new Equipment(
+  "amulet",
+  "amulet1",
+  ["amulet", "golden amulet", "necklace"],
+  "A beautiful golden amulet with a glowing blue gem in the center.<br>It looks very valuable."
+);
+amulet.canTake = true;
+amulet.canThrow = true;
+
 // *** bench
 const bench = new TableLike(
   "stone bench",
@@ -379,6 +389,8 @@ bench.createTrigger("look", benchLookTrigger);
 const waitRoomTrigger = () => {
   if (nest.isInContainer("worm1")) {
     hallway.deleteTrigger("wait");
+    nest.removeItem("worm1");
+    nest.addItems(amulet);
     return (
       "As you wait, a small bird flies in through the window and lands on the nest.<br>" +
       "It chirps happily and seems to be taking care of the worm you placed in the nest.<br>" +
@@ -481,8 +493,8 @@ deadEnd.exits = {
 deadEnd.addObjects();
 //---------------------------------------------------------------------------------------------------
 // * player
-const player = new Player(crossroads);
-
+const player = new Player(darkRoom);
+player.addToInventory(worm)
 //---------------------------------------------------------------------------------------------------
 // * Add rooms to rooms list
 rooms[darkRoom.uniqueKey] = darkRoom;
