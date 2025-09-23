@@ -88,7 +88,10 @@ const getInventoryAliases = (player) => {
 const getContainerAliases = (room) => {
   const aliases = {};
   for (const object in room.objects) {
-    if (room.objects[object].constructor.name === "Container") {
+    if (
+      room.objects[object].constructor.name === "Container" ||
+      room.objects[object].constructor.name === "TableLike"
+    ) {
       for (const item in room.objects[object].contains) {
         aliases[item] = room.objects[object].contains[item].aliases;
       }

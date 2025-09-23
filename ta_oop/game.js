@@ -97,9 +97,9 @@ const commands = {
     }
     desc += object.description;
 
-    // list contents if container
+    // list contents if container/tablelike
     if (object.constructor.name === "Container" || object.constructor.name === "TableLike") {
-      if (!object.isEmpty() && object.constructor.name === "TableLike") {
+      if (!object.isEmpty()) {
         desc += `<br>${object.containText}`;
         for (const item in object.contains) {
           desc += `<br>* ${object.contains[item].name}`;

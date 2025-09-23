@@ -273,7 +273,14 @@ nest.alwaysOpen = true;
 nest.sceneryDescription = "A small <strong>bird's nest</strong> is sitting on the window sill.";
 nest.hidden = true;
 nest.containText = "In the nest lies: ";
-const nestPutTrigger = (item) => {};
+const nestPutTrigger = (item) => {
+  if (item.uniqueKey === "worm1") {
+    nest.addItems(item);
+    player.removeFromInventory(item.uniqueKey);
+    return "You carefully place the worm into the nest.";
+  }
+  return `It doesn't seem like a good idea to put the <strong>${item.name}</strong> in the nest.`;
+};
 nest.createTrigger("put", nestPutTrigger);
 
 // *** window
@@ -282,7 +289,8 @@ const window2 = new GameObject(
   "window2",
   ["window", "opened window"],
   "You look outside the window. It's dark outside.<br>" +
-    "In the distance you can see an endless forest under a starry sky. The moon is full and bright."
+    "In the distance you can see an endless forest under a starry sky. The moon is full and bright.<br>" +
+    "From time to time you can spy a bird flying past the window, silhouetted against the moonlight."
 );
 
 const windowLookTrigger = (window2) => {
@@ -294,7 +302,7 @@ const windowLookTrigger = (window2) => {
     "<br>You recognize it as a <strong>bird's nest</strong>."
   );
 };
-const windowClimbTrigger = (window2) => {
+const windowClimbTrigger = () => {
   player.adjustHealth(-100);
   return (
     "You try to climb out the window. Your foot slips on the sill and you fall to your death.<br>" +
@@ -303,6 +311,38 @@ const windowClimbTrigger = (window2) => {
 };
 window2.createTrigger("look", windowLookTrigger);
 window2.createTrigger("climb", windowClimbTrigger);
+
+// *** apple
+const apple = new Consumable(
+  "apple",
+  "apple1",
+  ["apple", "red apple", "fruit"],
+  "A fresh red apple. It looks delicious."
+);
+apple.canTake = true;
+apple.canThrow = true;
+apple.sceneryDescription = "A fresh <strong>red apple</strong> is sitting on the floor.";
+const eatAppleTrigger = (apple) => {
+  player.removeFromInventory(apple.uniqueKey);
+  player.addToInventory(worm);
+
+  return (
+    "You bite into the apple. Yuk! There's a worm inside!<br>" +
+    "You spit it out and throw the apple away, but you decide to keep the worm."
+  );
+};
+apple.createTrigger("consume", eatAppleTrigger);
+
+// *** worm
+const worm = new GameObject(
+  "worm",
+  "worm1",
+  ["worm", "small worm", "insect"],
+  "A small green worm. It looks quite ordinary."
+);
+worm.sceneryDescription = "A small <strong>worm</strong> is wriggling around.";
+worm.canTake = true;
+worm.canThrow = true;
 
 // *** chest
 const chest = new Container(
@@ -317,6 +357,7 @@ chest.isLocked = true;
 chest.keyName = "key1";
 chest.sceneryDescription = "A small <strong>chest</strong> standing under the bench.";
 chest.hidden = true;
+chest.addItems(apple);
 
 // *** bench
 const bench = new TableLike(
@@ -335,12 +376,47 @@ const benchLookTrigger = (bench) => {
 };
 bench.createTrigger("look", benchLookTrigger);
 
+const waitRoomTrigger = () => {
+  if (nest.isInContainer("worm1")) {
+    hallway.deleteTrigger("wait");
+    return (
+      "As you wait, a small bird flies in through the window and lands on the nest.<br>" +
+      "It chirps happily and seems to be taking care of the worm you placed in the nest.<br>" +
+      "After a while, the bird flies away, leaving behind an amulet in the nest.<br>"
+    );
+  }
+  return "You wait for a while. Nothing happens";
+};
+hallway.createTrigger("wait", waitRoomTrigger);
 hallway.exits = {
   south: { destination: "room1", obstacle: door },
-  //north: { destination: "room3", obstacle: null },
+  north: { destination: "room3", obstacle: null },
 };
 hallway.addObjects(door, stone, marble, floor2, tapestries, torch, window2, nest, bench, chest);
 
+//---------------------------------------------------------------------------------------------------
+// * crossroads
+const crossroads = new Room(
+  "Crossroads",
+  "room3",
+  ["crossroads", "intersection"],
+  "You reach a crossroads.<br>" +
+    "The walls here are made of the same dark marble as the hallway but have no decorations or adornments.<br>" +
+    "The floor has some single grey stone tiles covering the dirt ground below.<br>" +
+    "In the north the path continues into darkness.<br>" +
+    "In the south lies the hallway with the torches and tapestries.<br>" +
+    "To the east and west are two doors on the walls that seem to lead you to other rooms.<br>" +
+    "The western door is painted red and has a small sign on it.<br>" +
+    "The eastern door is made of old oak wood and has a brass handle and some adornments on it.<br>"
+);
+
+// ** crossroads.objects
+// ***
+
+crossroads.exits = {
+  south: { destination: "room2", obstacle: null },
+};
+crossroads.addObjects();
 //---------------------------------------------------------------------------------------------------
 // * player
 const player = new Player(darkRoom);
@@ -349,5 +425,6 @@ const player = new Player(darkRoom);
 // * Add rooms to rooms list
 rooms[darkRoom.uniqueKey] = darkRoom;
 rooms[hallway.uniqueKey] = hallway;
+rooms[crossroads.uniqueKey] = crossroads;
 
 export { rooms, player };
