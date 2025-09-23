@@ -52,7 +52,11 @@ export class Player {
     return Object.keys(this.#inventory).length === 0;
   }
   diagnose() {
-    return `You are <strong>${this.#condition}</strong> with <strong>${this.#health}</strong> health.`;
+    const healthBarLength = 20;
+    const healthUnits = Math.round((this.#health / 100) * healthBarLength);
+    const healthBar = "[" + "#".repeat(healthUnits) + "-".repeat(healthBarLength - healthUnits) + "]";
+
+    return `You are <strong>${this.#condition}</strong><br>Health: ${this.#health}/100 ${healthBar}`;
   }
   adjustHealth(amount) {
     this.#health += amount;

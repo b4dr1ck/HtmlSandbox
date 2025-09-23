@@ -56,7 +56,6 @@ const table = new TableLike(
   "An old sturdy wooden <strong>table</strong>.<br>It has some scratches and cracks on the surface.",
   ["on", "on top of", "onto"]
 );
-table.alwaysOpen = true;
 table.containText = "On the table you see: ";
 table.addItems(book);
 
@@ -269,7 +268,6 @@ const nest = new TableLike(
   "A small bird's nest made of twigs and leaves.",
   ["in", "inside", "into"]
 );
-nest.alwaysOpen = true;
 nest.sceneryDescription = "A small <strong>bird's nest</strong> is sitting on the window sill.";
 nest.hidden = true;
 nest.containText = "In the nest lies: ";
@@ -378,7 +376,6 @@ const bench = new TableLike(
   ["on", "on top of", "onto"]
 );
 bench.containText = "On the bench you see: ";
-bench.alwaysOpen = true;
 const benchLookTrigger = (bench) => {
   chest.hidden = false;
   bench.deleteTrigger("look");
@@ -494,7 +491,7 @@ deadEnd.addObjects();
 //---------------------------------------------------------------------------------------------------
 // * player
 const player = new Player(darkRoom);
-player.addToInventory(worm)
+
 //---------------------------------------------------------------------------------------------------
 // * Add rooms to rooms list
 rooms[darkRoom.uniqueKey] = darkRoom;
