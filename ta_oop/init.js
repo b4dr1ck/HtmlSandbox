@@ -411,20 +411,85 @@ const crossroads = new Room(
 );
 
 // ** crossroads.objects
-// ***
+// *** marble
+const marble2 = new GameObject(
+  "marble",
+  "marble2",
+  ["marble", "dark marble", "marble walls"],
+  "Dark marble walls. Some of the tiles have small cracks and chips on them but still seem solid. Nothing special."
+);
+// *** floor
+const floor3 = new GameObject(
+  "stone tiles",
+  "floor3",
+  ["floor", "stone floor", "grey stone tiles", "tiles"],
+  "Most of the floor is just earth and dirt, but here and there are some single grey stone tiles covering it."
+);
+
+// *** redDoor
+const redDoor = new Lockable(
+  "red door",
+  "door2",
+  ["red door", "kitchen door", "door with sign", "red painted door"],
+  "A red painted door with a small sign on it that reads 'Kitchen'.<br>The surface is a bit scratched and dirty."
+);
+
+// *** woodenDoor
+const woodenDoor = new Lockable(
+  "wooden door",
+  "door3",
+  ["wooden door", "oak door", "door with brass handle", "old wooden door", "old door"],
+  "An old oak wooden door with a brass handle and some intricate carvings on the surface."
+);
 
 crossroads.exits = {
   south: { destination: "room2", obstacle: null },
+  west: { destination: "room4", obstacle: redDoor },
+  east: { destination: "room5", obstacle: woodenDoor },
+  north: { destination: "room6", obstacle: null },
 };
-crossroads.addObjects();
+crossroads.addObjects(marble2, floor3, redDoor, woodenDoor);
+//---------------------------------------------------------------------------------------------------
+// * kitchen
+const kitchen = new Room("Kitchen", "room4", ["kitchen"], "...");
+
+// ** kitchen.objects
+
+kitchen.exits = {
+  east: { destination: "room3", obstacle: redDoor },
+};
+kitchen.addObjects();
+//---------------------------------------------------------------------------------------------------
+// * library
+const library = new Room("Library", "room5", ["library"], "...");
+
+// ** library.objects
+
+library.exits = {
+  west: { destination: "room3", obstacle: woodenDoor },
+};
+library.addObjects();
+//---------------------------------------------------------------------------------------------------
+// * deadEnd
+const deadEnd = new Room("Dead End", "room6", ["dead end"], "...");
+
+// ** deadEnd.objects
+
+deadEnd.exits = {
+  south: { destination: "room3", obstacle: null },
+};
+deadEnd.addObjects();
 //---------------------------------------------------------------------------------------------------
 // * player
-const player = new Player(darkRoom);
+const player = new Player(crossroads);
 
 //---------------------------------------------------------------------------------------------------
 // * Add rooms to rooms list
 rooms[darkRoom.uniqueKey] = darkRoom;
 rooms[hallway.uniqueKey] = hallway;
 rooms[crossroads.uniqueKey] = crossroads;
+rooms[kitchen.uniqueKey] = kitchen;
+rooms[library.uniqueKey] = library;
+rooms[deadEnd.uniqueKey] = deadEnd;
 
 export { rooms, player };
