@@ -1,4 +1,4 @@
-import { getRoomDescription, cmdNotFoundMemes } from "./data.js";
+import { getRoomDescription, cmdNotFoundMemes } from "./utils.js";
 import { parseInput, commands, outputText } from "./game.js";
 import { player, rooms } from "./init.js";
 

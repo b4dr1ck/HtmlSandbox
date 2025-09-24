@@ -91,7 +91,7 @@ const planks = new GameObject(
 const chandelier = new GameObject(
   "chandelier",
   "chandelier1",
-  ["chandelier", "candle", "light", "lamp", "glower"],
+  ["chandelier", "candle", "light", "lamp", "glower", "ceiling"],
   "An old fashioned golden chandelier with a single candle flickering weakly.<br>It provides a dim light to the room."
 );
 
@@ -99,8 +99,8 @@ const chandelier = new GameObject(
 const walls = new GameObject(
   "walls",
   "walls1",
-  ["walls", "stone walls", "rough walls"],
-  "The walls around you are made of rough stone, cold and damp to the touch.<br>They seem solid and unyielding. Some writings can be seen on them."
+  ["walls", "stone walls", "rough walls", "wall"],
+  "The walls around you are made of rough stone, cold and damp to the touch.<br>Some writings can be seen on them."
 );
 walls.read = "The writings on the walls are faded and hard to read.<br>They seem to be in an ancient language.";
 
@@ -216,7 +216,7 @@ const tapestries = new GameObject(
   "tapestries1",
   ["tapestries", "faded tapestries", "wall hangings", "hangings"],
   "Some faded tapestries that depict scenes of battles and ancient rituals.<br>" +
-    "One of them shows a execution scene, with a hooded figure standing over a kneeling person.<br>" +
+    "One of them shows an execution scene, with a hooded figure standing over a kneeling person.<br>" +
     "Another one shows a group of robed figures standing around a glowing altar.<br>" +
     "The rest of them are too faded to make out any details.<br>" +
     "They are old and worn, but still quite beautiful."
@@ -309,6 +309,7 @@ const windowClimbTrigger = () => {
 };
 window2.createTrigger("look", windowLookTrigger);
 window2.createTrigger("climb", windowClimbTrigger);
+window2.hear = "You hear the faint hooting of an owl in the distance.";
 
 // *** apple
 const apple = new Consumable(
@@ -416,7 +417,8 @@ const crossroads = new Room(
     "In the south lies the hallway with the torches and tapestries.<br>" +
     "To the east and west are two doors on the walls that seem to lead you to other rooms.<br>" +
     "The western door is painted red and has a small sign on it.<br>" +
-    "The eastern door is made of old oak wood and has a brass handle and some adornments on it.<br>"
+    "The eastern door is made of old oak wood and has a brass handle and some adornments on it.<br>" +
+    "Another passage you spot in the northwest. It's an open archway without any door or other obstacle.<br>"
 );
 
 // ** crossroads.objects
@@ -451,13 +453,22 @@ const woodenDoor = new Lockable(
   "An old oak wooden door with a brass handle and some intricate carvings on the surface."
 );
 
+// *** passage
+const passage = new GameObject(
+  "passage",
+  "passage1",
+  ["passage", "open passage", "archway", "open archway"],
+  "An open archway leading northwest. It has no door or other obstacle, just an empty passage."
+);
+
 crossroads.exits = {
   south: { destination: "room2", obstacle: null },
   west: { destination: "room4", obstacle: redDoor },
   east: { destination: "room5", obstacle: woodenDoor },
   north: { destination: "room6", obstacle: null },
+  northwest: { destination: "room7", obstacle: null },
 };
-crossroads.addObjects(marble2, floor3, redDoor, woodenDoor);
+crossroads.addObjects(marble2, floor3, redDoor, woodenDoor, passage);
 //---------------------------------------------------------------------------------------------------
 // * kitchen
 const kitchen = new Room("Kitchen", "room4", ["kitchen"], "...");

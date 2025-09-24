@@ -1,4 +1,5 @@
 import { player, rooms } from "./init.js";
+import { outputText } from "./game.js";
 
 const verbs = {
   move: ["pull", "pull on", "drag on", "drag", "push", "press", "press on", "push on", "move", "shift"],
@@ -143,6 +144,28 @@ const findObject = (key) => {
   return null;
 };
 
+const validateObject = (object, verb, orig) => {
+  // object does not exist
+  if (!object) {
+    orig = orig.charAt(0).toUpperCase() + orig.slice(1);
+    outputText.push(`${orig} what?`);
+    return false;
+  }
+  // object is hidden
+  if (object.hidden) {
+    const randomIndex = Math.floor(Math.random() * cantSeeObjectMemes.length);
+    outputText.push(cantSeeObjectMemes[randomIndex]);
+    return false;
+  }
+
+  // object has a trigger
+  if (object.triggers.hasOwnProperty(verb)) {
+    outputText.push(object.trigger(verb, object));
+    return false;
+  }
+  return true;
+};
+
 export {
   verbs,
   directions,
@@ -156,4 +179,5 @@ export {
   getContainerAliases,
   getRoomDescription,
   findObject,
+  validateObject,
 };
