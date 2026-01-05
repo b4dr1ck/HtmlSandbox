@@ -141,33 +141,11 @@ export default {
   <v-stage style="border: 1px solid white" :config="stageSize">
     <v-layer ref="layerRef">
       <template v-for="(obj, index) in objectsContainer" :key="index">
-        <!--Shape-->
-        <v-rect v-if="obj.type === 'rect'" :config="obj" @dblclick="remove($event)" @click="writeInfo($event)"></v-rect>
-        <v-circle
-          v-else-if="obj.type === 'circle'"
+        <component
+          :is="'v-' + obj.type"
           :config="obj"
           @dblclick="remove($event)"
-          @click="writeInfo($event)"></v-circle>
-        <v-arc
-          v-else-if="obj.type === 'arc'"
-          :config="obj"
-          @dblclick="remove($event)"
-          @click="writeInfo($event)"></v-arc>
-        <v-regular-polygon
-          v-else-if="obj.type === 'regular-polygon'"
-          :config="obj"
-          @dblclick="remove($event)"
-          @click="writeInfo($event)"></v-regular-polygon>
-        <v-line
-          v-else-if="obj.type === 'line'"
-          :config="obj"
-          @dblclick="remove($event)"
-          @click="writeInfo($event)"></v-line>
-        <v-star
-          v-else-if="obj.type === 'star'"
-          :config="obj"
-          @dblclick="remove($event)"
-          @click="writeInfo($event)"></v-star>
+          @click="writeInfo($event)"></component>
       </template>
     </v-layer>
   </v-stage>
