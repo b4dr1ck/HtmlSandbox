@@ -53,6 +53,14 @@ export default {
           strokeWidth: 1,
           rotation: 0,
         },
+        lineConfig: {
+          type: "line",
+          y: 0,
+          x: 0,
+          points: [0, 0, 140, 140],
+          stroke: "white",
+          strokeWidth: 5,
+        },
       },
     };
   },
@@ -78,6 +86,11 @@ export default {
       this.info = `${JSON.stringify(foundShape)}`;
     },
     addObject(_event, config) {
+      if ("points" in this.configs[config]) {
+        if (typeof this.configs[config].points === "string") {
+          this.configs[config].points = this.configs[config].points.split(",").map(Number);
+        }
+      }
       this.info = `${this.configs[config].type} created`;
       this.objectsContainer.push({
         ...this.configs[config],
@@ -98,7 +111,7 @@ export default {
       <v-text-field
         v-if="key !== 'type'"
         class="mx-2"
-        max-width="100"
+        width="100%"
         density="compact"
         :label="key"
         v-model="configType[key]"></v-text-field>
@@ -114,7 +127,7 @@ export default {
 
   <pre class="text-green my-2">{{ info }}</pre>
 
-  <v-stage :config="stageSize">
+  <v-stage style="border: 1px solid white" :config="stageSize">
     <v-layer ref="layerRef">
       <template v-for="(obj, index) in objectsContainer" :key="index">
         <!--Shape-->
@@ -134,6 +147,11 @@ export default {
           :config="obj"
           @dblclick="remove($event)"
           @click="writeInfo($event)"></v-regular-polygon>
+        <v-line
+          v-else-if="obj.type === 'line'"
+          :config="obj"
+          @dblclick="remove($event)"
+          @click="writeInfo($event)"></v-line>
         <!--Text (debug)-->
         <!--v-text :config="{ x: obj.x, y: obj.y, text: obj.name, fill: 'white', fontSize: 20 }"></v-text-->
       </template>
