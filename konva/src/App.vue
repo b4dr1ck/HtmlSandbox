@@ -61,6 +61,17 @@ export default {
           stroke: "white",
           strokeWidth: 5,
         },
+        star: {
+          type: "star",
+          x: 40,
+          y: 40,
+          numPoints: 5,
+          innerRadius: 20,
+          outerRadius: 40,
+          fill: "purple",
+          stroke: "black",
+          strokeWidth: 1,
+        },
       },
     };
   },
@@ -152,8 +163,11 @@ export default {
           :config="obj"
           @dblclick="remove($event)"
           @click="writeInfo($event)"></v-line>
-        <!--Text (debug)-->
-        <!--v-text :config="{ x: obj.x, y: obj.y, text: obj.name, fill: 'white', fontSize: 20 }"></v-text-->
+        <v-star
+          v-else-if="obj.type === 'star'"
+          :config="obj"
+          @dblclick="remove($event)"
+          @click="writeInfo($event)"></v-star>
       </template>
     </v-layer>
   </v-stage>
