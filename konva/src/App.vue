@@ -3,6 +3,7 @@ export default {
   name: "App",
   data() {
     return {
+      gridSize: 100,
       stageSize: {
         width: window.innerWidth,
         height: window.innerHeight,
@@ -106,6 +107,10 @@ export default {
       this.objectsContainer.push({
         ...this.configs[config],
         draggable: true,
+        shadowColor: "black",
+        shadowBlur: 0,
+        shadowOffset: { x: 10, y: 10 },
+        shadowOpacity: 0.5,
         name: this.configs[config].type + this.objectsContainer.length,
       });
     },
@@ -116,6 +121,7 @@ export default {
 <template>
   <h1 class="text-h4">Create Shapes</h1>
   <h2 class="text-h5 mb-2">with konva.js</h2>
+
   <div class="d-flex" v-for="(configType, configKey) in configs" :key="configKey">
     <v-btn width="150" class="mx-2" @click="addObject($event, configKey)">{{ configKey.replace("Config", "") }}</v-btn>
     <template v-for="(value, key) in configType">
@@ -127,6 +133,7 @@ export default {
         :label="key"
         v-model="configType[key]"></v-text-field>
     </template>
+
   </div>
 
   <v-list density="compact">
@@ -139,6 +146,20 @@ export default {
   <pre class="text-green my-2">{{ info }}</pre>
 
   <v-stage style="border: 1px solid white" :config="stageSize">
+    <v-layer ref="backdrop">
+      <template v-for="y in Math.ceil(stageSize.height / gridSize)">
+        <v-rect
+          v-for="x in Math.ceil(stageSize.width / gridSize)"
+          :key="x"
+          :config="{
+            x: (x - 1) * gridSize,
+            y: (y - 1) * gridSize,
+            width: gridSize,
+            height: gridSize,
+            stroke: '#222',
+          }" />
+      </template>
+    </v-layer>
     <v-layer ref="layerRef">
       <template v-for="(obj, index) in objectsContainer" :key="index">
         <component
